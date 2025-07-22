@@ -3,6 +3,7 @@ import time
 import sqlite3
 import datetime
 import json
+
 try:
     import requests
 except ImportError as e:
@@ -18,7 +19,7 @@ except ImportError as e:
     ) from e
 
 API_KEY = os.getenv("POLYGON_API_KEY", "2YpDJoJw1g_6pUS_xZzu2NBDm5szHJ5Q")
-DB_FILE = 'market_data.db'
+DB_FILE = "market_data.db"
 RATE_LIMIT_SEC = 1  # simple rate limit between requests
 CACHE_QUOTE_MS = 5 * 1000
 WS_URL = "wss://delayed.polygon.io/stocks"
@@ -118,7 +119,9 @@ def rate_limited_get(url, params=None):
 def fetch_ohlcv(conn, symbol):
     end = datetime.date.today()
     start = end - datetime.timedelta(days=60)
-    start_ts = int(datetime.datetime.combine(start, datetime.time.min).timestamp() * 1000)
+    start_ts = int(
+        datetime.datetime.combine(start, datetime.time.min).timestamp() * 1000
+    )
     end_ts = int(datetime.datetime.combine(end, datetime.time.min).timestamp() * 1000)
     c = conn.cursor()
     c.execute(
@@ -227,8 +230,16 @@ def fetch_option_chain(conn, symbol):
                 details.get("expiration_date"),
                 details.get("strike_price"),
                 details.get("contract_type"),
-                last_quote.get("bid", {}).get("p") if isinstance(last_quote.get("bid"), dict) else None,
-                last_quote.get("ask", {}).get("p") if isinstance(last_quote.get("ask"), dict) else None,
+                (
+                    last_quote.get("bid", {}).get("p")
+                    if isinstance(last_quote.get("bid"), dict)
+                    else None
+                ),
+                (
+                    last_quote.get("ask", {}).get("p")
+                    if isinstance(last_quote.get("ask"), dict)
+                    else None
+                ),
                 opt.get("implied_volatility"),
                 greeks.get("delta"),
                 opt.get("day", {}).get("volume"),
@@ -310,10 +321,10 @@ def stream_quotes(symbols="AAPL", realtime=False):
 
     def subscribe(ws):
         chans = []
-        for sym in symbols.split(','):
+        for sym in symbols.split(","):
             chans.append(f"T.{sym}")
             chans.append(f"Q.{sym}")
-        subs = json.dumps({"action": "subscribe", "params": ','.join(chans)})
+        subs = json.dumps({"action": "subscribe", "params": ",".join(chans)})
         ws.send(subs)
 
     def on_message(ws, message):
@@ -327,7 +338,9 @@ def stream_quotes(symbols="AAPL", realtime=False):
         for evt in events:
             if evt.get("status") == "auth_success":
                 subscribe(ws)
-            elif evt.get("status") == "error" and evt.get("message") == "not authorized":
+            elif (
+                evt.get("status") == "error" and evt.get("message") == "not authorized"
+            ):
                 # Fall back to delayed feed when real-time subscription fails
                 if realtime:
                     print("Real-time feed unauthorized, switching to delayed feed...")
@@ -358,7 +371,7 @@ def stream_quotes(symbols="AAPL", realtime=False):
 
 def main(symbols="AAPL", stream=False, realtime=False):
     conn = init_db()
-    for sym in symbols.split(','):
+    for sym in symbols.split(","):
         fetch_ohlcv(conn, sym)
         fetch_minute_bars(conn, sym)
         fetch_realtime_quote(conn, sym)
