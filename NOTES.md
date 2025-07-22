@@ -8,3 +8,4 @@
 # Coder
 - 2025-07-22 23:50 UTC: Modularized collector into package and added argparse CLI.
 - 2025-07-22 23:45 UTC: Removed fallback API key; script now requires POLYGON_API_KEY.
+
