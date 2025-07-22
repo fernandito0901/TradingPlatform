@@ -26,9 +26,9 @@ edit `market_data_collector.py` to include your key. Then run:
 python3 market_data_collector.py
 ```
 
-The script fetches the last 60 days of OHLCV data, a recent price quote,
-and the weekly option chain for the default symbol `AAPL`. Adjust the symbol
-by running:
+The script fetches the last 60 days of OHLCV data, a recent quote from the
+snapshot endpoint, and the weekly option chain for the default symbol `AAPL`.
+Adjust the symbol by running:
 
 ```bash
 python3 market_data_collector.py TSLA
@@ -36,8 +36,9 @@ python3 market_data_collector.py TSLA
 
 Collected data is stored in `market_data.db`.
 
-To stream live trades and quotes continuously, pass the `stream` argument (note
-that the WebSocket feed requires an upgraded Polygon plan):
+To stream delayed trades and quotes continuously, pass the `stream` argument.
+The script connects to Polygon's delayed WebSocket, which is available on the
+Starter plan:
 
 ```bash
 python3 market_data_collector.py AAPL stream

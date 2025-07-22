@@ -6,10 +6,11 @@ import json
 import requests
 import websocket
 
-API_KEY = os.getenv('POLYGON_API_KEY', '2YpDJoJw1g_6pUS_xZzu2NBDm5szHJ5Q')
+API_KEY = os.getenv("POLYGON_API_KEY", "2YpDJoJw1g_6pUS_xZzu2NBDm5szHJ5Q")
 DB_FILE = 'market_data.db'
 RATE_LIMIT_SEC = 1  # simple rate limit between requests
 CACHE_QUOTE_MS = 5 * 1000
+WS_URL = "wss://delayed.polygon.io/stocks"
 
 
 def init_db():
@@ -105,26 +106,17 @@ def fetch_realtime_quote(conn, symbol):
     row = c.fetchone()
     if row and int(time.time() * 1000) - row[0] < CACHE_QUOTE_MS:
         return
-    url = f"https://api.polygon.io/v2/last/trade/{symbol}"
-    params = {"apiKey": API_KEY}
-    try:
-        data = rate_limited_get(url, params)
-        trade = data.get("results", data.get("last", {}))
-        price = trade.get("p", trade.get("price"))
-        ts = trade.get("t", trade.get("timestamp"))
-    except requests.HTTPError as e:
-        if e.response is not None and e.response.status_code == 403:
-            snap_url = "https://api.polygon.io/v3/snapshot"
-            snap_params = {"ticker": symbol, "apiKey": API_KEY}
-            data = rate_limited_get(snap_url, snap_params)
-            results = data.get("results", [])
-            if not results:
-                return
-            session = results[0].get("session", {})
-            price = session.get("price")
-            ts = session.get("last_updated")
-        else:
-            raise
+    # Starter plans cannot access the `/v2/last/trade` endpoint. Use the
+    # snapshot endpoint instead which provides a recent price.
+    snap_url = "https://api.polygon.io/v3/snapshot"
+    snap_params = {"ticker": symbol, "apiKey": API_KEY}
+    data = rate_limited_get(snap_url, snap_params)
+    results = data.get("results", [])
+    if not results:
+        return
+    session = results[0].get("session", {})
+    price = session.get("price")
+    ts = session.get("last_updated")
     if not price:
         return
     c = conn.cursor()
@@ -190,7 +182,7 @@ def stream_quotes(symbol="AAPL"):
         print("WebSocket closed", close_status_code, close_msg)
 
     ws = websocket.WebSocketApp(
-        "wss://socket.polygon.io/stocks",
+        WS_URL,
         on_open=on_open,
         on_message=on_message,
         on_error=on_error,
