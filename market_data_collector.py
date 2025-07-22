@@ -57,6 +57,9 @@ def init_db():
 def rate_limited_get(url, params=None):
     time.sleep(RATE_LIMIT_SEC)
     resp = requests.get(url, params=params)
+    if resp.status_code == 403:
+        # Let caller handle authorization failures explicitly
+        raise requests.HTTPError("Forbidden", response=resp)
     resp.raise_for_status()
     return resp.json()
 
@@ -104,14 +107,30 @@ def fetch_realtime_quote(conn, symbol):
         return
     url = f"https://api.polygon.io/v2/last/trade/{symbol}"
     params = {"apiKey": API_KEY}
-    data = rate_limited_get(url, params)
-    trade = data.get("results", data.get("last", {}))
-    if not trade:
+    try:
+        data = rate_limited_get(url, params)
+        trade = data.get("results", data.get("last", {}))
+        price = trade.get("p", trade.get("price"))
+        ts = trade.get("t", trade.get("timestamp"))
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code == 403:
+            snap_url = "https://api.polygon.io/v3/snapshot"
+            snap_params = {"ticker": symbol, "apiKey": API_KEY}
+            data = rate_limited_get(snap_url, snap_params)
+            results = data.get("results", [])
+            if not results:
+                return
+            session = results[0].get("session", {})
+            price = session.get("price")
+            ts = session.get("last_updated")
+        else:
+            raise
+    if not price:
         return
     c = conn.cursor()
     c.execute(
         "INSERT OR REPLACE INTO realtime_quotes VALUES (?,?,?)",
-        (symbol, trade.get("t", trade.get("timestamp")), trade.get("p", trade.get("price"))),
+        (symbol, ts, price),
     )
     conn.commit()
 
@@ -126,26 +145,26 @@ def fetch_option_chain(conn, symbol):
     if c.fetchone()[0]:
         return
     url = f"https://api.polygon.io/v3/snapshot/options/{symbol}"
-    params = {"apiKey": API_KEY}
+    params = {"apiKey": API_KEY, "greeks": "true"}
     data = rate_limited_get(url, params)
-    options = data.get("results", {}).get("options", [])
+    options = data.get("results", [])
     for opt in options:
         details = opt.get("details", {})
         greeks = opt.get("greeks", {})
-        ticker = opt.get("ticker")
+        ticker = details.get("ticker")
         c.execute(
-            "INSERT OR REPLACE INTO option_chain VALUES (?,?,?,?,?,?,?,?,?,?)",
+            "INSERT OR REPLACE INTO option_chain VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             (
                 symbol,
                 ticker,
                 details.get("expiration_date"),
                 details.get("strike_price"),
-                details.get("type"),
-                opt.get("bid"),
-                opt.get("ask"),
-                greeks.get("iv"),
+                details.get("contract_type"),
+                None,
+                None,
+                opt.get("implied_volatility"),
                 greeks.get("delta"),
-                opt.get("volume"),
+                opt.get("day", {}).get("volume"),
                 opt.get("open_interest"),
             ),
         )
@@ -164,10 +183,18 @@ def stream_quotes(symbol="AAPL"):
     def on_message(ws, message):
         print(message)
 
+    def on_error(ws, error):
+        print("WebSocket error:", error)
+
+    def on_close(ws, close_status_code, close_msg):
+        print("WebSocket closed", close_status_code, close_msg)
+
     ws = websocket.WebSocketApp(
         "wss://socket.polygon.io/stocks",
         on_open=on_open,
         on_message=on_message,
+        on_error=on_error,
+        on_close=on_close,
     )
     print(f"Streaming live data for {symbol}... press Ctrl+C to stop")
     ws.run_forever()
