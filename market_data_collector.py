@@ -327,6 +327,14 @@ def stream_quotes(symbols="AAPL", realtime=False):
         for evt in events:
             if evt.get("status") == "auth_success":
                 subscribe(ws)
+            elif evt.get("status") == "error" and evt.get("message") == "not authorized":
+                # Fall back to delayed feed when real-time subscription fails
+                if realtime:
+                    print("Real-time feed unauthorized, switching to delayed feed...")
+                    ws.close()
+                    stream_quotes(symbols, realtime=False)
+                else:
+                    print("Subscription unauthorized; check your plan permissions")
 
     def on_error(ws, error):
         print("WebSocket error:", error)

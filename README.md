@@ -42,8 +42,9 @@ Collected data is stored in `market_data.db`.
 
 To stream trades and quotes continuously, pass the `stream` argument. By
 default the collector uses Polygon's **delayed** WebSocket, which is available
-on the Starter plan. You can also request the real-time feed if your API key
-permits it.
+on the Starter plan. You can also request the real-time feed with the
+`realtime` flag. If the request fails due to insufficient permissions, the
+collector automatically falls back to the delayed feed.
 
 ```bash
 python3 market_data_collector.py AAPL stream
@@ -57,8 +58,9 @@ python3 market_data_collector.py AAPL,MSFT stream realtime
 ```
 
 The client waits for the connection to be authenticated before subscribing to
-trade and quote channels, preventing `not authorized` errors. The WebSocket
-feed will print data to the console until interrupted.
+trade and quote channels. If a `not authorized` error is returned when using
+the real-time feed, the collector automatically reconnects using the delayed
+WebSocket. The feed prints trade and quote data until interrupted.
 
 ## Starter Plan Compatibility
 
