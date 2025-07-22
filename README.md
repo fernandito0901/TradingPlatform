@@ -39,12 +39,20 @@ python3 market_data_collector.py TSLA
 
 Collected data is stored in `market_data.db`.
 
-To stream delayed trades and quotes continuously, pass the `stream` argument.
-The script connects to Polygon's delayed WebSocket, which is available on the
-Starter plan:
+To stream trades and quotes continuously, pass the `stream` argument. By
+default the collector uses Polygon's **delayed** WebSocket, which is available
+on the Starter plan. You can also request the real-time feed if your API key
+permits it.
 
 ```bash
 python3 market_data_collector.py AAPL stream
+```
+
+To stream multiple tickers, separate them with commas and optionally pass the
+`realtime` flag to use the live feed instead of the delayed one:
+
+```bash
+python3 market_data_collector.py AAPL,MSFT stream realtime
 ```
 
 The client waits for the connection to be authenticated before subscribing to
@@ -54,7 +62,7 @@ feed will print data to the console until interrupted.
 ## Starter Plan Compatibility
 
 The collector uses endpoints that are accessible with Polygon's **Stocks** and
-**Options** starter plans. Quotes and WebSocket data are delayed by 15 minutes,
-and option snapshots may omit bid/ask data. Additional fundamentals,
+**Options** starter plans. Quotes and the default WebSocket stream are delayed
+by 15 minutes. Option snapshots may omit bid/ask data. Additional fundamentals,
 corporate actions and technical indicators are fetched for future use when
 available.

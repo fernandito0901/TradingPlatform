@@ -11,6 +11,7 @@ DB_FILE = 'market_data.db'
 RATE_LIMIT_SEC = 1  # simple rate limit between requests
 CACHE_QUOTE_MS = 5 * 1000
 WS_URL = "wss://delayed.polygon.io/stocks"
+REALTIME_WS_URL = "wss://socket.polygon.io/stocks"
 
 
 def init_db():
@@ -279,8 +280,16 @@ def fetch_indicator_sma(conn, symbol):
     conn.commit()
 
 
-def stream_quotes(symbol="AAPL"):
-    """Stream real-time trades and quotes via Polygon's WebSocket."""
+def stream_quotes(symbols="AAPL", realtime=False):
+    """Stream trades and quotes via Polygon's WebSocket.
+
+    Parameters
+    ----------
+    symbols : str
+        Comma separated list of tickers to subscribe to.
+    realtime : bool
+        Use the real-time feed when True, otherwise use the delayed feed.
+    """
 
     def on_open(ws):
         # Authenticate first. The subscription request will be sent
@@ -289,9 +298,11 @@ def stream_quotes(symbol="AAPL"):
         ws.send(auth)
 
     def subscribe(ws):
-        subs = json.dumps(
-            {"action": "subscribe", "params": f"T.{symbol},Q.{symbol}"}
-        )
+        chans = []
+        for sym in symbols.split(','):
+            chans.append(f"T.{sym}")
+            chans.append(f"Q.{sym}")
+        subs = json.dumps({"action": "subscribe", "params": ','.join(chans)})
         ws.send(subs)
 
     def on_message(ws, message):
@@ -312,33 +323,40 @@ def stream_quotes(symbol="AAPL"):
     def on_close(ws, close_status_code, close_msg):
         print("WebSocket closed", close_status_code, close_msg)
 
+    url = REALTIME_WS_URL if realtime else WS_URL
     ws = websocket.WebSocketApp(
-        WS_URL,
+        url,
         on_open=on_open,
         on_message=on_message,
         on_error=on_error,
         on_close=on_close,
     )
-    print(f"Streaming live data for {symbol}... press Ctrl+C to stop")
+    print(
+        f"Streaming {'real-time' if realtime else 'delayed'} data for {symbols}... press Ctrl+C to stop"
+    )
     ws.run_forever()
 
 
-def main(symbol="AAPL", stream=False):
+def main(symbols="AAPL", stream=False, realtime=False):
     conn = init_db()
-    fetch_ohlcv(conn, symbol)
-    fetch_minute_bars(conn, symbol)
-    fetch_realtime_quote(conn, symbol)
-    fetch_option_chain(conn, symbol)
-    fetch_fundamentals(conn, symbol)
-    fetch_corporate_actions(conn, symbol)
-    fetch_indicator_sma(conn, symbol)
+    for sym in symbols.split(','):
+        fetch_ohlcv(conn, sym)
+        fetch_minute_bars(conn, sym)
+        fetch_realtime_quote(conn, sym)
+        fetch_option_chain(conn, sym)
+        fetch_fundamentals(conn, sym)
+        fetch_corporate_actions(conn, sym)
+        fetch_indicator_sma(conn, sym)
     print("Data collection completed")
     if stream:
-        stream_quotes(symbol)
+        stream_quotes(symbols, realtime=realtime)
 
 
 if __name__ == "__main__":
     import sys
-    sym = sys.argv[1] if len(sys.argv) > 1 else "AAPL"
-    stream = len(sys.argv) > 2 and sys.argv[2] == "stream"
-    main(sym, stream)
+
+    args = sys.argv[1:]
+    sym = args[0] if args else "AAPL"
+    stream = "stream" in args
+    realtime = "realtime" in args
+    main(sym, stream, realtime)
