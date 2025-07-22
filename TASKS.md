@@ -6,6 +6,8 @@
 - [T4] Modularize project into `collector/` package · Acceptance: create `collector/api.py`, `collector/db.py`, `collector/cli.py`, `collector/stream.py`, and update main script to import these modules · Assignee: Coder
 - [T6] Add logging module · Acceptance: logs written to a user-specified file with configurable level; CLI flag `--log-file` available · Assignee: Coder
 - [T7] Setup CI workflow · Acceptance: `.github/workflows/ci.yml` runs `black --check` and `pytest -q` on push · Assignee: Tester
+- [T8] Package project for distribution · Acceptance: `pyproject.toml` defines `collector` package and entry point; `pip install -e .` works · Assignee: Coder
+- [T9] Document environment variables · Acceptance: README explains `POLYGON_API_KEY` and logging config section · Assignee: Reviewer
 
 # Completed Tasks
 
