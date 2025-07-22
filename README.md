@@ -47,7 +47,9 @@ Starter plan:
 python3 market_data_collector.py AAPL stream
 ```
 
-The WebSocket feed will print data to the console until interrupted.
+The client waits for the connection to be authenticated before subscribing to
+trade and quote channels, preventing `not authorized` errors. The WebSocket
+feed will print data to the console until interrupted.
 
 ## Starter Plan Compatibility
 

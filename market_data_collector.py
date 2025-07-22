@@ -283,13 +283,28 @@ def stream_quotes(symbol="AAPL"):
     """Stream real-time trades and quotes via Polygon's WebSocket."""
 
     def on_open(ws):
+        # Authenticate first. The subscription request will be sent
+        # once we receive an auth_success message in on_message.
         auth = json.dumps({"action": "auth", "params": API_KEY})
         ws.send(auth)
-        subs = json.dumps({"action": "subscribe", "params": f"T.{symbol},Q.{symbol}"})
+
+    def subscribe(ws):
+        subs = json.dumps(
+            {"action": "subscribe", "params": f"T.{symbol},Q.{symbol}"}
+        )
         ws.send(subs)
 
     def on_message(ws, message):
         print(message)
+        try:
+            events = json.loads(message)
+        except json.JSONDecodeError:
+            return
+
+        # Wait for authentication before subscribing to channels.
+        for evt in events:
+            if evt.get("status") == "auth_success":
+                subscribe(ws)
 
     def on_error(ws, error):
         print("WebSocket error:", error)
