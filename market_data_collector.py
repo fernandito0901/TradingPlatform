@@ -3,8 +3,19 @@ import time
 import sqlite3
 import datetime
 import json
-import requests
-import websocket
+try:
+    import requests
+except ImportError as e:
+    raise SystemExit(
+        "Missing dependency 'requests'. Install it with 'python3 -m pip install requests'"
+    ) from e
+
+try:
+    import websocket
+except ImportError as e:
+    raise SystemExit(
+        "Missing dependency 'websocket-client'. Install it with 'python3 -m pip install websocket-client'"
+    ) from e
 
 API_KEY = os.getenv("POLYGON_API_KEY", "2YpDJoJw1g_6pUS_xZzu2NBDm5szHJ5Q")
 DB_FILE = 'market_data.db'

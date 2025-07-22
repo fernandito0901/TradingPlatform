@@ -12,10 +12,11 @@ average. All results are cached in a local SQLite database.
 - `requests` library
 - `websocket-client` library
 
-Install dependencies with:
+Install dependencies with the same Python interpreter you use to run the
+collector:
 
 ```bash
-pip install requests websocket-client
+python3 -m pip install -r requirements.txt
 ```
 
 ## Usage
