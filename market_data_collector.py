@@ -2,7 +2,9 @@ import os
 import time
 import sqlite3
 import datetime
+import json
 import requests
+import websocket
 
 API_KEY = os.getenv('POLYGON_API_KEY', '2YpDJoJw1g_6pUS_xZzu2NBDm5szHJ5Q')
 DB_FILE = 'market_data.db'
@@ -150,13 +152,39 @@ def fetch_option_chain(conn, symbol):
     conn.commit()
 
 
-def main(symbol="AAPL"):
+def stream_quotes(symbol="AAPL"):
+    """Stream real-time trades and quotes via Polygon's WebSocket."""
+
+    def on_open(ws):
+        auth = json.dumps({"action": "auth", "params": API_KEY})
+        ws.send(auth)
+        subs = json.dumps({"action": "subscribe", "params": f"T.{symbol},Q.{symbol}"})
+        ws.send(subs)
+
+    def on_message(ws, message):
+        print(message)
+
+    ws = websocket.WebSocketApp(
+        "wss://socket.polygon.io/stocks",
+        on_open=on_open,
+        on_message=on_message,
+    )
+    print(f"Streaming live data for {symbol}... press Ctrl+C to stop")
+    ws.run_forever()
+
+
+def main(symbol="AAPL", stream=False):
     conn = init_db()
     fetch_ohlcv(conn, symbol)
     fetch_realtime_quote(conn, symbol)
     fetch_option_chain(conn, symbol)
     print("Data collection completed")
+    if stream:
+        stream_quotes(symbol)
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    sym = sys.argv[1] if len(sys.argv) > 1 else "AAPL"
+    stream = len(sys.argv) > 2 and sys.argv[2] == "stream"
+    main(sym, stream)

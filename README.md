@@ -9,11 +9,12 @@ calls and to persist data between runs.
 
 - Python 3.8+
 - `requests` library
+- `websocket-client` library
 
 Install dependencies with:
 
 ```bash
-pip install requests
+pip install requests websocket-client
 ```
 
 ## Usage
@@ -34,3 +35,11 @@ python3 market_data_collector.py TSLA
 ```
 
 Collected data is stored in `market_data.db`.
+
+To stream live trades and quotes continuously, pass the `stream` argument:
+
+```bash
+python3 market_data_collector.py AAPL stream
+```
+
+The WebSocket feed will print data to the console until interrupted.
