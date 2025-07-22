@@ -1,9 +1,10 @@
 # Market Data Collector
 
 This script polls the [Polygon](https://polygon.io) REST API to collect
-historical bars, real‑time quotes and option chain snapshots for a given
-symbol. Data is cached in a local SQLite database to avoid redundant API
-calls and to persist data between runs.
+historical bars, minute aggregates, delayed real‑time quotes and option
+chain snapshots for a given symbol. The collector also stores basic
+fundamental data, recent corporate actions and a 50‑day simple moving
+average. All results are cached in a local SQLite database.
 
 ## Requirements
 
@@ -26,8 +27,10 @@ edit `market_data_collector.py` to include your key. Then run:
 python3 market_data_collector.py
 ```
 
-The script fetches the last 60 days of OHLCV data, a recent quote from the
-snapshot endpoint, and the weekly option chain for the default symbol `AAPL`.
+The script fetches the last 60 days of OHLCV data, the most recent minute
+aggregates, a delayed quote from the snapshot endpoint, and the weekly option
+chain for the default symbol `AAPL`. Basic fundamentals, recent split history
+and a 50‑day SMA are stored as well.
 Adjust the symbol by running:
 
 ```bash
@@ -45,3 +48,11 @@ python3 market_data_collector.py AAPL stream
 ```
 
 The WebSocket feed will print data to the console until interrupted.
+
+## Starter Plan Compatibility
+
+The collector uses endpoints that are accessible with Polygon's **Stocks** and
+**Options** starter plans. Quotes and WebSocket data are delayed by 15 minutes,
+and option snapshots may omit bid/ask data. Additional fundamentals,
+corporate actions and technical indicators are fetched for future use when
+available.
