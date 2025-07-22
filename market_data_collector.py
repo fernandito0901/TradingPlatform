@@ -18,7 +18,12 @@ except ImportError as e:
         "Missing dependency 'websocket-client'. Install it with 'python3 -m pip install websocket-client'"
     ) from e
 
-API_KEY = os.getenv("POLYGON_API_KEY", "2YpDJoJw1g_6pUS_xZzu2NBDm5szHJ5Q")
+API_KEY = os.getenv("POLYGON_API_KEY")
+if not API_KEY:
+    raise SystemExit(
+        "Environment variable POLYGON_API_KEY is required.\n"
+        "Sign up at https://polygon.io to obtain an API key."
+    )
 DB_FILE = "market_data.db"
 RATE_LIMIT_SEC = 1  # simple rate limit between requests
 CACHE_QUOTE_MS = 5 * 1000
@@ -27,6 +32,13 @@ REALTIME_WS_URL = "wss://socket.polygon.io/stocks"
 
 
 def init_db():
+    """Initialize the SQLite database and return a connection.
+
+    Returns
+    -------
+    sqlite3.Connection
+        Open connection to ``DB_FILE`` with required tables created.
+    """
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute(
@@ -117,6 +129,8 @@ def rate_limited_get(url, params=None):
 
 
 def fetch_ohlcv(conn, symbol):
+    """Fetch and cache 60 days of daily bars for a symbol."""
+
     end = datetime.date.today()
     start = end - datetime.timedelta(days=60)
     start_ts = int(

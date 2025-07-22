@@ -21,8 +21,8 @@ python3 -m pip install -r requirements.txt
 
 ## Usage
 
-Set your Polygon API key in the environment variable `POLYGON_API_KEY` or
-edit `market_data_collector.py` to include your key. Then run:
+Set your Polygon API key in the environment variable `POLYGON_API_KEY`.
+The collector refuses to start if this variable is missing. Then run:
 
 ```bash
 python3 market_data_collector.py
