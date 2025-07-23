@@ -24,6 +24,7 @@
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
 - 2025-07-23 02:40 UTC: Ran full test suite and validated playbook JSON; all tests passed.
 - 2025-07-29 00:45 UTC: Added WebSocket reconnect test and moved T10 to completed tasks.
+- 2025-08-04 00:10 UTC: Unable to write tests for `collector.verify` because the command is not implemented. Escalating to Planner. ⚠ NEEDS-HUMAN-REVIEW
 
 # Modeler
 - 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
