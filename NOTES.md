@@ -25,6 +25,7 @@
 
 # Modeler
 - 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
+- 2025-08-01 00:20 UTC: Added volatility and news sentiment features, cross-validation and metrics dashboard. Moved T16, T17, T18, T24 to completed.
 
 # Synthesizer
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.

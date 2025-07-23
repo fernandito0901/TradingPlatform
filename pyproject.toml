@@ -16,6 +16,7 @@ dependencies = [
     "numpy",
     "scikit-learn",
     "lightgbm",
+    "arch",
 ]
 
 [project.scripts]

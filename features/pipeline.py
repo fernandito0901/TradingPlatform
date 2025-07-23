@@ -1,9 +1,14 @@
 import os
+from typing import Optional
+
 import pandas as pd
+from arch import arch_model
 
 
-def compute_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute SMA20 and RSI14 indicators.
+def compute_features(
+    df: pd.DataFrame, iv: Optional[float] = None, news_sent: float = 0.0
+) -> pd.DataFrame:
+    """Compute technical and sentiment features.
 
     Parameters
     ----------
@@ -13,7 +18,7 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     pandas.DataFrame
-        DataFrame with ``sma20``, ``rsi14`` and ``target`` columns added.
+        DataFrame with engineered feature columns added.
     """
     df = df.sort_values("t").reset_index(drop=True)
     df["sma20"] = df["close"].rolling(20).mean()
@@ -24,17 +29,57 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     avg_loss = loss.rolling(14).mean()
     rs = avg_gain / avg_loss
     df["rsi14"] = 100 - (100 / (1 + rs))
+    df["hv30"] = df["close"].pct_change().rolling(30).std() * (252**0.5)
+    if iv is not None:
+        df["iv30"] = iv
+    else:
+        df["iv30"] = float("nan")
+
+    ret = df["close"].pct_change().dropna() * 100
+    if len(ret) >= 30:
+        model = arch_model(ret, p=1, q=1, rescale=False)
+        res = model.fit(disp="off")
+        vol = res.conditional_volatility / 100
+        full = pd.Series(float("nan"), index=df.index)
+        full.iloc[-len(vol) :] = vol.values
+        df["garch_sigma"] = full
+    else:
+        df["garch_sigma"] = float("nan")
+
+    df["news_sent"] = news_sent
     df["target"] = (df["close"].shift(-1) > df["close"]).astype(int)
     return df.dropna()
 
 
 def from_db(conn, symbol: str) -> pd.DataFrame:
-    """Load OHLCV data for ``symbol`` from SQLite and compute features."""
+    """Load OHLCV and related data from SQLite and compute features."""
     query = "SELECT t, close FROM ohlcv WHERE symbol=? ORDER BY t"
     df = pd.read_sql_query(query, conn, params=(symbol,))
     if df.empty:
         raise ValueError("no data for symbol")
-    return compute_features(df)
+
+    opt = pd.read_sql_query(
+        "SELECT iv FROM option_chain WHERE symbol=?", conn, params=(symbol,)
+    )
+    iv = float(opt["iv"].mean()) if not opt.empty else None
+
+    news = pd.read_sql_query(
+        "SELECT title FROM news WHERE symbol=?", conn, params=(symbol,)
+    )
+    news_sent = 0.0
+    if not news.empty:
+        words_pos = {"up", "gain", "rise", "beat", "soars"}
+        words_neg = {"down", "fall", "miss", "drop", "plunge"}
+        scores = []
+        for title in news["title"]:
+            t = title.lower()
+            pos = sum(w in t for w in words_pos)
+            neg = sum(w in t for w in words_neg)
+            scores.append(pos - neg)
+        if scores:
+            news_sent = sum(scores) / len(scores)
+
+    return compute_features(df, iv=iv, news_sent=news_sent)
 
 
 def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:

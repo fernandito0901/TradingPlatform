@@ -25,3 +25,8 @@
 
 ## 2025-07-30
 - Added NewsAPI integration storing headlines in `news` table.
+
+## 2025-08-01
+- Extended feature pipeline with IV30, HV30, GARCH volatility and news sentiment.
+- Model training now returns train/test AUC metrics.
+- Added HTML dashboard under `reports/` summarizing AUC scores.
