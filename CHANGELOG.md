@@ -16,3 +16,6 @@
 
 ## 2025-07-23
 - Added optional HTTP caching controlled by `CACHE_TTL` environment variable.
+
+## 2025-07-28
+- Implemented playbook generation module producing JSON files under `playbooks/`.
