@@ -1,6 +1,5 @@
 # Open Tasks
 
-- [T10] Add WebSocket tests for stream_quotes · Acceptance: mocked server verifies reconnect logic; `pytest -q` passes · Assignee: Tester
 - [T12] Integrate NewsAPI for headlines · Acceptance: `collector.api` stores top articles in `news` table; schema documented · Assignee: DataCollector
 - [T15] Generate playbook JSON · Acceptance: `playbooks/{date}.json` produced using scoring rule; schema validated in tests · Assignee: Synthesizer
 
@@ -20,3 +19,5 @@
 - [T15] Generate playbook JSON · Acceptance: `playbooks/{date}.json` produced using scoring rule; schema validated in tests · Completed by Synthesizer on 2025-07-23
 
 - [T9] Document environment variables · Acceptance: README explains `POLYGON_API_KEY` and logging config section · Completed by Reviewer on 2025-07-29
+- [T10] Add WebSocket tests for stream_quotes · Acceptance: mocked server verifies reconnect logic; `pytest -q` passes · Completed by Tester on 2025-07-29
+
