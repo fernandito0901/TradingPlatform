@@ -1,6 +1,8 @@
 # AGENTS.md
 *Single‑source handbook for all AI programming agents in this repo.*
 
+if any AI agents have reccomendations for the AGENTS.md file that would help with overall programming design and development whether that be new roles or suggestions feel free to add them to the SUGGESTIONS.md file
+
 ---
 
 ## 1  Global Guidelines  <!-- apply to every agent -->
@@ -35,7 +37,7 @@
 
 ### @Planner
 **Purpose** Architect & task decomposer  
-**Key Inputs** `README.md`, feature requests, bug reports  
+**Key Inputs** `REQUESTS.md`, feature requests, bug reports  
 **Outputs** `TASKS.md` with bullet tasks including: ID · title · acceptance criteria · assignee role  
 **Workflow**  
 1. Parse requirement → draft design notes in `design/`.  
@@ -114,4 +116,29 @@
 - **UOA** – Unusual Options Activity flag (volume ≥ 5× 30‑d avg).
 
 ---
+
+## 6  Project Overview & Vision  <!-- informational; no actionable rules -->
+
+**What we’re building**  
+This repository hosts an *autonomous, multi‑agent trading‑research platform* that produces a **Daily Options‑Trade Playbook** before the U.S. market opens.  
+Each morning the agents:
+
+1. **Collect** fresh market, options‑chain, and news data (DataCollector).  
+2. **Engineer features & update models** to quantify momentum, volatility edge, sentiment, and probability of price moves (Modeler).  
+3. **Synthesize** a JSON playbook listing the highest‑score swing or day‑trade option strategies, complete with POP, Greeks, and rationale (Synthesizer).  
+4. **Validate** the output via full test suites and schema checks (Tester).  
+5. **Review & merge** the playbook to `main` so humans (or downstream bots) can act on it (Reviewer).  
+
+A Planner / Coordinator agent keeps tasks aligned and resolves ambiguities.
+
+**Why it matters**  
+- **Speed & Scale:** AI agents can scan thousands of strikes, run GARCH forecasts, and parse news far faster than any single human analyst.  
+- **Consistency:** Formalized scoring rules and automated tests ensure every playbook meets the same quality bar.  
+- **Transparency:** The entire workflow is open‑source; every metric is reproducible, every decision traceable in `NOTES.md` and the commit history.  
+
+**Long‑term goal**  
+To evolve into a self‑adapting research stack that not only outputs trade ideas but also **learns from live P/L**, retrains itself, and surfaces new alpha signals—while remaining fully auditable by humans.
+
+*(This section is descriptive only; agents do **not** need to act on it. It exists to give context to new contributors—human or AI—about what this project is aiming to achieve.)*
+
 
