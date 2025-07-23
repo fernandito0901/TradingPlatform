@@ -6,6 +6,7 @@
 - [T22] Slack notification alerts · Acceptance: pipeline sends Slack message after playbook generation and on errors; config documented · Assignee: Coder
 - [T23] Historical data backfill script · Acceptance: `collector.backfill` downloads missing bars for a date range; unit test validates row count · Assignee: DataCollector
 - [T25] Docker packaging · Acceptance: `Dockerfile` and `run_pipeline.sh` enable one-command execution; instructions in README · Assignee: Coder
+- [T26] Review modeling updates · Acceptance: confirm docs and tests for new features, run `pytest -q` and squash-merge · Assignee: Reviewer
 
 
 # Planned Tasks
