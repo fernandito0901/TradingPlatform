@@ -22,3 +22,6 @@
 
 ## 2025-07-29
 - Documented `POLYGON_API_KEY`, `CACHE_TTL` and logging options in README.
+
+## 2025-07-30
+- Added NewsAPI integration storing headlines in `news` table.

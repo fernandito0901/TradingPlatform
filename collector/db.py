@@ -2,7 +2,20 @@ import sqlite3
 
 
 def init_db(db_file: str) -> sqlite3.Connection:
-    """Initialize SQLite database and return connection."""
+    """Initialize SQLite database and return connection.
+
+    Tables
+    ------
+    - ``ohlcv`` (symbol, t, open, high, low, close, volume)
+    - ``minute_bars`` (symbol, t, open, high, low, close, volume)
+    - ``fundamentals`` (symbol, fetched_at, data)
+    - ``corporate_actions`` (symbol, execution_date, action, details)
+    - ``indicators`` (symbol, t, name, value)
+    - ``realtime_quotes`` (symbol, t, price)
+    - ``option_chain`` (symbol, contract, expiration, strike, option_type,
+      bid, ask, iv, delta, volume, open_interest)
+    - ``news`` (symbol, published_at, title, url, source)
+    """
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
     c.execute(
@@ -76,6 +89,16 @@ def init_db(db_file: str) -> sqlite3.Connection:
             volume REAL,
             open_interest REAL,
             PRIMARY KEY(symbol, contract)
+        )"""
+    )
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS news (
+            symbol TEXT,
+            published_at TEXT,
+            title TEXT,
+            url TEXT,
+            source TEXT,
+            PRIMARY KEY(symbol, published_at, title)
         )"""
     )
     conn.commit()

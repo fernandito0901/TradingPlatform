@@ -28,3 +28,6 @@
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
 # Reviewer
 - 2025-07-29 00:30 UTC: Documented environment variables and logging options in README; moved T9 to completed tasks.
+
+# DataCollector
+ - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.

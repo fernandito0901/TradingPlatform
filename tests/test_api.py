@@ -8,6 +8,7 @@ import collector.db as db
 
 # Ensure API key is set before importing collector.api
 os.environ.setdefault("POLYGON_API_KEY", "test")
+os.environ.setdefault("NEWS_API_KEY", "test")
 import collector.api as api
 
 
@@ -60,3 +61,25 @@ def test_http_cache(monkeypatch):
     api.rate_limited_get("https://example.com", {"q": "a"})
 
     assert len(calls) == 1
+
+
+def test_fetch_news(monkeypatch):
+    importlib.reload(api)
+    conn = db.init_db(":memory:")
+
+    def fake_news(url, params=None):
+        return {
+            "articles": [
+                {
+                    "publishedAt": "2025-07-30T00:00:00Z",
+                    "title": "Foo rises",
+                    "url": "https://example.com/foo",
+                    "source": {"name": "Example"},
+                }
+            ]
+        }
+
+    monkeypatch.setattr(api, "rate_limited_get", fake_news)
+    api.fetch_news(conn, "AAPL")
+    count = conn.execute("SELECT COUNT(*) FROM news").fetchone()[0]
+    assert count == 1
