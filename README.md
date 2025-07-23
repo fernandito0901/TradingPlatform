@@ -16,51 +16,44 @@ Install dependencies with the same Python interpreter you use to run the
 collector:
 
 ```bash
+pip install -e .
 python3 -m pip install -r requirements.txt
 ```
 
 ## Usage
 
-Set your Polygon API key in the environment variable `POLYGON_API_KEY` or
-edit `market_data_collector.py` to include your key. Then run:
+Set your Polygon API key using the environment variable `POLYGON_API_KEY`. You may specify `--log-file` to write logs to a file and set verbosity with `--log-level`. Then run the script with optional arguments:
 
 ```bash
-python3 market_data_collector.py
+python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime --db-file mydata.db
 ```
 
-The script fetches the last 60 days of OHLCV data, the most recent minute
-aggregates, a delayed quote from the snapshot endpoint, and the weekly option
-chain for the default symbol `AAPL`. Basic fundamentals, recent split history
-and a 50‑day SMA are stored as well.
-Adjust the symbol by running:
-
-```bash
-python3 market_data_collector.py TSLA
-```
+The script incrementally fetches OHLCV data, retrieving only new days while ensuring the last 60 days are present, the most recent minute
+aggregates, a delayed quote from the snapshot endpoint, and the weekly option chain for the default symbol `AAPL`. Basic fundamentals, recent split history and a 50-day SMA are stored as well.
 
 Collected data is stored in `market_data.db`.
 
-To stream trades and quotes continuously, pass the `stream` argument. By
+To stream trades and quotes continuously, pass the `--stream` flag. By
 default the collector uses Polygon's **delayed** WebSocket, which is available
 on the Starter plan. You can also request the real-time feed with the
-`realtime` flag. If the request fails due to insufficient permissions, the
+`--realtime` flag. If the request fails due to insufficient permissions, the
 collector automatically falls back to the delayed feed.
 
 ```bash
-python3 market_data_collector.py AAPL stream
+python3 market_data_collector.py --symbols AAPL --stream
 ```
 
 To stream multiple tickers, separate them with commas and optionally pass the
 `realtime` flag to use the live feed instead of the delayed one:
 
 ```bash
-python3 market_data_collector.py AAPL,MSFT stream realtime
+python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime
 ```
 
-The client waits for the connection to be authenticated before subscribing to
-trade and quote channels. If a `not authorized` error is returned when using
-the real-time feed, the collector automatically reconnects using the delayed
-WebSocket. The feed prints trade and quote data until interrupted.
+The client waits for the connection to be authenticated before subscribing to trade and quote channels. If a `not authorized` error is returned when using the real-time feed, the collector automatically reconnects using the delayed WebSocket. The feed prints trade and quote data until interrupted.
+
+## Logging
+Use `--log-file` to specify a log path and `--log-level` to control verbosity. Logs default to stdout.
 
 ## Starter Plan Compatibility
 

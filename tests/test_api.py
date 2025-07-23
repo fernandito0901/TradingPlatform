@@ -1,0 +1,33 @@
+import os
+import sys
+import importlib
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import collector.db as db
+
+# Ensure API key is set before importing collector.api
+os.environ.setdefault("POLYGON_API_KEY", "test")
+import collector.api as api
+
+
+def fake_rate_get(url, params=None):
+    return {"results": [{"t": 1, "o": 1, "h": 1, "l": 1, "c": 1, "v": 10}]}
+
+
+def test_fetch_ohlcv(monkeypatch):
+    importlib.reload(api)
+    conn = db.init_db(":memory:")
+    monkeypatch.setattr(api, "rate_limited_get", fake_rate_get)
+    api.fetch_ohlcv(conn, "AAPL")
+    count = conn.execute("SELECT COUNT(*) FROM ohlcv").fetchone()[0]
+    assert count == 1
+
+
+def test_fetch_minute_bars(monkeypatch):
+    importlib.reload(api)
+    conn = db.init_db(":memory:")
+    monkeypatch.setattr(api, "rate_limited_get", fake_rate_get)
+    api.fetch_minute_bars(conn, "AAPL")
+    count = conn.execute("SELECT COUNT(*) FROM minute_bars").fetchone()[0]
+    assert count == 1
