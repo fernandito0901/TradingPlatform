@@ -1,11 +1,13 @@
 # Open Tasks
 
-- [T15] Generate playbook JSON · Acceptance: `playbooks/{date}.json` produced using scoring rule; schema validated in tests · Assignee: Synthesizer
-
-# Planned Tasks
 - [T16] Extend feature pipeline with IV/HV and GARCH σ · Acceptance: `compute_features` outputs `iv30`, `hv30`, `garch_sigma`; tests updated · Assignee: Modeler
 - [T17] Cross-validate LightGBM model · Acceptance: `models.train` returns train/test AUC; tests cover new logic · Assignee: Modeler
 
+# Planned Tasks
+
+- [T18] Add news sentiment feature · Acceptance: `features.csv` includes `news_sent` column computed from collected headlines; tests updated · Assignee: Modeler
+- [T19] Update playbook scoring rule · Acceptance: `generate_playbook` uses news_sent, IV_edge, UOA and garch_spike; tests validate weighting · Assignee: Synthesizer
+- [T20] Daily orchestration script · Acceptance: `run_daily.py` executes collection, features, training and playbook; README updated; tests cover CLI · Assignee: Coder
 # Completed Tasks
 
 - [T1] Secure API Key handling · Acceptance: collector fails to start without `POLYGON_API_KEY`; README updated · Completed by Coder on 2025-07-22
@@ -15,7 +17,6 @@
 - [T11] Implement HTTP caching layer · Acceptance: repeated API calls within TTL skip network request; TTL set via `CACHE_TTL` env var; tests updated · Completed by Coder on 2025-07-23
 - [T13] Feature engineering pipeline · Acceptance: `features/{date}/features.csv` produced with SMA and RSI columns; unit test validates shape · Completed by Modeler on 2025-07-23
 - [T14] Baseline model training · Acceptance: LightGBM model saved under `models/`; AUC logged in `NOTES.md`; tests cover training function · Completed by Modeler on 2025-07-23
-- [T15] Generate playbook JSON · Acceptance: `playbooks/{date}.json` produced using scoring rule; schema validated in tests · Completed by Synthesizer on 2025-07-23
 
 - [T12] Integrate NewsAPI for headlines · Acceptance: `collector.api` stores top articles in `news` table; schema documented · Completed by DataCollector on 2025-07-30
 
