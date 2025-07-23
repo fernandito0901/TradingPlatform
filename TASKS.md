@@ -9,6 +9,9 @@
 - [T26] Review modeling updates · Acceptance: confirm docs and tests for new features, run `pytest -q` and squash-merge · Assignee: Reviewer
 - [T27] Connectivity test command · Acceptance: `collector.verify` fetches OHLCV and option data for up to 5 symbols using API keys provided via CLI and prints a summary; README documents usage · Assignee: DataCollector
 - [T28] Tests for connectivity command · Acceptance: pytest covers success and failure paths for `collector.verify` with mocked API responses · Assignee: Tester
+- [T29] UOA indicator · Acceptance: `features.pipeline` outputs `uoa` column computed from option volume vs. 30‑day average; tests validate calculation · Assignee: Modeler
+- [T30] IV edge & garch spike features · Acceptance: `features.pipeline` includes `iv_edge` and `garch_spike` columns; tests confirm formulas · Assignee: Modeler
+- [T31] README update for verify command · Acceptance: README section demonstrates `python -m collector.verify` with API keys via CLI · Assignee: Reviewer
 
 
 # Planned Tasks
