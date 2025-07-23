@@ -9,3 +9,6 @@
 - Implemented incremental OHLCV downloading.
 - Added packaging metadata via `pyproject.toml`.
 - Created pytest tests for API functions and GitHub Actions CI.
+
+## 2025-07-23
+- Added optional HTTP caching controlled by `CACHE_TTL` environment variable.

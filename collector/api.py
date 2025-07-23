@@ -15,17 +15,31 @@ WS_URL = "wss://delayed.polygon.io/stocks"
 REALTIME_WS_URL = "wss://socket.polygon.io/stocks"
 RATE_LIMIT_SEC = 1
 CACHE_QUOTE_MS = 5 * 1000
+CACHE_TTL = int(os.getenv("CACHE_TTL", "0"))
+
+_HTTP_CACHE: dict[str, tuple[float, dict]] = {}
 
 
 def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
-    """Perform a GET request respecting a simple rate limit."""
+    """Perform a GET request with caching and rate limiting."""
+    key = url + json.dumps(params or {}, sort_keys=True)
+    now = time.time()
+    if CACHE_TTL > 0:
+        cached = _HTTP_CACHE.get(key)
+        if cached and now - cached[0] < CACHE_TTL:
+            logging.debug("Cache hit for %s", key)
+            return cached[1]
+
     time.sleep(RATE_LIMIT_SEC)
     logging.debug("GET %s params=%s", url, params)
     resp = requests.get(url, params=params)
     if resp.status_code == 403:
         raise requests.HTTPError("Forbidden", response=resp)
     resp.raise_for_status()
-    return resp.json()
+    data = resp.json()
+    if CACHE_TTL > 0:
+        _HTTP_CACHE[key] = (now, data)
+    return data
 
 
 def fetch_ohlcv(conn, symbol: str):

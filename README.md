@@ -22,7 +22,7 @@ python3 -m pip install -r requirements.txt
 
 ## Usage
 
-Set your Polygon API key using the environment variable `POLYGON_API_KEY`. You may specify `--log-file` to write logs to a file and set verbosity with `--log-level`. Then run the script with optional arguments:
+Set your Polygon API key using the environment variable `POLYGON_API_KEY`. You may specify `--log-file` to write logs to a file and set verbosity with `--log-level`. Optionally set `CACHE_TTL` (in seconds) to enable HTTP response caching. Then run the script with optional arguments:
 
 ```bash
 python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime --db-file mydata.db
