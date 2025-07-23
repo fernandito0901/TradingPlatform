@@ -12,7 +12,11 @@
 - 2025-07-22 23:50 UTC: Modularized collector into package and added argparse CLI.
 - 2025-07-22 23:45 UTC: Removed fallback API key; script now requires POLYGON_API_KEY.
 - 2025-07-23 00:30 UTC: Added logging, incremental OHLCV, packaging metadata and basic tests.
+- 2025-07-23 00:45 UTC: Implemented HTTP caching controlled via `CACHE_TTL` and added unit test.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
 
+# Modeler
+
+- 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
