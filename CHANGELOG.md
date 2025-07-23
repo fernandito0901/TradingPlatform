@@ -19,3 +19,6 @@
 
 ## 2025-07-28
 - Implemented playbook generation module producing JSON files under `playbooks/`.
+
+## 2025-07-29
+- Documented `POLYGON_API_KEY`, `CACHE_TTL` and logging options in README.

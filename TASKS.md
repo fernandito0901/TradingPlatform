@@ -1,6 +1,5 @@
 # Open Tasks
 
-- [T9] Document environment variables · Acceptance: README explains `POLYGON_API_KEY` and logging config section · Assignee: Reviewer
 - [T10] Add WebSocket tests for stream_quotes · Acceptance: mocked server verifies reconnect logic; `pytest -q` passes · Assignee: Tester
 - [T12] Integrate NewsAPI for headlines · Acceptance: `collector.api` stores top articles in `news` table; schema documented · Assignee: DataCollector
 - [T15] Generate playbook JSON · Acceptance: `playbooks/{date}.json` produced using scoring rule; schema validated in tests · Assignee: Synthesizer
@@ -19,3 +18,5 @@
 - [T13] Feature engineering pipeline · Acceptance: `features/{date}/features.csv` produced with SMA and RSI columns; unit test validates shape · Completed by Modeler on 2025-07-23
 - [T14] Baseline model training · Acceptance: LightGBM model saved under `models/`; AUC logged in `NOTES.md`; tests cover training function · Completed by Modeler on 2025-07-23
 - [T15] Generate playbook JSON · Acceptance: `playbooks/{date}.json` produced using scoring rule; schema validated in tests · Completed by Synthesizer on 2025-07-23
+
+- [T9] Document environment variables · Acceptance: README explains `POLYGON_API_KEY` and logging config section · Completed by Reviewer on 2025-07-29
