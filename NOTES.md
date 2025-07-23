@@ -33,5 +33,3 @@
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
-
-
