@@ -1,8 +1,6 @@
 # AGENTS.md
 *Single‑source handbook for all AI programming agents in this repo.*
 
-if any AI agents have reccomendations for the AGENTS.md file that would help with overall programming design and development whether that be new roles or suggestions feel free to add them to the SUGGESTIONS.md file
-
 ---
 
 ## 1  Global Guidelines  <!-- apply to every agent -->
