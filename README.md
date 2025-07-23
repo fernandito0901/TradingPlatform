@@ -20,9 +20,23 @@ pip install -e .
 python3 -m pip install -r requirements.txt
 ```
 
+## Configuration
+
+The collector relies on a couple of environment variables and optional
+command‑line flags:
+
+- **`POLYGON_API_KEY`**: API key required for all REST and WebSocket requests.
+- **`CACHE_TTL`**: Time‑to‑live in seconds for HTTP response caching. Set to
+  `0` to disable caching.
+
+Logging can be directed to a file and the verbosity adjusted using the
+`--log-file` and `--log-level` arguments, respectively.
+
 ## Usage
 
-Set your Polygon API key using the environment variable `POLYGON_API_KEY`. You may specify `--log-file` to write logs to a file and set verbosity with `--log-level`. Optionally set `CACHE_TTL` (in seconds) to enable HTTP response caching. Then run the script with optional arguments:
+Export your `POLYGON_API_KEY` and set any optional variables described in the
+[Configuration](#configuration) section. Then run the script with optional
+arguments:
 
 ```bash
 python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime --db-file mydata.db
@@ -53,7 +67,8 @@ python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime
 The client waits for the connection to be authenticated before subscribing to trade and quote channels. If a `not authorized` error is returned when using the real-time feed, the collector automatically reconnects using the delayed WebSocket. The feed prints trade and quote data until interrupted.
 
 ## Logging
-Use `--log-file` to specify a log path and `--log-level` to control verbosity. Logs default to stdout.
+Logs default to stdout. Use `--log-file` to write to a specific path and
+`--log-level` to choose the log severity (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
 
 ## Starter Plan Compatibility
 
