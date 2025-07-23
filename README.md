@@ -77,3 +77,8 @@ The collector uses endpoints that are accessible with Polygon's **Stocks** and
 by 15 minutes. Option snapshots may omit bid/ask data. Additional fundamentals,
 corporate actions and technical indicators are fetched for future use when
 available.
+
+## Reports
+
+Model training metrics are written to `reports/dashboard.html`. Open this file
+in a browser to view recent AUC scores.

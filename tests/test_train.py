@@ -12,6 +12,7 @@ def test_train_model(tmp_path):
     fpath = tmp_path / "features.csv"
     df.to_csv(fpath, index=False)
     model_path = tmp_path / "model.txt"
-    auc = train_model(str(fpath), str(model_path))
-    assert 0.0 <= auc <= 1.0
+    train_auc, test_auc = train_model(str(fpath), str(model_path))
+    assert 0.0 <= train_auc <= 1.0
+    assert 0.0 <= test_auc <= 1.0
     assert model_path.exists()
