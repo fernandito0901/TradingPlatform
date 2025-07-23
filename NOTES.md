@@ -26,6 +26,7 @@
 - 2025-07-23 02:40 UTC: Ran full test suite and validated playbook JSON; all tests passed.
 - 2025-07-29 00:45 UTC: Added WebSocket reconnect test and moved T10 to completed tasks.
 - 2025-08-04 00:10 UTC: Unable to write tests for `collector.verify` because the command is not implemented. Escalating to Planner. ⚠ NEEDS-HUMAN-REVIEW
+- 2025-08-05 00:20 UTC: Verified updated scoring logic and ensured all tests pass.
 
 # Modeler
 - 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
@@ -33,6 +34,7 @@
 
 # Synthesizer
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
+- 2025-08-05 00:10 UTC: Updated scoring rule to incorporate news_sent, iv_edge, uoa and garch_spike; added tests verifying weighting.
 # Reviewer
 - 2025-07-29 00:30 UTC: Documented environment variables and logging options in README; moved T9 to completed tasks.
 

@@ -14,7 +14,12 @@ def test_stream_quotes_reconnect(monkeypatch):
 
     class FakeWS:
         def __init__(
-            self, url, on_open=None, on_message=None, on_error=None, on_close=None
+            self,
+            url,
+            on_open=None,
+            on_message=None,
+            on_error=None,
+            on_close=None,
         ):
             self.url = url
             self.on_open = on_open
@@ -34,7 +39,9 @@ def test_stream_quotes_reconnect(monkeypatch):
                 self.on_open(self)
             if self.on_message:
                 if self.url == stream.REALTIME_WS_URL:
-                    msg = json.dumps([{"status": "error", "message": "not authorized"}])
+                    msg = json.dumps(
+                        [{"status": "error", "message": "not authorized"}]
+                    )
                     self.on_message(self, msg)
                 else:
                     msg = json.dumps([{"status": "auth_success"}])

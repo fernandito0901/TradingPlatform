@@ -30,3 +30,6 @@
 - Extended feature pipeline with IV30, HV30, GARCH volatility and news sentiment.
 - Model training now returns train/test AUC metrics.
 - Added HTML dashboard under `reports/` summarizing AUC scores.
+
+## 2025-08-05
+- Playbook scoring now factors in news sentiment, IV edge, unusual options activity and GARCH spike.
