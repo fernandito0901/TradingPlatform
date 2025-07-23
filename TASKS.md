@@ -1,6 +1,9 @@
 # Open Tasks
 
 - [T9] Document environment variables · Acceptance: README explains `POLYGON_API_KEY` and logging config section · Assignee: Reviewer
+- [T10] Add WebSocket tests for stream_quotes · Acceptance: mocked server verifies reconnect logic; `pytest -q` passes · Assignee: Tester
+- [T11] Implement HTTP caching layer · Acceptance: repeated API calls within TTL skip network request; TTL set via `CACHE_TTL` env var; tests updated · Assignee: Coder
+- [T12] Integrate NewsAPI for headlines · Acceptance: `collector.api` stores top articles in `news` table; schema documented · Assignee: DataCollector
 
 # Completed Tasks
 
