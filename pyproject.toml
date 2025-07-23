@@ -12,6 +12,10 @@ readme = "README.md"
 dependencies = [
     "requests",
     "websocket-client",
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    "lightgbm",
 ]
 
 [project.scripts]
