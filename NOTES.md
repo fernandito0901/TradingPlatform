@@ -1,4 +1,6 @@
 # Planner
+- 2025-07-29 00:15 UTC: Reviewed design notes; created plan-2025-07-29.md summarizing remaining tasks T9,T10,T12,T16,T17.
+- 2025-07-28 00:10 UTC: Planned news integration and playbook generation; see plan-2025-07-28.md and new tasks T16-T17.
 - 2025-07-27 00:45 UTC: Planned feature engineering and modeling tasks; see plan-2025-07-27.md and new tasks T13-T15.
 - 2025-07-23 00:34 UTC: Planned caching, news collection and WebSocket tests; see plan-2025-07-26.md and updated TASKS.md.
 - 2025-07-22 22:12 UTC: Created initial design notes under `design/` and populated `TASKS.md` with three starter tasks for securing API keys, adding tests, and introducing a configuration module.
@@ -12,7 +14,15 @@
 - 2025-07-22 23:50 UTC: Modularized collector into package and added argparse CLI.
 - 2025-07-22 23:45 UTC: Removed fallback API key; script now requires POLYGON_API_KEY.
 - 2025-07-23 00:30 UTC: Added logging, incremental OHLCV, packaging metadata and basic tests.
+- 2025-07-23 00:45 UTC: Implemented HTTP caching controlled via `CACHE_TTL` and added unit test.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
+- 2025-07-23 02:40 UTC: Ran full test suite and validated playbook JSON; all tests passed.
 
+# Modeler
+
+- 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
+
+# Synthesizer
+- 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
