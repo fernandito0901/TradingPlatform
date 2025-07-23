@@ -1,6 +1,7 @@
 # Planner
 - 2025-07-29 00:15 UTC: Reviewed design notes; created plan-2025-07-29.md summarizing remaining tasks T9,T10,T12,T16,T17.
 - 2025-07-31 00:15 UTC: Reviewed repository status; created plan-2025-07-31.md with new tasks T18-T20 and moved T15 to completed.
+- 2025-08-01 00:10 UTC: Created plan-2025-08-01.md with tasks T21-T25 added to open list.
 - 2025-07-28 00:10 UTC: Planned news integration and playbook generation; see plan-2025-07-28.md and new tasks T16-T17.
 - 2025-07-27 00:45 UTC: Planned feature engineering and modeling tasks; see plan-2025-07-27.md and new tasks T13-T15.
 - 2025-07-23 00:34 UTC: Planned caching, news collection and WebSocket tests; see plan-2025-07-26.md and updated TASKS.md.
@@ -32,4 +33,3 @@
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
-
