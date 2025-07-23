@@ -30,7 +30,8 @@ def stream_quotes(symbols="AAPL", realtime=False):
             if evt.get("status") == "auth_success":
                 subscribe(ws)
             elif (
-                evt.get("status") == "error" and evt.get("message") == "not authorized"
+                evt.get("status") == "error"
+                and evt.get("message") == "not authorized"
             ):
                 if realtime:
                     logging.warning(

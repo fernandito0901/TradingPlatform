@@ -9,6 +9,11 @@ def generate_playbook(
 ) -> str:
     """Generate daily options trade playbook.
 
+    The scoring rule ranks trades using model predictions and
+    additional context features:
+
+    ``score = 2.5 * prob_up + 1.5 * momentum + news_sent + iv_edge + uoa - garch_spike``.
+
     Parameters
     ----------
     features_csv : str
@@ -25,10 +30,38 @@ def generate_playbook(
     """
     df = pd.read_csv(features_csv)
     model = lgb.Booster(model_file=model_file)
-    X = df[["sma20", "rsi14"]]
+
+    feature_cols = [
+        c
+        for c in [
+            "sma20",
+            "rsi14",
+            "iv30",
+            "hv30",
+            "garch_sigma",
+            "news_sent",
+            "iv_edge",
+            "uoa",
+            "garch_spike",
+        ]
+        if c in df.columns
+    ]
+
+    X = df[feature_cols]
     prob_up = model.predict(X)
     momentum = (df["close"] - df["sma20"]) / df["sma20"]
-    df["score"] = 2.5 * prob_up + 1.5 * momentum
+    news_sent = df.get("news_sent", 0)
+    iv_edge = df.get("iv_edge", 0)
+    uoa = df.get("uoa", 0)
+    garch_spike = df.get("garch_spike", 0)
+    df["score"] = (
+        2.5 * prob_up
+        + 1.5 * momentum
+        + news_sent
+        + iv_edge
+        + uoa
+        - garch_spike
+    )
     top = df.nlargest(5, "score")
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
