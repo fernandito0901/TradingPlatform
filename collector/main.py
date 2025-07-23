@@ -38,6 +38,7 @@ def main(
         api.fetch_fundamentals(conn, sym)
         api.fetch_corporate_actions(conn, sym)
         api.fetch_indicator_sma(conn, sym)
+        api.fetch_news(conn, sym)
     logging.info("Data collection completed")
     if stream_data:
         stream.stream_quotes(symbols, realtime=realtime)

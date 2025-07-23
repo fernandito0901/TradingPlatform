@@ -10,6 +10,9 @@ import requests
 API_KEY = os.getenv("POLYGON_API_KEY")
 if not API_KEY:
     raise SystemExit("POLYGON_API_KEY environment variable not set")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+if not NEWS_API_KEY:
+    raise SystemExit("NEWS_API_KEY environment variable not set")
 
 WS_URL = "wss://delayed.polygon.io/stocks"
 REALTIME_WS_URL = "wss://socket.polygon.io/stocks"
@@ -226,5 +229,33 @@ def fetch_indicator_sma(conn, symbol: str):
         conn.execute(
             "INSERT OR REPLACE INTO indicators VALUES (?,?,?,?)",
             (symbol, val.get("timestamp"), "sma50", val.get("value")),
+        )
+    conn.commit()
+
+
+def fetch_news(conn, symbol: str, limit: int = 5) -> None:
+    """Fetch latest news articles for the given symbol."""
+    logging.info("Fetching news for %s", symbol)
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": symbol,
+        "pageSize": limit,
+        "sortBy": "publishedAt",
+        "language": "en",
+        "apiKey": NEWS_API_KEY,
+    }
+    data = rate_limited_get(url, params)
+    articles = data.get("articles", [])
+    c = conn.cursor()
+    for art in articles:
+        c.execute(
+            "INSERT OR REPLACE INTO news VALUES (?,?,?,?,?)",
+            (
+                symbol,
+                art.get("publishedAt"),
+                art.get("title"),
+                art.get("url"),
+                art.get("source", {}).get("name"),
+            ),
         )
     conn.commit()
