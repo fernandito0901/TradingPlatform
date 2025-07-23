@@ -31,3 +31,32 @@ def test_fetch_minute_bars(monkeypatch):
     api.fetch_minute_bars(conn, "AAPL")
     count = conn.execute("SELECT COUNT(*) FROM minute_bars").fetchone()[0]
     assert count == 1
+
+
+def test_http_cache(monkeypatch):
+    monkeypatch.setenv("CACHE_TTL", "10")
+    importlib.reload(api)
+
+    calls = []
+
+    def fake_get(url, params=None):
+        calls.append(1)
+
+        class Resp:
+            status_code = 200
+
+            def json(self):
+                return {"ok": True}
+
+            def raise_for_status(self):
+                pass
+
+        return Resp()
+
+    monkeypatch.setattr(api, "RATE_LIMIT_SEC", 0)
+    monkeypatch.setattr(api.requests, "get", fake_get)
+
+    api.rate_limited_get("https://example.com", {"q": "a"})
+    api.rate_limited_get("https://example.com", {"q": "a"})
+
+    assert len(calls) == 1
