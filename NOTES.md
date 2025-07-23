@@ -24,4 +24,3 @@
 # Synthesizer
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
 
-
