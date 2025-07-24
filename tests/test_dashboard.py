@@ -1,5 +1,10 @@
-from reports.dashboard import generate_dashboard
 from pathlib import Path
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from reports.dashboard import generate_dashboard
 
 
 def test_generate_dashboard(tmp_path):

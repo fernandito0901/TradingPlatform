@@ -1,15 +1,17 @@
 import os
-import sys
 import importlib
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import sys
 
-import collector.db as db
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+)
 
-# Ensure API key is set before importing collector.api
+# Ensure API keys for module import
 os.environ.setdefault("POLYGON_API_KEY", "test")
 os.environ.setdefault("NEWS_API_KEY", "test")
-import collector.api as api
+
+from trading_platform.collector import db, api
 
 
 def fake_rate_get(url, params=None):

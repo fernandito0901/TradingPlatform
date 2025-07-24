@@ -1,5 +1,12 @@
 import pandas as pd
-from models import train as train_model
+import sys
+import os
+
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+)
+
+from trading_platform.models import train as train_model
 
 
 def test_train_model(tmp_path):

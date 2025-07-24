@@ -38,3 +38,5 @@
 - Added `collector.verify` module for quick API connectivity checks.
 - New `run_daily.py` orchestrates data collection, feature generation, model training and playbook creation.
 - README documents preflight check and daily pipeline.
+## 2025-08-07
+- Restructured project into src/ package to conform with AGENTS guidelines.
