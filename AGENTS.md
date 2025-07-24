@@ -1,142 +1,179 @@
-# AGENTS.md
-*Single‑source handbook for all AI programming agents in this repo.*
+
+# AGENTS.md  
+_Single-source handbook for all AI programming agents in this trading-research repository._
 
 ---
 
-## 1  Global Guidelines  <!-- apply to every agent -->
-- **Code Style:** PEP8 + Black (run `black .` before committing).
-- **Tests:** All Python code must pass `pytest -q` before PR merge.
-- **Docs:** Public functions need a NumPy‑style docstring; update `CHANGELOG.md` for user‑facing changes.
-- **Commit Msg:** `[Role] <one‑line summary>` – example: `[Coder] Implement GARCH sigma service`
-- **Branching:** Work in `feature/<task‑slug>`; never push directly to `main`.
-- **Security:** Never expose API keys; load from env vars.
+## 📌 1. Global Guidelines
+
+These rules apply to all roles—human and AI.
+
+- **Code Style:** Python PEP8 + Black (run `black .` before committing).
+- **Testing:** All code must pass `pytest -q`; failure blocks PR merge.
+- **Docs:** Public functions require NumPy-style docstrings; log changes in `CHANGELOG.md`.
+- **Commits:** Use format `[<Role>] <summary>` — e.g. `[Modeler] Add GARCH volatility forecast`.
+- **Branching:** Use `feature/<slug>` branches; never commit directly to `main`.
+- **Security:** Never expose API keys. Use environment variables and `.env` files only.
 
 ---
 
-## 2  Collaboration Protocol
-1. **Planner → DataCollector → Modeler → Synthesizer → Tester → Reviewer**  
-   Work on a task flows in that order unless explicitly parallelized.
-2. **Shared Memory:**  
-   - Use `TASKS.md` for open tasks & IDs.  
-   - Use `NOTES.md` for design ideas or interim findings.  
-   - Agents must read latest versions before starting new work.
-3. **Messaging:**  
-   Agents communicate by appending a Markdown bullet under their role heading in `NOTES.md`, prefixed with date/time.
-4. **Error Handling:**  
-   - If tests fail, Tester documents failure in PR and re‑assigns to Coder.  
-   - If any agent is unsure, write “⚠ NEEDS‑HUMAN‑REVIEW” in `NOTES.md` and stop.
-5. **Timeout / Deadlock:**  
-   If an agent’s task exceeds 10 min wall‑clock or 3 consecutive failures, escalate to Planner.
+## 🔁 2. Collaboration Protocol
+
+### Standard Agent Chain
+
+```
+Planner → DataCollector → Modeler → Synthesizer → Tester → Reviewer
+```
+
+### Shared Memory
+
+- `TASKS.md` — master task list with ID, owner, status, and description.
+- `NOTES.md` — design notes, discoveries, or agent logs.
+- All agents must read latest versions of both before working.
+
+### Communication Format
+
+Each agent must append structured logs in `NOTES.md` under their role using this format:
+
+```markdown
+### 2025-07-23 – @DataCollector  
+- Pulled OHLCV, options chain, and VIX data for TSLA and AMD.  
+- Stored in `data/2025-07-23/`.  
+- No anomalies detected.
+```
+
+### Error Escalation
+
+- ❌ If tests fail, the @Tester marks PR as ❌ and reassigns to relevant agent.
+- ⚠ If any agent is uncertain, write `⚠ NEEDS-HUMAN-REVIEW` in `NOTES.md` and halt.
+
+### Stalling Protocol
+
+- If an agent fails the same task 3× or is idle for over 10 minutes wall-clock, escalate to @Planner.
+- Do not guess or improvise beyond scope—log the block and wait.
 
 ---
 
-## 3  Role Definitions
-*(Each agent must read its matching block in addition to the Global Guidelines.)*
+## 🧠 3. Agent Role Specs
 
-### @Planner
-**Purpose** Architect & task decomposer  
-**Key Inputs** `REQUESTS.md`, feature requests, bug reports  
-**Outputs** `TASKS.md` with bullet tasks including: ID · title · acceptance criteria · assignee role  
-**Workflow**  
-1. Parse requirement → draft design notes in `design/`.  
-2. Break into tasks; estimate complexity; assign `@Coder`, `@Modeler`, etc.  
-3. Update `NOTES.md` → hand off to next agent.  
+### 🔹 @Planner  
+> **Role:** Task Architect & Coordinator
 
-### @DataCollector
-**Purpose** Fetch raw market / option / news data  
-**Key Tools** Polygon API, NewsAPI, Python `requests`, caching layer  
-**Outputs** `data/{date}/` CSV or Parquet + `data_catalog.json` summary  
-**Workflow**  
-1. Read latest tasks where `assignee == DataCollector`.  
-2. Pull data; validate row counts & schema.  
-3. Commit data + update `NOTES.md` with path & any anomalies.
-
-### @Modeler
-**Purpose** Compute indicators & predictive features  
-**Key Tools** pandas, NumPy, scikit‑learn (local), in‑repo `models/` libs  
-**Outputs** `features/{date}/features.csv`; retrained model artifacts under `models/`; metrics in `NOTES.md`  
-**Workflow**  
-1. Load data paths from DataCollector note.  
-2. Run feature pipeline: SMA, RSI, IV/HV, GARCH σ (or fallback).  
-3. If retrain flag present, retrain LightGBM & log AUC / accuracy.  
-4. Hand off to Synthesizer.
-
-### @Synthesizer
-**Purpose** Generate daily options‑trade playbook  
-**Key Tools** Python helpers in `playbook/`, option‑pricing lib  
-**Outputs** `playbooks/{date}.json` and a Markdown “DETAILS” section in PR  
-**Workflow**  
-1. Read `features.csv` & model predictions.  
-2. Apply scoring rule:  
-   `Score = 2.5·prob_up + 1.5·momentum + news_sent + IV_edge + UOA - garch_spike`.  
-3. Select trades per rules in `playbook/config.yaml`.  
-4. Write JSON → commit & open PR for Tester.
-
-### @Tester
-**Purpose** Validate code, data integrity, and playbook schema  
-**Key Tools** pytest, jsonschema, flake8  
-**Outputs** PR comment with ✅ / ❌; coverage report in `reports/`  
-**Workflow**  
-1. Run `pytest -q` and schema validation on playbook JSON.  
-2. If failures → mark PR ❌ and ping Coder/Synthesizer.  
-3. If all green → mark ✅ and ping Reviewer.
-
-### @Reviewer
-**Purpose** Enforce quality & merge PRs  
-**Key Checklist**  
-- All tests green  
-- Code follows style  
-- Docs updated  
-- No TODOs or debug prints  
-**Workflow**  
-1. Review diff; request changes if needed.  
-2. When satisfied, squash‑merge to `main`.  
-3. Update `CHANGELOG.md`.  
+- Reads `REQUESTS.md` for goals or reports.
+- Breaks requirements into atomic tasks with IDs, complexity, and assigned role.
+- Writes interfaces or blueprints in `design/`.
+- Updates `TASKS.md` and logs context in `NOTES.md`.
 
 ---
 
-## 4  File Ownership Matrix
-| Path Pattern | Primary Agent |
-|--------------|---------------|
-| `data/**`            | DataCollector |
-| `features/**`        | Modeler |
-| `models/**`          | Modeler |
-| `playbooks/**`       | Synthesizer |
-| `tests/**`           | Tester |
-| `design/**`          | Planner |
-| `**/*.md` (docs)     | Reviewer |
+### 🔹 @DataCollector  
+> **Role:** Pull and cache raw market data
+
+- Uses Polygon, NewsAPI, and optionally FRED.
+- Outputs go to `data/YYYY-MM-DD/` in CSV/Parquet + `data_catalog.json`.
+- Notes must specify symbol, date range, and checks passed.
 
 ---
 
-## 5  Glossary
-- **POP** – Probability of Profit (Monte‑Carlo or Black‑Scholes estimate).  
-- **IV_edge** – (IV30 – HV30) / HV30.  
-- **UOA** – Unusual Options Activity flag (volume ≥ 5× 30‑d avg).
+### 🔹 @Modeler  
+> **Role:** Engineer features & run predictive models
+
+- Loads data from @DataCollector.
+- Computes IV/HV, SMA, RSI, GARCH volatility, sentiment, and POP.
+- Trains or loads models from `models/`; outputs `features.csv` and logs metrics.
+- If `retrain: true`, retrain model and log ROC/AUC/F1 scores.
 
 ---
 
-## 6  Project Overview & Vision  <!-- informational; no actionable rules -->
+### 🔹 @Synthesizer  
+> **Role:** Generate JSON trade playbook + Markdown summary
 
-**What we’re building**  
-This repository hosts an *autonomous, multi‑agent trading‑research platform* that produces a **Daily Options‑Trade Playbook** before the U.S. market opens.  
-Each morning the agents:
+- Uses scoring function:
 
-1. **Collect** fresh market, options‑chain, and news data (DataCollector).  
-2. **Engineer features & update models** to quantify momentum, volatility edge, sentiment, and probability of price moves (Modeler).  
-3. **Synthesize** a JSON playbook listing the highest‑score swing or day‑trade option strategies, complete with POP, Greeks, and rationale (Synthesizer).  
-4. **Validate** the output via full test suites and schema checks (Tester).  
-5. **Review & merge** the playbook to `main` so humans (or downstream bots) can act on it (Reviewer).  
+  ```
+  Score = 2.5 * prob_up + 1.5 * momentum + news_sent + IV_edge + UOA - garch_spike
+  ```
 
-A Planner / Coordinator agent keeps tasks aligned and resolves ambiguities.
+- Reads config from `playbook/config.yaml`.
+- Outputs: `playbooks/YYYY-MM-DD.json` and details section in PR body.
+- Adds visual charts (optional) and rationale in `NOTES.md`.
 
-**Why it matters**  
-- **Speed & Scale:** AI agents can scan thousands of strikes, run GARCH forecasts, and parse news far faster than any single human analyst.  
-- **Consistency:** Formalized scoring rules and automated tests ensure every playbook meets the same quality bar.  
-- **Transparency:** The entire workflow is open‑source; every metric is reproducible, every decision traceable in `NOTES.md` and the commit history.  
+---
 
-**Long‑term goal**  
-To evolve into a self‑adapting research stack that not only outputs trade ideas but also **learns from live P/L**, retrains itself, and surfaces new alpha signals—while remaining fully auditable by humans.
+### 🔹 @Tester  
+> **Role:** Validate code, data, schema, and test coverage
 
-*(This section is descriptive only; agents do **not** need to act on it. It exists to give context to new contributors—human or AI—about what this project is aiming to achieve.)*
+- Runs: `pytest`, `flake8`, `black`, and JSON schema validation.
+- If ✅: mark PR approved and ping Reviewer.
+- If ❌: document reason and assign back to last agent.
 
+---
 
+### 🔹 @Reviewer  
+> **Role:** Final merge gate & quality assurance
+
+- Verifies: passing tests, clean commit history, no `TODO`/`print()` left.
+- Ensures `CHANGELOG.md` is updated.
+- If satisfied: squash-merge PR into `main` and log in `NOTES.md`.
+
+---
+
+## 📁 4. File Ownership Matrix
+
+| Path Pattern        | Owner         |
+|---------------------|---------------|
+| `data/**`           | @DataCollector |
+| `features/**`       | @Modeler       |
+| `models/**`         | @Modeler       |
+| `playbooks/**`      | @Synthesizer   |
+| `tests/**`          | @Tester        |
+| `design/**`         | @Planner       |
+| `*.md`, `CHANGELOG` | @Reviewer      |
+
+---
+
+## 📚 5. Glossary
+
+- **POP** – Probability of Profit; estimated from GARCH or Black-Scholes.
+- **IV_edge** – (IV30 − HV30) / HV30; a measure of volatility mispricing.
+- **UOA** – Unusual Options Activity (volume ≥ 5× 30-day avg).
+- **Score** – Weighted ranking for trade ideas based on edge and prediction.
+- **GARCH σ** – Conditional volatility forecast via GARCH(1,1).
+- **IV/HV** – Implied Volatility vs Historical Volatility.
+
+---
+
+## 🧭 6. Project Overview & Vision
+
+### 🧠 What We’re Building
+
+A fully autonomous agent system that builds a **Daily Options-Trade Playbook** using real-time market data, predictive models, and consistent rules.
+
+Every day before market open:
+
+1. @DataCollector scrapes stock, options, news, and sentiment data.  
+2. @Modeler computes predictive features and retrains models as needed.  
+3. @Synthesizer selects the top option strategies based on edge, POP, and macro context.  
+4. @Tester runs full validations.  
+5. @Reviewer merges final output to `main` for human consumption or automated trading.
+
+### 🎯 Why It Matters
+
+- **Scalability:** An AI team that evaluates 1000s of tickers daily.
+- **Consistency:** Formal scoring and schema enforcement.
+- **Transparency:** Every decision is logged, testable, and reviewable.
+
+### 🚀 Long-Term Vision
+
+To evolve into a **self-adapting research and execution engine**—one that:
+
+- Learns from real-world results (P/L tracking)  
+- Refines models autonomously  
+- Surfaces new signals, edges, and strategies  
+- Stays fully auditable and human-overridable
+
+*(This section is informational. Agents do not act on it directly.)*
+
+---
+
+© 2025 TradingPlatform AI – MIT Licensed
