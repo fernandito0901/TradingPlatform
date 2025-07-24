@@ -1,11 +1,8 @@
+"""Tests for streaming utilities."""
+
 import json
 import importlib
 import os
-import sys
-
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
 
 os.environ.setdefault("POLYGON_API_KEY", "test")
 

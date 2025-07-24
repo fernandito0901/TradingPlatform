@@ -1,12 +1,7 @@
+"""Tests for daily pipeline orchestration."""
+
 import importlib
 import pytest
-
-import sys
-import os
-
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
 
 from trading_platform import run_daily
 

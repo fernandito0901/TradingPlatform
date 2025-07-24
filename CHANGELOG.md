@@ -42,3 +42,26 @@
 - Restructured project into src/ package to conform with AGENTS guidelines.
 ## 2025-08-08
 - Moved features and models packages to project root and added CODE_ATLAS, SCHEMAS, RUNBOOK and WORKFLOW docs.
+- Added PLAN_INDEX.md listing all design plans.
+- Updated tests to import installed package and refreshed README with project layout notes.
+## 2025-08-09
+- Added plan index entry for architecture doc and new plan.
+- Updated architecture overview to match package restructure.
+- Organized planning notes by month and cleaned TASKS.md duplicates.
+## 2025-08-10
+- Logged planning tasks for automating PLAN_INDEX and versioning architecture docs.
+## 2025-08-11
+- Planned migration to numbered planning docs and added tasks T44-T46.
+## 2025-08-12
+- Created first numbered plan P001 and introduced tasks T47-T49 for migrating and indexing old notes.
+
+## 2025-08-13
+- Marked playbook scoring update complete and linked numbered planning docs from README.
+
+## 2025-08-14
+- Added `update_plan_index.py` script to automate PLAN_INDEX regeneration.
+- Marked tasks T41 and T46 as completed.
+- Confirmed PLAN_INDEX automation works and test suite passes after editable installation.
+
+## 2025-07-24
+- Verified test suite passes with editable install after restructure.

@@ -20,6 +20,14 @@ pip install -e .
 python3 -m pip install -r requirements.txt
 ```
 
+## Project Layout
+
+Core collector code lives under `src/trading_platform`. Feature engineering and
+model training packages are located at the repository root under `features/` and
+`models/`. Wrapper modules under `src/trading_platform/features` and
+`src/trading_platform/models` re-export these packages for backward
+compatibility.
+
 ## Configuration
 
 The collector relies on a couple of environment variables and optional
@@ -39,7 +47,8 @@ Export your `POLYGON_API_KEY` and set any optional variables described in the
 arguments:
 
 ```bash
-python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime --db-file mydata.db
+python -m trading_platform.market_data_collector \
+  --symbols AAPL,MSFT --stream --realtime --db-file mydata.db
 ```
 
 The script incrementally fetches OHLCV data, retrieving only new days while ensuring the last 60 days are present, the most recent minute
@@ -54,14 +63,15 @@ on the Starter plan. You can also request the real-time feed with the
 collector automatically falls back to the delayed feed.
 
 ```bash
-python3 market_data_collector.py --symbols AAPL --stream
+python -m trading_platform.market_data_collector --symbols AAPL --stream
 ```
 
 To stream multiple tickers, separate them with commas and optionally pass the
 `realtime` flag to use the live feed instead of the delayed one:
 
 ```bash
-python3 market_data_collector.py --symbols AAPL,MSFT --stream --realtime
+python -m trading_platform.market_data_collector \
+  --symbols AAPL,MSFT --stream --realtime
 ```
 
 The client waits for the connection to be authenticated before subscribing to trade and quote channels. If a `not authorized` error is returned when using the real-time feed, the collector automatically reconnects using the delayed WebSocket. The feed prints trade and quote data until interrupted.
@@ -100,3 +110,12 @@ python run_daily.py --symbols AAPL,MSFT --db-file market_data.db
 ```
 
 The script aborts if the preflight connectivity check fails.
+
+## Documentation
+
+Planning notes and architecture overviews live under the
+[`design/`](design/) folder. Numbered plans are tracked in
+[`design/plans/`](design/plans/) with an index in
+[`design/plans/index.md`](design/plans/index.md).
+Run `python scripts/update_plan_index.py` to regenerate
+[`design/PLAN_INDEX.md`](design/PLAN_INDEX.md).

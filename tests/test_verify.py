@@ -1,10 +1,6 @@
-import importlib
-import os
-import sys
+"""Tests for preflight connectivity check."""
 
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
+import importlib
 
 from trading_platform.collector import verify
 
