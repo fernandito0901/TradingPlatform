@@ -55,12 +55,7 @@ def generate_playbook(
     uoa = df.get("uoa", 0)
     garch_spike = df.get("garch_spike", 0)
     df["score"] = (
-        2.5 * prob_up
-        + 1.5 * momentum
-        + news_sent
-        + iv_edge
-        + uoa
-        - garch_spike
+        2.5 * prob_up + 1.5 * momentum + news_sent + iv_edge + uoa - garch_spike
     )
     top = df.nlargest(5, "score")
 

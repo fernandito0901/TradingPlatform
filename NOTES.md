@@ -5,6 +5,7 @@
 - 2025-08-02 00:15 UTC: Reviewed modeling updates; added plan-2025-08-02.md and task T26 for Reviewer.
 - 2025-08-03 00:10 UTC: Planned connectivity test command and wrote plan-2025-08-03.md; added tasks T27 and T28.
 - 2025-08-04 00:20 UTC: Added plan-2025-08-04.md addressing connectivity command and new feature tasks T29-T31.
+- 2025-08-05 00:15 UTC: Created plan-2025-08-05.md and added tasks T32-T33 for data quality reporting and preflight connectivity check.
 - 2025-07-28 00:10 UTC: Planned news integration and playbook generation; see plan-2025-07-28.md and new tasks T16-T17.
 - 2025-07-27 00:45 UTC: Planned feature engineering and modeling tasks; see plan-2025-07-27.md and new tasks T13-T15.
 - 2025-07-23 00:34 UTC: Planned caching, news collection and WebSocket tests; see plan-2025-07-26.md and updated TASKS.md.
@@ -20,6 +21,7 @@
 - 2025-07-22 23:45 UTC: Removed fallback API key; script now requires POLYGON_API_KEY.
 - 2025-07-23 00:30 UTC: Added logging, incremental OHLCV, packaging metadata and basic tests.
 - 2025-07-23 00:45 UTC: Implemented HTTP caching controlled via `CACHE_TTL` and added unit test.
+- 2025-08-06 00:00 UTC: Added `collector.verify` and `run_daily.py` with preflight connectivity check.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
