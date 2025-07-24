@@ -52,6 +52,115 @@
 - Logged planning tasks for automating PLAN_INDEX and versioning architecture docs.
 ## 2025-08-11
 - Planned migration to numbered planning docs and added tasks T44-T46.
+- Added UOA, IV edge and garch spike features to feature pipeline.
+- Added GitHub Actions workflow running `black --check` and `pytest -q` on pull requests.
+## 2025-08-12
+- Added Slack notifier and integrated notifications into `run_daily.py`.
 
 ## 2025-07-24
 - Verified test suite passes with editable install after restructure.
+## 2025-08-13
+- Added historical backfill and data quality utilities under `collector` package.
+- README documents the new commands.
+- Added Dockerfile and run_pipeline.sh for containerized execution.
+- README covers Docker usage.
+## 2025-08-15
+- Moved architecture docs to `design/architecture/` with new `ARCH_INDEX.md`.
+- Consolidated dated planning notes into `planning/archive.md`.
+- Created numbered planning system starting with `design/plans/P001.md`.
+- Updated scripts and README references to use the numbered plans.
+
+- Drafted planning document P002 and outlined tasks T47-T50.
+- Drafted planning document P003 covering tasks T51-T53.
+- Implemented async collector API and `.env` loader with tests.
+
+## 2025-08-16
+- Added `collector.stream_async` for asynchronous WebSocket streaming and updated
+  README documentation.
+- Tests cover reconnect behavior and dependency list includes `websockets`.
+
+## 2025-08-17
+- Added 5-fold cross-validation mode in `models.train` with average AUC.
+- Dashboard now reports **CV AUC** when provided.
+- Introduced `reports.scoreboard` to track daily playbook results.
+- Created interactive Plotly feature dashboard.
+## 2025-08-18
+- Drafted planning document P004 describing unified Config dataclass tasks
+- Added tasks T54-T56 for config dataclass design, refactor, and documentation
+- Implemented Config dataclass and refactored `run_daily` and collector entry point
+- Drafted plan P006 for POP estimator, paper trading, risk limits, and alert aggregator (tasks T61-T64)
+- Added paper trading simulator `simulate.py` with scoreboard PnL logging
+- Added `simulate` console script for running the simulator via `pipx` or `python -m`
+
+## 2025-08-19
+- Added `strategies.py` with iron condor and call debit spread payoff helpers
+- Implemented Monte Carlo POP estimator
+- Documented usage in README and moved tasks T57 and T61 to completed
+- Added planning document P008 for dashboard and alerting
+- Registered tasks T65-T66 for broker stub and portfolio tracker
+
+## 2025-08-20
+- Added `generate_strategy_dashboard` to produce `reports/strategies.html` with POP values
+- Configuration now accepts `MAX_RISK` for per-strategy limits
+- Marked tasks T58 and T63 as completed
+- Implemented real-time trade & news alerts with an alert aggregator service
+  integrated into `run_daily`. Completed tasks T59 and T64.
+- Documented strategy workflow and Slack alerts in README; closed T60.
+- Added broker API stub and CLI for placing simulated orders; closed T65.
+
+## 2025-08-21
+- Added Flask-based `webapp` command providing a simple web UI
+  that prompts for API keys on first run and lets users start the
+  daily pipeline or connectivity checks.
+## 2025-08-22
+- Added plan P009 for full web dashboard
+- Registered tasks T68-T72 for expanded web UI and docs
+
+## 2025-08-23
+- Expanded webapp with backfill, simulation, and dashboard routes
+  and homepage table of recent scoreboard entries. Marked task T69
+  complete.
+
+## 2025-08-24
+- Added plan P010 for portfolio tracker design and registered tasks T73-T76
+  in TASKS.md. Marked T68 complete after documenting the web dashboard design.
+
+## 2025-08-25
+- Implemented `portfolio` module with load/save helpers and CLI commands.
+  Updated README with usage examples and completed task T74.
+
+## 2025-08-26
+- Web UI now shows scoreboard and dashboard links. Portfolio tracker integrated
+  into the simulator so trades update `portfolio.csv` and `pnl.csv`. Tasks T70
+  and T75 completed.
+
+- Documented web interface usage with example `webapp` command; closed T71.
+
+## 2025-08-27
+- Verified webapp and portfolio tests run successfully
+  after installing project dependencies. Closed tasks T72 and T76.
+
+## 2025-08-28
+- All tests pass across suite after installing project editable. No open tasks.
+## 2025-08-29
+- Added plan P011 for scheduler and docker-compose deployment.
+  Registered tasks T77-T81 in TASKS.md.
+
+## 2025-08-30
+- Implemented `scheduler.py` using APScheduler and added CLI entrypoint.
+- Added APScheduler dependency and exposed scheduler from package.
+- Completed task T78 in TASKS.md.
+
+
+## 2025-08-31
+- Expanded P011 with scheduler architecture and docker-compose details.
+- Marked task T77 completed in TASKS.md.
+
+## 2025-09-01
+- Added `docker-compose.yml` defining `web` and `scheduler` services.
+- README now documents how to build and run both services via docker-compose.
+
+## 2025-09-02
+- Webapp can start and stop the scheduler from the browser.
+- Added scheduler documentation and CLI usage section.
+- Scheduler tests ensure `run_daily` executes on schedule.

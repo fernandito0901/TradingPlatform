@@ -34,4 +34,7 @@ def test_compute_features_from_db():
     assert "iv30" in df.columns
     assert "garch_sigma" in df.columns
     assert "news_sent" in df.columns
+    assert "uoa" in df.columns
+    assert "iv_edge" in df.columns
+    assert "garch_spike" in df.columns
     assert len(df) > 0
