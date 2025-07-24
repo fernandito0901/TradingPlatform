@@ -52,6 +52,39 @@
 - Logged planning tasks for automating PLAN_INDEX and versioning architecture docs.
 ## 2025-08-11
 - Planned migration to numbered planning docs and added tasks T44-T46.
+- Added UOA, IV edge and garch spike features to feature pipeline.
+- Added GitHub Actions workflow running `black --check` and `pytest -q` on pull requests.
+## 2025-08-12
+- Added Slack notifier and integrated notifications into `run_daily.py`.
 
 ## 2025-07-24
 - Verified test suite passes with editable install after restructure.
+## 2025-08-13
+- Added historical backfill and data quality utilities under `collector` package.
+- README documents the new commands.
+- Added Dockerfile and run_pipeline.sh for containerized execution.
+- README covers Docker usage.
+## 2025-08-15
+- Moved architecture docs to `design/architecture/` with new `ARCH_INDEX.md`.
+- Consolidated dated planning notes into `planning/archive.md`.
+- Created numbered planning system starting with `design/plans/P001.md`.
+- Updated scripts and README references to use the numbered plans.
+
+- Drafted planning document P002 and outlined tasks T47-T50.
+- Drafted planning document P003 covering tasks T51-T53.
+- Implemented async collector API and `.env` loader with tests.
+
+## 2025-08-16
+- Added `collector.stream_async` for asynchronous WebSocket streaming and updated
+  README documentation.
+- Tests cover reconnect behavior and dependency list includes `websockets`.
+
+## 2025-08-17
+- Added 5-fold cross-validation mode in `models.train` with average AUC.
+- Dashboard now reports **CV AUC** when provided.
+- Introduced `reports.scoreboard` to track daily playbook results.
+- Created interactive Plotly feature dashboard.
+## 2025-08-18
+- Drafted planning document P004 describing unified Config dataclass tasks
+- Added tasks T54-T56 for config dataclass design, refactor, and documentation
+- Implemented Config dataclass and refactored `run_daily` and collector entry point

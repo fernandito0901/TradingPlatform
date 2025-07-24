@@ -31,11 +31,14 @@ compatibility.
 ## Configuration
 
 The collector relies on a couple of environment variables and optional
-command‑line flags:
+command‑line flags. These are merged into a single ``Config`` dataclass
+loaded via ``trading_platform.load_config``:
 
 - **`POLYGON_API_KEY`**: API key required for all REST and WebSocket requests.
 - **`CACHE_TTL`**: Time‑to‑live in seconds for HTTP response caching. Set to
   `0` to disable caching.
+- **`SLACK_WEBHOOK_URL`**: Incoming webhook for pipeline notifications.
+- `.env` files are loaded automatically if present so secrets can be stored locally.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
@@ -76,6 +79,8 @@ python -m trading_platform.market_data_collector \
 
 The client waits for the connection to be authenticated before subscribing to trade and quote channels. If a `not authorized` error is returned when using the real-time feed, the collector automatically reconnects using the delayed WebSocket. The feed prints trade and quote data until interrupted.
 
+An asynchronous streaming helper is available in ``trading_platform.collector.stream_async``. It uses the ``websockets`` package and can be combined with the async API for fully non-blocking pipelines.
+
 ## Logging
 Logs default to stdout. Use `--log-file` to write to a specific path and
 `--log-level` to choose the log severity (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
@@ -91,7 +96,11 @@ available.
 ## Reports
 
 Model training metrics are written to `reports/dashboard.html`. Open this file
-in a browser to view recent AUC scores.
+in a browser to view recent AUC scores. Pass ``cv=True`` to
+``models.train`` to compute a 5-fold average AUC that appears as **CV AUC**.
+Call ``generate_feature_dashboard`` with the features CSV to produce
+`reports/feature_dashboard.html` for interactive exploration of feature
+distributions. Historical results are stored in `reports/scoreboard.csv`.
 
 ## Preflight Connectivity Check
 Run a quick smoke test before the full pipeline to validate your API keys:
@@ -103,10 +112,50 @@ python -m collector.verify --symbols AAPL,MSFT --polygon-key YOUR_KEY --news-key
 The command fetches a small sample of OHLCV bars and option chains and exits non-zero on failure.
 
 ## Daily Pipeline
-Use `run_daily.py` to execute data collection, feature generation, model training and playbook creation in one step:
+Use `run_daily.py` to execute data collection, feature generation, model training and playbook creation in one step. The script accepts the same options as
+``load_config``:
 
 ```bash
 python run_daily.py --symbols AAPL,MSFT --db-file market_data.db
 ```
 
 The script aborts if the preflight connectivity check fails.
+If ``SLACK_WEBHOOK_URL`` is set, a message is posted on success or failure.
+
+## Data Utilities
+
+Use the helper commands below to maintain the local database.
+
+### Backfill Historical Bars
+
+Fetch missing daily bars for a specific range:
+
+```bash
+python -m collector.backfill AAPL 2025-01-01 2025-01-31 --db-file market_data.db
+```
+
+### Data Quality Report
+
+Get per-symbol stats on missing days and null values:
+
+```bash
+python -m collector.quality --db-file market_data.db
+```
+
+## Docker Usage
+
+Build the container and run the full pipeline in one step:
+
+```bash
+docker build -t trading-platform .
+docker run --env POLYGON_API_KEY=YOUR_KEY trading-platform --symbols AAPL,MSFT
+```
+
+`run_pipeline.sh` wraps `python -m trading_platform.run_daily` so you can pass any of its arguments.
+
+## Planning Documents
+
+Design notes are tracked in `design/plans/` using sequential IDs (e.g. `P001.md`).
+Older date-based notes are summarized in `planning/archive.md`. See
+[`design/PLAN_INDEX.md`](design/PLAN_INDEX.md) for a list of all planning files.
+
