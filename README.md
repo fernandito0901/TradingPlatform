@@ -82,3 +82,21 @@ available.
 
 Model training metrics are written to `reports/dashboard.html`. Open this file
 in a browser to view recent AUC scores.
+
+## Preflight Connectivity Check
+Run a quick smoke test before the full pipeline to validate your API keys:
+
+```bash
+python -m collector.verify --symbols AAPL,MSFT --polygon-key YOUR_KEY --news-key YOUR_KEY
+```
+
+The command fetches a small sample of OHLCV bars and option chains and exits non-zero on failure.
+
+## Daily Pipeline
+Use `run_daily.py` to execute data collection, feature generation, model training and playbook creation in one step:
+
+```bash
+python run_daily.py --symbols AAPL,MSFT --db-file market_data.db
+```
+
+The script aborts if the preflight connectivity check fails.

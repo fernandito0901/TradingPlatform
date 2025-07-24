@@ -54,9 +54,7 @@ def fetch_ohlcv(conn, symbol: str):
     row = c.fetchone()
     if row[0]:
         last_ts = row[0] // 1000
-        start = datetime.date.fromtimestamp(last_ts) + datetime.timedelta(
-            days=1
-        )
+        start = datetime.date.fromtimestamp(last_ts) + datetime.timedelta(days=1)
     else:
         start = end - datetime.timedelta(days=60)
     if start > end:

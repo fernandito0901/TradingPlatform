@@ -33,3 +33,8 @@
 
 ## 2025-08-05
 - Playbook scoring now factors in news sentiment, IV edge, unusual options activity and GARCH spike.
+
+## 2025-08-06
+- Added `collector.verify` module for quick API connectivity checks.
+- New `run_daily.py` orchestrates data collection, feature generation, model training and playbook creation.
+- README documents preflight check and daily pipeline.
