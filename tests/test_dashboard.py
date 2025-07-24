@@ -1,8 +1,6 @@
-from pathlib import Path
-import os
-import sys
+"""Tests for dashboard report generation."""
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from pathlib import Path
 
 from reports.dashboard import generate_dashboard
 

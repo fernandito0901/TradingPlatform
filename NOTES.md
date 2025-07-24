@@ -1,4 +1,10 @@
 # Planner
+- 2025-08-09 00:15 UTC: Created new planning notes and tasks T38-T40; updated architecture overview and PLAN_INDEX.
+- 2025-08-09 02:00 UTC: Organized planning docs by month, cleaned TASKS.md and completed T38-T40.
+- 2025-08-10 00:10 UTC: Verified plan headers, created tasks T41-T43 for automating index and versioning architecture docs.
+- 2025-08-08 02:00 UTC: Updated tests to use installed package and refreshed README; completed tasks T34-T37.
+- 2025-08-08 01:30 UTC: Added PLAN_INDEX.md for easier navigation and normalized plan headers; created tasks T36-T37.
+- 2025-08-08 01:00 UTC: Documented follow-up tasks for restructure; see design/plan-2025-08-08.md and added T34-T35.
 - 2025-08-08 00:20 UTC: Restructured features and models into top-level packages; added project docs.
 - 2025-07-29 00:15 UTC: Reviewed design notes; created plan-2025-07-29.md summarizing remaining tasks T9,T10,T12,T16,T17.
 - 2025-07-31 00:15 UTC: Reviewed repository status; created plan-2025-07-31.md with new tasks T18-T20 and moved T15 to completed.
@@ -16,6 +22,7 @@
 
 - 2025-07-22 23:39 UTC: Added plan-2025-07-24.md with packaging objectives and outlined incremental extraction steps.
 - 2025-07-23 00:03 UTC: Planned next steps including logging module, tests, CI, packaging, and README updates. See plan-2025-07-25.md.
+- 2025-08-11 00:10 UTC: Planned numbered planning docs and added tasks T44-T46.
 
 # Coder
 - 2025-07-22 23:50 UTC: Modularized collector into package and added argparse CLI.
@@ -30,6 +37,7 @@
 - 2025-07-29 00:45 UTC: Added WebSocket reconnect test and moved T10 to completed tasks.
 - 2025-08-04 00:10 UTC: Unable to write tests for `collector.verify` because the command is not implemented. Escalating to Planner. ⚠ NEEDS-HUMAN-REVIEW
 - 2025-08-05 00:20 UTC: Verified updated scoring logic and ensured all tests pass.
+- 2025-07-24 02:35 UTC: Installed package editable, ran test suite; all 13 tests passed.
 
 # Modeler
 - 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
@@ -39,7 +47,10 @@
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
 - 2025-08-05 00:10 UTC: Updated scoring rule to incorporate news_sent, iv_edge, uoa and garch_spike; added tests verifying weighting.
 # Reviewer
+- 2025-07-24 02:38 UTC: Reviewed restructuring commit and confirmed tests pass.
 - 2025-07-29 00:30 UTC: Documented environment variables and logging options in README; moved T9 to completed tasks.
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
+
+

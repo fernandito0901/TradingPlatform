@@ -1,10 +1,6 @@
-import pandas as pd
-import sys
-import os
+"""Tests for model training utilities."""
 
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
+import pandas as pd
 
 from trading_platform.models import train as train_model
 

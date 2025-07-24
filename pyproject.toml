@@ -21,3 +21,6 @@ dependencies = [
 
 [project.scripts]
 collect-data = "trading_platform.collector.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src", ""]

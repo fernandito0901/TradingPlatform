@@ -1,11 +1,6 @@
+"""Tests for feature engineering pipeline."""
+
 import sqlite3
-
-import sys
-import os
-
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
 
 from trading_platform.features import pipeline
 
