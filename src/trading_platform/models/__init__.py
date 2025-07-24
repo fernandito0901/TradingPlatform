@@ -1,5 +1,5 @@
-"""Model training utilities."""
+"""Backwards compatibility wrapper for model training functions."""
 
-from .train import train
+from models.train import train
 
 __all__ = ["train"]
