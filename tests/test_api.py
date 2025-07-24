@@ -1,11 +1,7 @@
+"""Tests for collector API helpers."""
+
 import os
 import importlib
-
-import sys
-
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
 
 # Ensure API keys for module import
 os.environ.setdefault("POLYGON_API_KEY", "test")

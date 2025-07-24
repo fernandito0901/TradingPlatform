@@ -1,13 +1,9 @@
+"""Tests for playbook generation."""
+
 from pathlib import Path
 import json
 import pandas as pd
 import lightgbm as lgb
-import os
-import sys
-
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
-)
 
 from trading_platform.playbook import generate_playbook
 
