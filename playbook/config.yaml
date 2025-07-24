@@ -1,0 +1,8 @@
+weights:
+  prob_up: 2.5
+  momentum: 1.5
+  news_sent: 1.0
+  iv_edge: 1.0
+  uoa: 1.0
+  garch_spike: -1.0
+top_n: 5

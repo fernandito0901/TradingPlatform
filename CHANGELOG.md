@@ -40,3 +40,5 @@
 - README documents preflight check and daily pipeline.
 ## 2025-08-07
 - Restructured project into src/ package to conform with AGENTS guidelines.
+## 2025-08-08
+- Moved features and models packages to project root and added CODE_ATLAS, SCHEMAS, RUNBOOK and WORKFLOW docs.
