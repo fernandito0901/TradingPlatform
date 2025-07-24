@@ -1,7 +1,13 @@
 requests
 websocket-client
+aiohttp
 pandas
 numpy
 scikit-learn
 lightgbm
 arch
+pytest-asyncio
+websockets
+plotly
+flask
+APScheduler

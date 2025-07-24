@@ -6,14 +6,23 @@ from arch import arch_model
 
 
 def compute_features(
-    df: pd.DataFrame, iv: Optional[float] = None, news_sent: float = 0.0
+    df: pd.DataFrame,
+    iv: Optional[float] = None,
+    news_sent: float = 0.0,
+    uoa: float = 0.0,
 ) -> pd.DataFrame:
     """Compute technical and sentiment features.
 
     Parameters
     ----------
     df : pandas.DataFrame
-        DataFrame containing a ``close`` price column and ``t`` timestamps.
+        DataFrame containing ``close`` prices and ``t`` timestamps.
+    iv : float, optional
+        30‑day implied volatility. ``None`` inserts ``NaN``.
+    news_sent : float, optional
+        Aggregate news sentiment score for the symbol.
+    uoa : float, optional
+        Unusual options activity ratio.
 
     Returns
     -------
@@ -47,21 +56,42 @@ def compute_features(
         df["garch_sigma"] = float("nan")
 
     df["news_sent"] = news_sent
+    df["iv_edge"] = (df["iv30"] - df["hv30"]) / df["hv30"]
+    df["garch_spike"] = (df["garch_sigma"] > df["hv30"] * 1.5).astype(float)
+    df["uoa"] = uoa
     df["target"] = (df["close"].shift(-1) > df["close"]).astype(int)
     return df.dropna()
 
 
 def from_db(conn, symbol: str) -> pd.DataFrame:
-    """Load OHLCV and related data from SQLite and compute features."""
+    """Load OHLCV, option, and news data from SQLite and compute features.
+
+    Parameters
+    ----------
+    conn : sqlite3.Connection
+        Open connection to the project database.
+    symbol : str
+        Symbol to fetch data for.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with feature columns computed by :func:`compute_features`.
+    """
     query = "SELECT t, close FROM ohlcv WHERE symbol=? ORDER BY t"
     df = pd.read_sql_query(query, conn, params=(symbol,))
     if df.empty:
         raise ValueError("no data for symbol")
 
     opt = pd.read_sql_query(
-        "SELECT iv FROM option_chain WHERE symbol=?", conn, params=(symbol,)
+        "SELECT iv, volume, open_interest FROM option_chain WHERE symbol=?",
+        conn,
+        params=(symbol,),
     )
     iv = float(opt["iv"].mean()) if not opt.empty else None
+    uoa = 0.0
+    if not opt.empty and opt["open_interest"].sum() > 0:
+        uoa = opt["volume"].sum() / opt["open_interest"].sum()
 
     news = pd.read_sql_query(
         "SELECT title FROM news WHERE symbol=?", conn, params=(symbol,)
@@ -79,7 +109,7 @@ def from_db(conn, symbol: str) -> pd.DataFrame:
         if scores:
             news_sent = sum(scores) / len(scores)
 
-    return compute_features(df, iv=iv, news_sent=news_sent)
+    return compute_features(df, iv=iv, news_sent=news_sent, uoa=uoa)
 
 
 def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
