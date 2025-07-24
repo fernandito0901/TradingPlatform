@@ -20,4 +20,4 @@ dependencies = [
 ]
 
 [project.scripts]
-collect-data = "collector.main:main"
+collect-data = "trading_platform.collector.main:main"

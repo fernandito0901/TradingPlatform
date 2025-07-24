@@ -1,6 +1,13 @@
 import sqlite3
-import pandas as pd
-from features import pipeline
+
+import sys
+import os
+
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+)
+
+from trading_platform.features import pipeline
 
 
 def test_compute_features_from_db():

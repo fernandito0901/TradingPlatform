@@ -1,7 +1,7 @@
 """Entry point for the collector CLI."""
 
-from collector.cli import parse_args
-from collector.main import main
+from .collector.cli import parse_args
+from .collector.main import main
 
 
 if __name__ == "__main__":

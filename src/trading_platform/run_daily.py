@@ -2,11 +2,12 @@
 
 import argparse
 import logging
+from pathlib import Path
 
-from collector import api, db, verify
-from features import run_pipeline
-from models import train as train_model
-from playbook.generate import generate_playbook
+from .collector import api, db, verify
+from .features import run_pipeline
+from .models import train as train_model
+from .playbook.generate import generate_playbook
 
 
 def run(symbols: str = "AAPL", db_file: str = "market_data.db") -> str:
@@ -21,7 +22,7 @@ def run(symbols: str = "AAPL", db_file: str = "market_data.db") -> str:
         api.fetch_news(conn, sym)
 
     feat_csv = run_pipeline(conn, symbols.split(",")[0])
-    model_path = "models/model.txt"
+    model_path = str(Path(__file__).resolve().parent / "models" / "model.txt")
     train_model(feat_csv, model_path)
     pb_path = generate_playbook(feat_csv, model_path)
     logging.info("Pipeline completed: %s", pb_path)
