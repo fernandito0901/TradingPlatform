@@ -12,11 +12,15 @@ readme = "README.md"
 dependencies = [
     "requests",
     "websocket-client",
+    "aiohttp",
     "pandas",
     "numpy",
     "scikit-learn",
     "lightgbm",
     "arch",
+    "pytest-asyncio",
+    "websockets",
+    "plotly",
 ]
 
 [project.scripts]

@@ -1,0 +1,25 @@
+"""Environment variable loader."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+
+def load_env(path: str | os.PathLike[str] = ".env") -> None:
+    """Load environment variables from a ``.env`` file if it exists.
+
+    Parameters
+    ----------
+    path : str or Path, optional
+        File path to the ``.env`` file, by default ``".env"``.
+    """
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key, value)

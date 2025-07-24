@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 
+from ..load_env import load_env
+
 from . import api, db
 
 
@@ -42,6 +44,7 @@ def verify(
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point for the connectivity checker."""
+    load_env()
     parser = argparse.ArgumentParser(description="Verify API keys and connectivity")
     parser.add_argument("--polygon-key", help="Polygon API key")
     parser.add_argument("--news-key", help="NewsAPI key")

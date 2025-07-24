@@ -19,3 +19,18 @@ def test_train_model(tmp_path):
     assert 0.0 <= train_auc <= 1.0
     assert 0.0 <= test_auc <= 1.0
     assert model_path.exists()
+
+
+def test_train_model_cv(tmp_path):
+    data = {
+        "sma20": list(range(1, 21)),
+        "rsi14": list(range(20, 40)),
+        "target": [0, 1] * 10,
+    }
+    df = pd.DataFrame(data)
+    fpath = tmp_path / "features.csv"
+    df.to_csv(fpath, index=False)
+    model_path = tmp_path / "model.txt"
+    mean_auc, _ = train_model(str(fpath), str(model_path), cv=True)
+    assert 0.0 <= mean_auc <= 1.0
+    assert model_path.exists()
