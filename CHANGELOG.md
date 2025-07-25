@@ -192,3 +192,15 @@
 - Webapp now listens on ``0.0.0.0`` so the UI is reachable outside the
   container. Host and port can be overridden with ``WEBAPP_HOST`` and
   ``WEBAPP_PORT``.
+
+## 2025-09-07
+- Playbook generator now reads feature names from the trained model, avoiding
+  LightGBM shape mismatch errors during prediction.
+
+## 2025-09-08
+- Missing model features are padded with zeros when generating playbooks so
+  LightGBM predictions work even if some columns are absent.
+
+## 2025-09-09
+- Training now uses all feature columns by default so new indicators are picked
+  up automatically. Updated schemas and README.

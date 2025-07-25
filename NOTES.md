@@ -69,6 +69,12 @@
 - 2025-09-05 00:20 UTC: Implemented evaluator module and CLI; completed tasks T88 and T93.
 - 2025-09-06 00:20 UTC: Updated webapp to listen on 0.0.0.0 with configurable
   `WEBAPP_HOST` and `WEBAPP_PORT` variables.
+- 2025-09-07 00:05 UTC: Fixed LightGBM feature mismatch by using model
+  `feature_name()` in playbook generator.
+- 2025-09-08 00:05 UTC: Filled missing model features with zeros to ensure
+  playbook generation never fails LightGBM shape checks.
+- 2025-09-09 00:10 UTC: Training now auto-detects feature columns so models work
+  with any pipeline output.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.

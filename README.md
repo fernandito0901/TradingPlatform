@@ -99,6 +99,8 @@ available.
 Model training metrics are written to `reports/dashboard.html`. Open this file
 in a browser to view recent AUC scores. Pass ``cv=True`` to
 ``models.train`` to compute a 5-fold average AUC that appears as **CV AUC**.
+The trainer automatically uses all feature columns (except ``t`` and
+``target``), so new features are picked up without code changes.
 Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
@@ -132,6 +134,8 @@ The script aborts if the preflight connectivity check fails.
 If ``SLACK_WEBHOOK_URL`` is set, a message is posted on success or failure.
 Large trades and breaking news are detected during execution and aggregated into
 a Slack alert if ``SLACK_WEBHOOK_URL`` is configured.
+The playbook generator automatically pads any missing model features with zeros
+so LightGBM predictions run smoothly even if some columns are absent.
 
 ## Data Utilities
 
