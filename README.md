@@ -204,6 +204,9 @@ Launch a local web UI for running commands:
 webapp
 ```
 
+The server binds to `0.0.0.0:5000` by default so it can be reached from outside
+the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`.
+
 On first launch, the page prompts for API keys and saves them to `.env`.
 After setup you can run the daily pipeline or connectivity checks with
 buttons on the homepage. You can also backfill historical bars, run simulations, and generate feature or strategy dashboards directly from the site. Recent results from `reports/scoreboard.csv` are displayed with links to all reports.

@@ -67,6 +67,8 @@
 - 2025-09-03 00:15 UTC: Implemented risk_report CLI computing Sharpe and drawdown metrics. Closed T83.
 - 2025-09-03 01:00 UTC: Added file existence check and extra test for risk_report.
 - 2025-09-05 00:20 UTC: Implemented evaluator module and CLI; completed tasks T88 and T93.
+- 2025-09-06 00:20 UTC: Updated webapp to listen on 0.0.0.0 with configurable
+  `WEBAPP_HOST` and `WEBAPP_PORT` variables.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
