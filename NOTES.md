@@ -38,6 +38,7 @@
 - 2025-09-03 18:35 UTC: Created plan P013 for real-time position management with tasks T87-T92.
 - 2025-09-03 19:00 UTC: Expanded P012 with Sharpe and drawdown formulas and scoreboard schema updates; marked T82 complete.
 - 2025-09-03 19:05 UTC: Detailed real-time monitoring approach in P013 covering streaming, evaluation, automatic trade recording and alerts.
+- 2025-09-05 00:10 UTC: Created plan P014 for position evaluator and exit simulation; marked T86 completed and added tasks T93-T95.
 # Coder
 - 2025-07-22 23:50 UTC: Modularized collector into package and added argparse CLI.
 - 2025-07-22 23:45 UTC: Removed fallback API key; script now requires POLYGON_API_KEY.
@@ -65,6 +66,7 @@
 - 2025-09-02 00:00 UTC: Added scheduler start/stop controls in webapp, documented scheduler usage, and wrote tests. Closed T79-T81.
 - 2025-09-03 00:15 UTC: Implemented risk_report CLI computing Sharpe and drawdown metrics. Closed T83.
 - 2025-09-03 01:00 UTC: Added file existence check and extra test for risk_report.
+- 2025-09-05 00:20 UTC: Implemented evaluator module and CLI; completed tasks T88 and T93.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
@@ -84,12 +86,17 @@
 ### 2025-08-28 – @Tester
 - All tests pass after installing dependencies. No open tasks at the moment.
 
+### 2025-09-05 – @Tester
+- Installed dependencies and ran `black --check`, `flake8`, `pytest -q`; all 50 tests passed.
+- Marked task T94 complete.
+
 
 # Modeler
 - 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
 - 2025-08-01 00:20 UTC: Added volatility and news sentiment features, cross-validation and metrics dashboard. Moved T16, T17, T18, T24 to completed.
 - 2025-08-11 00:00 UTC: Implemented UOA, IV edge and garch spike features; marked T29 and T30 complete.
 - 2025-08-17 00:00 UTC: Added 5-fold cross-validation training and trade scoreboard. Marked T48 and T52 complete.
+- 2025-09-05 00:30 UTC: Implemented exit simulation algorithm updating unrealized PnL. Closed T90.
 
 # Synthesizer
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
@@ -108,6 +115,8 @@
 - 2025-08-26 01:00 UTC: Reviewed portfolio tracker integration and web UI docs; closed T71 after verifying README examples.
 - 2025-09-02 01:30 UTC: Reviewed scheduler integration and web controls; tasks T79-T81 closed.
 - 2025-09-04 01:30 UTC: Reviewed risk dashboard and portfolio streaming features; all tests pass.
+- 2025-09-05 00:45 UTC: Documented risk workflow, real-time monitoring and evaluator usage in README; closed T85, T92 and T95.
+- 2025-09-06 00:10 UTC: Fixed package import recursion by lazy-loading scheduler and evaluator modules.
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
