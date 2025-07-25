@@ -180,3 +180,8 @@
 - New CLI `portfolio-stream` starts real-time streaming based on `portfolio.csv`.
 - Tasks T87 and T91 completed.
 - Review complete; confirmed risk dashboard and trade streaming features.
+
+## 2025-09-05
+- Added exit simulation algorithm recording unrealized PnL for open positions.
+- Position evaluator engine and CLI implemented with accompanying tests.
+- Documented risk workflow, real-time monitoring and evaluator usage in README.
