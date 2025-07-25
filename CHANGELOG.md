@@ -180,3 +180,15 @@
 - New CLI `portfolio-stream` starts real-time streaming based on `portfolio.csv`.
 - Tasks T87 and T91 completed.
 - Review complete; confirmed risk dashboard and trade streaming features.
+
+## 2025-09-05
+- Added exit simulation algorithm recording unrealized PnL for open positions.
+- Position evaluator engine and CLI implemented with accompanying tests.
+- Documented risk workflow, real-time monitoring and evaluator usage in README.
+
+## 2025-09-06
+- Fixed recursion error when importing :mod:`trading_platform.scheduler` and
+  enabled lazy loading for the new ``evaluator`` module.
+- Webapp now listens on ``0.0.0.0`` so the UI is reachable outside the
+  container. Host and port can be overridden with ``WEBAPP_HOST`` and
+  ``WEBAPP_PORT``.

@@ -103,6 +103,13 @@ Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
 Use ``generate_strategy_dashboard`` to write `reports/strategies.html` summarizing POP for available trades.
+Risk metrics can be computed from `reports/scoreboard.csv` using the risk report CLI:
+
+```bash
+risk-report --scoreboard reports/scoreboard.csv --out-file reports/scoreboard_risk.csv
+```
+The `MAX_RISK` environment variable specifies per-strategy risk limits applied during simulations and evaluation.
+
 
 ## Preflight Connectivity Check
 Run a quick smoke test before the full pipeline to validate your API keys:
@@ -178,6 +185,16 @@ portfolio close AAPL 150 --portfolio-file reports/portfolio.csv --pnl-file repor
 ```
 
 Closing a position updates `reports/pnl.csv` so dashboards can track PnL over time.
+### Real-time Monitoring
+
+Stream quotes for open positions and evaluate them continuously:
+
+```bash
+portfolio-stream --db-file market_data.db --portfolio-file reports/portfolio.csv
+evaluator --portfolio-file reports/portfolio.csv --pnl-file reports/pnl.csv
+```
+`portfolio-stream` records real-time quotes in the database. The `evaluator` closes positions when stop-loss or take-profit thresholds are reached and appends PnL to `reports/pnl.csv`. Set `SLACK_WEBHOOK_URL` to receive alerts for entry and exit events.
+
 
 ### Web Interface
 
@@ -186,6 +203,9 @@ Launch a local web UI for running commands:
 ```bash
 webapp
 ```
+
+The server binds to `0.0.0.0:5000` by default so it can be reached from outside
+the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`.
 
 On first launch, the page prompts for API keys and saves them to `.env`.
 After setup you can run the daily pipeline or connectivity checks with
