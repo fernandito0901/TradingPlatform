@@ -180,3 +180,27 @@
 - New CLI `portfolio-stream` starts real-time streaming based on `portfolio.csv`.
 - Tasks T87 and T91 completed.
 - Review complete; confirmed risk dashboard and trade streaming features.
+
+## 2025-09-05
+- Added exit simulation algorithm recording unrealized PnL for open positions.
+- Position evaluator engine and CLI implemented with accompanying tests.
+- Documented risk workflow, real-time monitoring and evaluator usage in README.
+
+## 2025-09-06
+- Fixed recursion error when importing :mod:`trading_platform.scheduler` and
+  enabled lazy loading for the new ``evaluator`` module.
+- Webapp now listens on ``0.0.0.0`` so the UI is reachable outside the
+  container. Host and port can be overridden with ``WEBAPP_HOST`` and
+  ``WEBAPP_PORT``.
+
+## 2025-09-07
+- Playbook generator now reads feature names from the trained model, avoiding
+  LightGBM shape mismatch errors during prediction.
+
+## 2025-09-08
+- Missing model features are padded with zeros when generating playbooks so
+  LightGBM predictions work even if some columns are absent.
+
+## 2025-09-09
+- Training now uses all feature columns by default so new indicators are picked
+  up automatically. Updated schemas and README.

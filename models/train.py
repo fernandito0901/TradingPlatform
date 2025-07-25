@@ -6,7 +6,10 @@ from sklearn.model_selection import train_test_split, cross_val_score
 
 
 def train(
-    features_csv: str, model_path: str = "models/model.txt", cv: bool = False
+    features_csv: str,
+    model_path: str = "models/model.txt",
+    cv: bool = False,
+    feature_cols: list[str] | None = None,
 ) -> tuple[float, float]:
     """Train LightGBM model from feature CSV with train/test split.
 
@@ -16,6 +19,11 @@ def train(
         Path to the features CSV produced by :func:`features.run_pipeline`.
     model_path : str, optional
         Destination path for the trained model.
+    cv : bool, optional
+        When ``True``, perform 5-fold cross-validation and return the mean AUC.
+    feature_cols : list[str], optional
+        Specific columns to train on. By default all columns except ``t`` and
+        ``target`` are used.
 
     Returns
     -------
@@ -24,18 +32,8 @@ def train(
         the mean cross-validation AUC.
     """
     df = pd.read_csv(features_csv)
-    feature_cols = [
-        c
-        for c in [
-            "sma20",
-            "rsi14",
-            "iv30",
-            "hv30",
-            "garch_sigma",
-            "news_sent",
-        ]
-        if c in df.columns
-    ]
+    if feature_cols is None:
+        feature_cols = [c for c in df.columns if c not in {"t", "target"}]
     X = df[feature_cols]
     y = df["target"]
     if cv:

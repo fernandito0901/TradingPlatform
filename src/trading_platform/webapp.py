@@ -213,7 +213,9 @@ def main() -> None:
     """Run the Flask development server."""
 
     app = create_app()
-    app.run()
+    host = os.getenv("WEBAPP_HOST", "0.0.0.0")
+    port = int(os.getenv("WEBAPP_PORT", "5000"))
+    app.run(host=host, port=port)
 
 
 if __name__ == "__main__":

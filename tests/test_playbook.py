@@ -61,3 +61,50 @@ def test_generate_playbook(tmp_path):
     assert isinstance(pb["trades"], list)
     assert len(pb["trades"]) <= 5
     assert pb["trades"] == expected_top.to_dict(orient="records")
+
+
+def test_generate_playbook_missing_columns(tmp_path):
+    df = pd.DataFrame(
+        {
+            "t": [1, 2],
+            "close": [10, 11],
+            "sma20": [10, 10.5],
+            "rsi14": [50, 55],
+            "iv_edge": [0.1, 0.2],
+            "target": [0, 1],
+        }
+    )
+
+    feature_cols = ["sma20", "rsi14", "iv_edge"]
+    train_set = lgb.Dataset(df[feature_cols], label=df["target"])
+    model = lgb.train(
+        {"objective": "binary", "verbosity": -1}, train_set, num_boost_round=2
+    )
+    model_file = tmp_path / "model.txt"
+    model.save_model(model_file)
+
+    # Drop one feature to simulate a pipeline that didn't produce it
+    test_df = df.drop(columns=["iv_edge"])
+    feat_csv = tmp_path / "features.csv"
+    test_df.to_csv(feat_csv, index=False)
+
+    out_dir = tmp_path / "playbooks"
+    path = generate_playbook(str(feat_csv), str(model_file), str(out_dir))
+
+    filled = test_df.copy()
+    filled["iv_edge"] = 0
+    prob_up = model.predict(filled[feature_cols])
+    momentum = (filled["close"] - filled["sma20"]) / filled["sma20"]
+    expected = filled.copy()
+    expected["score"] = (
+        2.5 * prob_up
+        + 1.5 * momentum
+        + filled.get("news_sent", 0)
+        + filled["iv_edge"]
+        + filled.get("uoa", 0)
+        - filled.get("garch_spike", 0)
+    )
+    expected_top = expected.nlargest(5, "score")[["t", "score"]]
+
+    pb = json.loads(Path(path).read_text())
+    assert pb["trades"] == expected_top.to_dict(orient="records")
