@@ -6,11 +6,12 @@ from . import broker, simulate, strategies, portfolio
 from . import risk_report
 
 
-def __getattr__(name: str):
-    if name == "scheduler":
-        from . import scheduler as mod
+import importlib
 
-        return mod
+
+def __getattr__(name: str):
+    if name in {"scheduler", "evaluator"}:
+        return importlib.import_module(f".{name}", __name__)
     raise AttributeError(name)
 
 

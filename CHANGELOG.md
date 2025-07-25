@@ -185,3 +185,7 @@
 - Added exit simulation algorithm recording unrealized PnL for open positions.
 - Position evaluator engine and CLI implemented with accompanying tests.
 - Documented risk workflow, real-time monitoring and evaluator usage in README.
+
+## 2025-09-06
+- Fixed recursion error when importing :mod:`trading_platform.scheduler` and
+  enabled lazy loading for the new ``evaluator`` module.

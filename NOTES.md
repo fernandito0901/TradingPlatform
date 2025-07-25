@@ -116,6 +116,7 @@
 - 2025-09-02 01:30 UTC: Reviewed scheduler integration and web controls; tasks T79-T81 closed.
 - 2025-09-04 01:30 UTC: Reviewed risk dashboard and portfolio streaming features; all tests pass.
 - 2025-09-05 00:45 UTC: Documented risk workflow, real-time monitoring and evaluator usage in README; closed T85, T92 and T95.
+- 2025-09-06 00:10 UTC: Fixed package import recursion by lazy-loading scheduler and evaluator modules.
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
