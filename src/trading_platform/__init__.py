@@ -24,4 +24,5 @@ __all__ = [
     "portfolio",
     "scheduler",
     "risk_report",
+    "evaluator",
 ]
