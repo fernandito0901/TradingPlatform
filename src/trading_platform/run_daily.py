@@ -7,6 +7,7 @@ from pathlib import Path
 from .config import Config, load_config
 
 from .collector import api, api_async, db, verify
+from .collector.alerts import AlertAggregator
 from .features import run_pipeline
 from .models import train as train_model
 from .playbook.generate import generate_playbook
@@ -34,13 +35,14 @@ def run(config: Config) -> str:
         raise SystemExit("Connectivity check failed")
 
     conn = db.init_db(config.db_file)
+    agg = AlertAggregator(config.slack_webhook_url)
     for sym in config.symbols.split(","):
         if config.use_async:
-            asyncio.run(api_async.fetch_all(conn, sym))
+            asyncio.run(api_async.fetch_all(conn, sym, aggregator=agg))
         else:
             api.fetch_ohlcv(conn, sym)
             api.fetch_option_chain(conn, sym)
-            api.fetch_news(conn, sym)
+            api.fetch_news(conn, sym, aggregator=agg)
 
     try:
         feat_csv = run_pipeline(conn, config.symbols.split(",")[0])
@@ -51,10 +53,12 @@ def run(config: Config) -> str:
         pb_path = generate_playbook(feat_csv, model_path)
         update_scoreboard(pb_path, test_auc)
     except Exception as exc:
+        agg.flush()
         notifier.send_slack(f"Pipeline failed: {exc}")
         raise
 
     logging.info("Pipeline completed: %s", pb_path)
+    agg.flush()
     notifier.send_slack(f"Pipeline completed: {pb_path}")
     return pb_path
 

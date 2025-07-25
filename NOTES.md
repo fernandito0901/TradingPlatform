@@ -28,6 +28,12 @@
 - 2025-08-15 00:05 UTC: Consolidated old plans into numbered format and moved architecture docs under design/architecture.
 
 - 2025-08-18 00:10 UTC: Created plan P004 outlining tasks T54-T56 for unified configuration.
+- 2025-08-18 00:25 UTC: Drafted plan P005 for option strategies, dashboard, and real-time alerts; added tasks T57-T60.
+- 2025-08-18 01:00 UTC: Created plan P006 detailing POP estimator, paper trading, risk limits, and alert aggregator; added tasks T61-T64.
+- 2025-08-22 00:10 UTC: Created plan P009 for expanded web dashboard and registered tasks T68-T72.
+- 2025-08-24 00:10 UTC: Drafted plan P010 for portfolio tracker design with tasks T73-T76; marked T68 complete.
+- 2025-08-29 00:05 UTC: Created plan P011 for scheduler and deployment; added tasks T77-T81.
+- 2025-08-31 00:05 UTC: Expanded P011 with scheduler architecture and docker-compose details; marked T77 complete.
 # Coder
 - 2025-07-22 23:50 UTC: Modularized collector into package and added argparse CLI.
 - 2025-07-22 23:45 UTC: Removed fallback API key; script now requires POLYGON_API_KEY.
@@ -42,6 +48,18 @@
 - 2025-08-16 00:10 UTC: Added async WebSocket streaming module and updated README and tasks.
 - 2025-08-18 00:20 UTC: Introduced Config dataclass with loader and refactored entry points.
 
+- 2025-08-18 00:30 UTC: Implemented paper trading simulator and updated scoreboard; closed T62.
+- 2025-08-18 00:40 UTC: Added CLI entrypoint for simulator in pyproject.
+- 2025-08-18 02:00 UTC: Documented `simulate` CLI usage in README.
+- 2025-08-19 00:00 UTC: Added option strategy primitives and POP estimator in `strategies.py`; updated tasks T57 and T61.
+- 2025-08-20 02:00 UTC: Implemented broker API stub and CLI entrypoint; closed T65.
+- 2025-08-21 00:00 UTC: Added Flask web interface exposing pipeline commands and first-run API key setup. Closed T67.
+- 2025-08-22 00:00 UTC: Expanded webapp with backfill, simulation, and dashboard routes; homepage lists scoreboard entries. Closed T69.
+- 2025-08-25 00:00 UTC: Implemented portfolio tracker module with CLI commands; closed T74.
+- 2025-08-27 00:00 UTC: Added APScheduler-based scheduler service with CLI entrypoint; closed T78.
+- 2025-09-01 00:00 UTC: Created `docker-compose.yml` for running webapp and scheduler together; updated README with instructions.
+- 2025-09-02 00:00 UTC: Added scheduler start/stop controls in webapp, documented scheduler usage, and wrote tests. Closed T79-T81.
+
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
 - 2025-07-23 02:40 UTC: Ran full test suite and validated playbook JSON; all tests passed.
@@ -53,6 +71,13 @@
 - 2025-07-24 05:22 UTC: Verified Docker packaging commit; installed project in editable mode and ensured `black --check`, `flake8`, and `pytest -q` all pass with 19 tests.
 - 2025-07-24 05:23 UTC: Implemented `check_plan_headers.py` and accompanying tests, completing task T42.
 - 2025-07-24 07:05 UTC: Installed dependencies and ran full test suite; `black --check`, `flake8`, and `pytest -q` all passed with 29 tests.
+- 
+### 2025-08-27 – @Tester
+- Verified webapp and portfolio tests pass after installing dependencies.
+- Marked tasks T72 and T76 completed.
+### 2025-08-28 – @Tester
+- All tests pass after installing dependencies. No open tasks at the moment.
+
 
 # Modeler
 - 2025-07-23 01:37 UTC: Implemented feature pipeline and baseline model training.
@@ -65,19 +90,24 @@
 - 2025-08-05 00:10 UTC: Updated scoring rule to incorporate news_sent, iv_edge, uoa and garch_spike; added tests verifying weighting.
 - 2025-08-05 00:30 UTC: Marked task T19 complete and updated TASKS.md accordingly.
 - 2025-08-17 00:05 UTC: Implemented Plotly feature dashboard and closed T49.
+- 2025-08-19 00:20 UTC: Added strategy dashboard generator and risk limit config fields; closed T58 and T63.
+- 2025-08-26 00:10 UTC: Integrated portfolio tracker with simulator and confirmed dashboards appear in web UI. Completed T70 and T75.
 # Reviewer
 - 2025-07-24 02:38 UTC: Reviewed restructuring commit and confirmed tests pass.
 - 2025-07-29 00:30 UTC: Documented environment variables and logging options in README; moved T9 to completed tasks.
 - 2025-08-11 01:15 UTC: Reviewed new UOA, IV edge and garch spike features plus CI workflow; all tests pass.
 - 2025-08-13 01:30 UTC: Reviewed Docker packaging, plan header validation, backfill and quality utilities; all tests and lint pass. Moved T26 to completed tasks.
+- 2025-08-20 01:30 UTC: Reviewed alert aggregator and updated README with strategy workflow. Closed T60.
+- 2025-08-26 01:00 UTC: Reviewed portfolio tracker integration and web UI docs; closed T71 after verifying README examples.
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
-
-
 - 2025-08-13 00:10 UTC: Implemented backfill utility and data quality report with tests.
 - 2025-08-13 00:15 UTC: Marked tasks T23 and T32 complete in TASKS.md.
 - 2025-08-15 00:20 UTC: Drafted plan P002 outlining tasks T47-T50 for async API, cross-validation, feature dashboard and env loader.
 - 2025-08-15 02:00 UTC: Added plan P003 with tasks T51-T53 for async streaming, trade scoreboard and unified config.
-
 - 2025-08-17 01:00 UTC: Reviewed feature dashboard, async modules, and scoreboard integration; all tests pass.
+- 2025-08-18 03:00 UTC: Created P007 with plan for options strategy execution and updated PLAN_INDEX. Tasks T57-T64 outline next steps.
+- 2025-08-19 00:10 UTC: Drafted plan P008 covering dashboard and alerting; added tasks T65-T66.
+- 2025-08-20 00:30 UTC: Implemented alert aggregator and real-time trade/news alerts. Marked T59 and T64 complete.
+

@@ -27,8 +27,8 @@ def test_run_daily_notify_failure(monkeypatch, tmp_path):
         pass
 
     monkeypatch.setattr(run_daily.api, "fetch_ohlcv", fake_fetch_ohlcv)
-    monkeypatch.setattr(run_daily.api, "fetch_option_chain", lambda *a: None)
-    monkeypatch.setattr(run_daily.api, "fetch_news", lambda *a: None)
+    monkeypatch.setattr(run_daily.api, "fetch_option_chain", lambda *a, **k: None)
+    monkeypatch.setattr(run_daily.api, "fetch_news", lambda *a, **k: None)
 
     monkeypatch.setattr(run_daily, "run_pipeline", lambda *a, **k: "features.csv")
 
@@ -64,7 +64,7 @@ def test_run_daily_success(monkeypatch, tmp_path):
     def fake_fetch_option_chain(conn, sym):
         pass
 
-    def fake_fetch_news(conn, sym):
+    def fake_fetch_news(conn, sym, aggregator=None):
         pass
 
     monkeypatch.setattr(run_daily.api, "fetch_ohlcv", fake_fetch_ohlcv)

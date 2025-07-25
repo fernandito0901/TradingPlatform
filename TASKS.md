@@ -1,9 +1,12 @@
 # Open Tasks
-- [T53] Unified config dataclass · Acceptance: modules accept a shared Config object merging CLI flags and env vars
-- [T54] Design Config dataclass structure and loader
-- [T56] Document configuration system in README
+# (All tasks should have unique IDs in ascending order)
+
+## Upcoming Strategy Features
 
 # Completed Tasks
+- [T72] Webapp tests · Acceptance: pytest covers new routes and setup flow · Completed by Tester on 2025-08-27
+- [T76] Portfolio tests · Acceptance: pytest validates trade recording and PnL calculations · Completed by Tester on 2025-08-27
+- [T77] Scheduler architecture plan · Acceptance: design doc P011 outlines scheduler and compose setup · Completed by Planner on 2025-08-31
 - [T46] Update references for new planning layout · Acceptance: README and automation scripts point to numbered plans · Completed by Planner on 2025-08-14
 - [T45] Adopt numbered plan docs · Acceptance: new notes saved as `design/plans/P001.md` etc. with sequential index · Completed by Planner on 2025-08-14
 - [T44] Consolidate historical plans · Acceptance: dated notes summarized in `planning/archive.md` and old files removed · Completed by Planner on 2025-08-14
@@ -46,9 +49,32 @@
 - [T26] Review modeling updates · Acceptance: confirm docs and tests for new features, run `pytest -q` and squash-merge · Completed by Reviewer on 2025-08-13
 - [T42] Validate plan headers · Acceptance: CI fails if a plan's heading doesn't match its filename; script checks all docs · Completed by Tester on 2025-07-24
 - [T47] Async collector API · Acceptance: `collector/api_async.py` uses aiohttp to fetch data concurrently; unit tests cover success and failure paths · Completed by Coder on 2025-08-15
-- [T50] Environment file loader · Acceptance: helper loads `.env` into environment; all entry points call it before other imports · Completed by Coder on 2025-08-15
-- [T51] Async streaming module · Acceptance: `collector/stream_async.py` streams trades concurrently via websockets; integrate with async API · Completed by Coder on 2025-08-16
 - [T48] Cross-validation training · Acceptance: `models.train` supports 5-fold CV and dashboard reports CV AUC · Completed by Modeler on 2025-08-17
 - [T49] Interactive feature dashboard · Acceptance: Plotly report `reports/feature_dashboard.html` shows feature distributions with README instructions · Completed by Synthesizer on 2025-08-17
+- [T50] Environment file loader · Acceptance: helper loads `.env` into environment; all entry points call it before other imports · Completed by Coder on 2025-08-15
+- [T51] Async streaming module · Acceptance: `collector/stream_async.py` streams trades concurrently via websockets; integrate with async API · Completed by Coder on 2025-08-16
 - [T52] Trade scoreboard · Acceptance: `reports/scoreboard.csv` appends daily playbook results; tests cover update logic · Completed by Modeler on 2025-08-17
+- [T53] Unified config dataclass · Completed by Synthesizer on 2025-08-18
+- [T54] Design Config dataclass structure and loader · Completed by Planner on 2025-08-18
 - [T55] Refactor entry points to use Config dataclass · Completed by Coder on 2025-08-18
+- [T56] Document configuration system in README · Completed by Reviewer on 2025-08-18
+- [T62] Paper trading simulator · Acceptance: `simulate.py` executes strategies on historical data and logs PnL to scoreboard · Completed by Coder on 2025-08-18
+- [T57] Options strategy primitives · Acceptance: `strategies.py` implements iron condor and call debit spread payoff calculations · Completed by Coder on 2025-08-19
+- [T61] Probability-of-profit estimator · Acceptance: `strategies.pop` returns values between 0 and 1 for sample legs · Completed by Coder on 2025-08-19
+- [T58] Strategy dashboard · Acceptance: `reports/strategies.html` lists available strategies with buy/sell actions and probability of profit · Completed by Synthesizer on 2025-08-19
+- [T63] Risk limits configuration · Acceptance: Config dataclass includes per-strategy max risk with docs and tests · Completed by Synthesizer on 2025-08-19
+- [T59] Real-time trade & news alerts · Completed by DataCollector on 2025-08-20
+- [T60] Document strategy workflow · Completed by Reviewer on 2025-08-20
+- [T64] Alert aggregator service · Completed by DataCollector on 2025-08-20
+- [T65] Broker API stub · Acceptance: CLI action places simulated trades through a stubbed broker module · Completed by Coder on 2025-08-20
+- [T69] Implement expanded webapp · Acceptance: website can run pipeline, backfill, simulate, and generate dashboards; config stored in .env · Completed by Coder on 2025-08-22
+- [T68] Web dashboard design · Acceptance: plan P009 outlines setup workflow and buttons for all commands · Completed by Planner on 2025-08-24
+- [T66] Portfolio tracker design · Acceptance: planning doc outlines schema for open positions and PnL history · Completed by Planner on 2025-08-24
+- [T74] Portfolio module implementation · Acceptance: `portfolio.py` with load/save helpers and CLI · Completed by Coder on 2025-08-25
+- [T70] Integrate reports in web UI · Acceptance: scoreboard and strategy/feature dashboards viewable from webapp · Completed by Synthesizer on 2025-08-26
+- [T75] Integrate tracker with simulator · Acceptance: simulations record trades and update portfolio files · Completed by Synthesizer on 2025-08-26
+- [T71] Document web usage · Acceptance: README includes web interface section with examples · Completed by Reviewer on 2025-08-26
+- [T78] Scheduler service implementation · Acceptance: `scheduler.py` runs `run_daily` via APScheduler · Completed by Coder on 2025-08-27
+- [T79] Webapp scheduler controls · Acceptance: users can toggle schedule via the web UI · Completed by Coder on 2025-09-02
+- [T80] Deployment docs · Acceptance: README explains docker-compose and scheduler · Completed by Coder on 2025-09-02
+- [T81] Scheduler tests · Acceptance: pytest verifies scheduled runs execute `run_daily` · Completed by Coder on 2025-09-02

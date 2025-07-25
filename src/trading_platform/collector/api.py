@@ -7,6 +7,8 @@ import logging
 
 import requests
 
+from .alerts import AlertAggregator
+
 API_KEY = os.getenv("POLYGON_API_KEY")
 if not API_KEY:
     raise SystemExit("POLYGON_API_KEY environment variable not set")
@@ -233,8 +235,25 @@ def fetch_indicator_sma(conn, symbol: str):
     conn.commit()
 
 
-def fetch_news(conn, symbol: str, limit: int = 5) -> None:
-    """Fetch latest news articles for the given symbol."""
+def fetch_news(
+    conn,
+    symbol: str,
+    limit: int = 5,
+    aggregator: AlertAggregator | None = None,
+) -> None:
+    """Fetch latest news articles for the given symbol.
+
+    Parameters
+    ----------
+    conn : sqlite3.Connection
+        Database connection.
+    symbol : str
+        Ticker symbol to fetch headlines for.
+    limit : int, default 5
+        Maximum number of articles to fetch.
+    aggregator : AlertAggregator, optional
+        Alert aggregator that receives headlines for Slack notifications.
+    """
     logging.info("Fetching news for %s", symbol)
     url = "https://newsapi.org/v2/everything"
     params = {
@@ -258,4 +277,6 @@ def fetch_news(conn, symbol: str, limit: int = 5) -> None:
                 art.get("source", {}).get("name"),
             ),
         )
+        if aggregator:
+            aggregator.add_news(art.get("title", ""), art.get("url", ""))
     conn.commit()

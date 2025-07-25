@@ -9,3 +9,10 @@ def test_load_config_reads_env(tmp_path, monkeypatch):
     assert cfg.symbols == "MSFT"
     assert cfg.polygon_api_key == "foo"
     assert cfg.log_level == "DEBUG"
+
+
+def test_load_config_parses_max_risk(tmp_path, monkeypatch):
+    env = tmp_path / ".env"
+    env.write_text("MAX_RISK=call=100,condor=50\n")
+    cfg = load_config([], env_path=env)
+    assert cfg.max_risk == {"call": 100.0, "condor": 50.0}

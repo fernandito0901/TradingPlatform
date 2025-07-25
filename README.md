@@ -38,6 +38,7 @@ loaded via ``trading_platform.load_config``:
 - **`CACHE_TTL`**: Time‑to‑live in seconds for HTTP response caching. Set to
   `0` to disable caching.
 - **`SLACK_WEBHOOK_URL`**: Incoming webhook for pipeline notifications.
+- **`MAX_RISK`**: Comma-separated per-strategy limits like ``call=100,condor=50``.
 - `.env` files are loaded automatically if present so secrets can be stored locally.
 
 Logging can be directed to a file and the verbosity adjusted using the
@@ -101,6 +102,7 @@ in a browser to view recent AUC scores. Pass ``cv=True`` to
 Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
+Use ``generate_strategy_dashboard`` to write `reports/strategies.html` summarizing POP for available trades.
 
 ## Preflight Connectivity Check
 Run a quick smoke test before the full pipeline to validate your API keys:
@@ -121,6 +123,8 @@ python run_daily.py --symbols AAPL,MSFT --db-file market_data.db
 
 The script aborts if the preflight connectivity check fails.
 If ``SLACK_WEBHOOK_URL`` is set, a message is posted on success or failure.
+Large trades and breaking news are detected during execution and aggregated into
+a Slack alert if ``SLACK_WEBHOOK_URL`` is configured.
 
 ## Data Utilities
 
@@ -142,6 +146,91 @@ Get per-symbol stats on missing days and null values:
 python -m collector.quality --db-file market_data.db
 ```
 
+### Paper Trading Simulator
+
+Run a simple buy‑and‑hold backtest and record profits to the scoreboard:
+
+```bash
+simulate data/features.csv --strategy buy_hold --capital 10000
+```
+
+The CSV at `reports/scoreboard.csv` tracks daily AUC and optional PnL values.
+Simulated trades are also logged in `reports/portfolio.csv` and realized
+profits appended to `reports/pnl.csv`.
+
+### Broker API Stub
+
+Place simulated orders from the command line using the broker stub:
+
+```bash
+broker BUY AAPL 1 100 --out-file reports/orders.csv
+```
+
+Each order is appended to `reports/orders.csv` with a timestamp.
+
+### Portfolio Tracker
+
+Manage open positions and record realized profits:
+
+```bash
+portfolio show --file reports/portfolio.csv
+portfolio close AAPL 150 --portfolio-file reports/portfolio.csv --pnl-file reports/pnl.csv
+```
+
+Closing a position updates `reports/pnl.csv` so dashboards can track PnL over time.
+
+### Web Interface
+
+Launch a local web UI for running commands:
+
+```bash
+webapp
+```
+
+On first launch, the page prompts for API keys and saves them to `.env`.
+After setup you can run the daily pipeline or connectivity checks with
+buttons on the homepage. You can also backfill historical bars, run simulations, and generate feature or strategy dashboards directly from the site. Recent results from `reports/scoreboard.csv` are displayed with links to all reports.
+
+### Strategy Workflow
+
+Use the strategy helpers and dashboard generator to evaluate trades:
+
+```python
+from trading_platform import strategies
+from reports.strategy_dashboard import generate_strategy_dashboard
+
+strategies_data = [
+    {
+        "name": "Call Debit Spread",
+        "payoff": lambda s: strategies.call_debit_spread_payoff(s, 100, 110, 5),
+        "price": 100,
+    }
+]
+generate_strategy_dashboard(strategies_data)
+```
+
+The HTML report `reports/strategies.html` lists probability of profit (POP) for
+each trade. When `SLACK_WEBHOOK_URL` is set, large trades and breaking news are
+aggregated into a Slack alert during `run_daily.py` execution.
+
+### Option Strategies and POP
+
+Use the `strategies` module to evaluate spreads and estimate probability of
+profit. Example:
+
+```python
+from trading_platform import strategies
+
+# payoff of a call debit spread
+profit = strategies.call_debit_spread_payoff(120, 100, 110, 5)
+
+# probability of profit via Monte Carlo
+pop = strategies.pop(
+    lambda s: strategies.call_debit_spread_payoff(s, 100, 110, 5),
+    price=100,
+)
+```
+
 ## Docker Usage
 
 Build the container and run the full pipeline in one step:
@@ -153,6 +242,26 @@ docker run --env POLYGON_API_KEY=YOUR_KEY trading-platform --symbols AAPL,MSFT
 
 `run_pipeline.sh` wraps `python -m trading_platform.run_daily` so you can pass any of its arguments.
 
+### docker-compose
+
+Start the web interface and scheduler together using the provided compose file:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+Both services load variables from `.env` and share the `data/` and `reports/` directories.
+
+### Scheduler Service
+
+The scheduler runs `run_daily` automatically once per day. Launch it directly:
+
+```bash
+python -m trading_platform.scheduler
+```
+
+Use the web interface to start or stop the scheduler at any time.
 ## Planning Documents
 
 Design notes are tracked in `design/plans/` using sequential IDs (e.g. `P001.md`).

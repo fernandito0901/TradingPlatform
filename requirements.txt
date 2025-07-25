@@ -9,3 +9,5 @@ arch
 pytest-asyncio
 websockets
 plotly
+flask
+APScheduler

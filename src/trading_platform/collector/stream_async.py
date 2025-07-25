@@ -8,9 +8,15 @@ import logging
 import websockets
 
 from .api_async import API_KEY, WS_URL, REALTIME_WS_URL
+from .alerts import AlertAggregator
 
 
-async def stream_quotes(symbols: str = "AAPL", realtime: bool = False) -> None:
+async def stream_quotes(
+    symbols: str = "AAPL",
+    realtime: bool = False,
+    alert_agg: AlertAggregator | None = None,
+    trade_threshold: int = 10000,
+) -> None:
     """Stream trades and quotes via Polygon's WebSocket asynchronously.
 
     Parameters
@@ -58,3 +64,8 @@ async def stream_quotes(symbols: str = "AAPL", realtime: bool = False) -> None:
                         "Subscription unauthorized; check your plan permissions"
                     )
                     return
+                if evt.get("ev") == "T":
+                    size = evt.get("s") or evt.get("size") or evt.get("v")
+                    sym = evt.get("sym") or evt.get("symbol")
+                    if alert_agg and size and size >= trade_threshold:
+                        alert_agg.add_trade(sym, int(size))

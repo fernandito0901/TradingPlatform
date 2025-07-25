@@ -21,10 +21,17 @@ dependencies = [
     "pytest-asyncio",
     "websockets",
     "plotly",
+    "flask",
+    "APScheduler",
 ]
 
 [project.scripts]
 collect-data = "trading_platform.collector.main:main"
+simulate = "trading_platform.simulate:main"
+broker = "trading_platform.broker:main"
+webapp = "trading_platform.webapp:main"
+portfolio = "trading_platform.portfolio:main"
+scheduler = "trading_platform.scheduler:main"
 
 [tool.setuptools.packages.find]
 where = ["src", ""]

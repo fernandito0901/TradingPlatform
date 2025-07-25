@@ -127,8 +127,15 @@ async def fetch_option_chain(session: aiohttp.ClientSession, conn, symbol: str) 
     conn.commit()
 
 
+from .alerts import AlertAggregator
+
+
 async def fetch_news(
-    session: aiohttp.ClientSession, conn, symbol: str, limit: int = 5
+    session: aiohttp.ClientSession,
+    conn,
+    symbol: str,
+    limit: int = 5,
+    aggregator: AlertAggregator | None = None,
 ) -> None:
     logging.info("Fetching news for %s", symbol)
     url = "https://newsapi.org/v2/everything"
@@ -153,13 +160,19 @@ async def fetch_news(
                 art.get("source", {}).get("name"),
             ),
         )
+        if aggregator:
+            aggregator.add_news(art.get("title", ""), art.get("url", ""))
     conn.commit()
 
 
-async def fetch_all(conn, symbol: str) -> None:
+async def fetch_all(
+    conn,
+    symbol: str,
+    aggregator: AlertAggregator | None = None,
+) -> None:
     async with aiohttp.ClientSession() as session:
         await asyncio.gather(
             fetch_ohlcv(session, conn, symbol),
             fetch_option_chain(session, conn, symbol),
-            fetch_news(session, conn, symbol),
+            fetch_news(session, conn, symbol, aggregator=aggregator),
         )

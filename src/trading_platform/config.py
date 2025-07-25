@@ -9,6 +9,22 @@ import os
 from .load_env import load_env
 
 
+def _parse_risk(value: str | None) -> dict[str, float] | None:
+    """Parse a comma-separated risk string into a dictionary."""
+    if not value:
+        return None
+    result: dict[str, float] = {}
+    for pair in value.split(","):
+        if "=" not in pair:
+            continue
+        name, val = pair.split("=", 1)
+        try:
+            result[name.strip()] = float(val)
+        except ValueError:
+            continue
+    return result
+
+
 @dataclass
 class Config:
     """Runtime configuration options."""
@@ -21,6 +37,7 @@ class Config:
     polygon_api_key: str | None = None
     news_api_key: str | None = None
     slack_webhook_url: str | None = None
+    max_risk: dict[str, float] | None = None
 
 
 def load_config(
@@ -41,6 +58,7 @@ def load_config(
     )
     parser.add_argument("--log-file", default=os.getenv("LOG_FILE"))
     parser.add_argument("--log-level", default=os.getenv("LOG_LEVEL", "INFO"))
+    parser.add_argument("--max-risk", default=os.getenv("MAX_RISK"))
     args, _ = parser.parse_known_args(argv)
 
     return Config(
@@ -52,4 +70,5 @@ def load_config(
         polygon_api_key=os.getenv("POLYGON_API_KEY"),
         news_api_key=os.getenv("NEWS_API_KEY"),
         slack_webhook_url=os.getenv("SLACK_WEBHOOK_URL"),
+        max_risk=_parse_risk(args.max_risk),
     )
