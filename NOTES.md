@@ -71,7 +71,7 @@
 - 2025-07-24 05:22 UTC: Verified Docker packaging commit; installed project in editable mode and ensured `black --check`, `flake8`, and `pytest -q` all pass with 19 tests.
 - 2025-07-24 05:23 UTC: Implemented `check_plan_headers.py` and accompanying tests, completing task T42.
 - 2025-07-24 07:05 UTC: Installed dependencies and ran full test suite; `black --check`, `flake8`, and `pytest -q` all passed with 29 tests.
-
+- 
 ### 2025-08-27 – @Tester
 - Verified webapp and portfolio tests pass after installing dependencies.
 - Marked tasks T72 and T76 completed.
@@ -102,15 +102,11 @@
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
-
-
 - 2025-08-13 00:10 UTC: Implemented backfill utility and data quality report with tests.
 - 2025-08-13 00:15 UTC: Marked tasks T23 and T32 complete in TASKS.md.
 - 2025-08-15 00:20 UTC: Drafted plan P002 outlining tasks T47-T50 for async API, cross-validation, feature dashboard and env loader.
 - 2025-08-15 02:00 UTC: Added plan P003 with tasks T51-T53 for async streaming, trade scoreboard and unified config.
-
 - 2025-08-17 01:00 UTC: Reviewed feature dashboard, async modules, and scoreboard integration; all tests pass.
-
 - 2025-08-18 03:00 UTC: Created P007 with plan for options strategy execution and updated PLAN_INDEX. Tasks T57-T64 outline next steps.
 - 2025-08-19 00:10 UTC: Drafted plan P008 covering dashboard and alerting; added tasks T65-T66.
 - 2025-08-20 00:30 UTC: Implemented alert aggregator and real-time trade/news alerts. Marked T59 and T64 complete.

@@ -9,6 +9,7 @@ def update_scoreboard(
     auc: float,
     pnl: float | None = None,
     out_file: str = "reports/scoreboard.csv",
+
 ) -> str:
     """Append a new entry to the scoreboard CSV.
 
