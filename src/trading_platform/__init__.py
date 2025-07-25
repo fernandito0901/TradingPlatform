@@ -3,6 +3,7 @@
 from .load_env import load_env
 from .config import Config, load_config
 from . import broker, simulate, strategies, portfolio
+from . import risk_report
 
 
 def __getattr__(name: str):
@@ -22,4 +23,5 @@ __all__ = [
     "broker",
     "portfolio",
     "scheduler",
+    "risk_report",
 ]

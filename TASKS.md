@@ -3,7 +3,14 @@
 
 ## Upcoming Strategy Features
 
+ - [T85] Document risk workflow · Acceptance: README explains risk_report usage and risk limits. · Assigned to Reviewer
+ - [T86] Risk report tests · Acceptance: pytest covers risk calculations and dashboard output. · Assigned to Tester
+ - [T88] Position evaluator engine · Acceptance: open positions monitored and exit signals computed. · Assigned to Coder
+ - [T90] Exit simulation algorithm · Acceptance: simulator records hypothetical exits and updates PnL. · Assigned to Modeler
+ - [T92] Document real-time monitoring · Acceptance: README explains live evaluation and alert workflow. · Assigned to Reviewer
 # Completed Tasks
+- [T87] Real-time streaming for portfolio symbols · Acceptance: quotes for held symbols update every minute and log to database. · Completed by DataCollector on 2025-09-04
+- [T91] Real-time alert notifications · Acceptance: user notified via Slack when entry or exit triggers occur. · Completed by DataCollector on 2025-09-04
 - [T72] Webapp tests · Acceptance: pytest covers new routes and setup flow · Completed by Tester on 2025-08-27
 - [T76] Portfolio tests · Acceptance: pytest validates trade recording and PnL calculations · Completed by Tester on 2025-08-27
 - [T77] Scheduler architecture plan · Acceptance: design doc P011 outlines scheduler and compose setup · Completed by Planner on 2025-08-31
@@ -78,3 +85,7 @@
 - [T79] Webapp scheduler controls · Acceptance: users can toggle schedule via the web UI · Completed by Coder on 2025-09-02
 - [T80] Deployment docs · Acceptance: README explains docker-compose and scheduler · Completed by Coder on 2025-09-02
 - [T81] Scheduler tests · Acceptance: pytest verifies scheduled runs execute `run_daily` · Completed by Coder on 2025-09-02
+- [T83] Risk report CLI · Acceptance: `risk_report.py` outputs Sharpe and max drawdown per day from scoreboard · Completed by Coder on 2025-09-03
+- [T82] Risk metrics design · Acceptance: plan P012 defines Sharpe and drawdown formulas and scoreboard schema changes · Completed by Planner on 2025-09-03
+- [T84] Risk dashboard integration · Acceptance: dashboard and web UI display Sharpe and drawdown columns. · Completed by Synthesizer on 2025-09-03
+- [T89] Automatic trade saving · Acceptance: executed trades persist to portfolio.csv without manual calls. · Completed by Synthesizer on 2025-09-03
