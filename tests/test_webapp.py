@@ -47,3 +47,18 @@ def test_scheduler_controls(tmp_path, monkeypatch):
     client.post("/stop_scheduler")
     resp = client.get("/")
     assert b"Start Scheduler" in resp.data
+
+
+def test_scoreboard_with_risk_columns(tmp_path, monkeypatch):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=abc\n")
+    csv = tmp_path / "scoreboard.csv"
+    csv.write_text(
+        "date,playbook,auc,pnl\n2025-01-01,p1,0.7,1\n2025-01-02,p2,0.8,-0.5\n"
+    )
+    app = create_app(env_path=env)
+    app.static_folder = str(tmp_path)
+    client = app.test_client()
+    resp = client.get("/")
+    assert b"sharpe" in resp.data
+    assert b"max_drawdown" in resp.data

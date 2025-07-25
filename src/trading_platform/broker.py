@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from . import portfolio
+
 
 def place_order(
     symbol: str,
@@ -14,6 +16,9 @@ def place_order(
     qty: float,
     price: float,
     out_file: str = "reports/orders.csv",
+    *,
+    portfolio_file: str = portfolio.PORTFOLIO_FILE,
+    strategy: str = "manual",
 ) -> str:
     """Record a simulated trade in ``out_file``.
 
@@ -29,6 +34,10 @@ def place_order(
         Execution price.
     out_file : str, optional
         Destination CSV to append the order, by default ``"reports/orders.csv"``.
+    portfolio_file : str, optional
+        Portfolio CSV updated automatically with this trade.
+    strategy : str, optional
+        Strategy name recorded in the portfolio file.
 
     Returns
     -------
@@ -51,6 +60,16 @@ def place_order(
     else:
         cur = df
     cur.to_csv(path, index=False)
+
+    qty_signed = qty if side.upper() == "BUY" else -qty
+    portfolio.record_trade(
+        symbol,
+        strategy,
+        qty_signed,
+        price,
+        portfolio_file=portfolio_file,
+    )
+
     return str(path)
 
 
@@ -64,8 +83,18 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("qty", type=float)
     parser.add_argument("price", type=float)
     parser.add_argument("--out-file", default="reports/orders.csv")
+    parser.add_argument("--portfolio-file", default=portfolio.PORTFOLIO_FILE)
+    parser.add_argument("--strategy", default="manual")
     args = parser.parse_args(argv)
-    place_order(args.symbol, args.side, args.qty, args.price, args.out_file)
+    place_order(
+        args.symbol,
+        args.side,
+        args.qty,
+        args.price,
+        args.out_file,
+        portfolio_file=args.portfolio_file,
+        strategy=args.strategy,
+    )
 
 
 if __name__ == "__main__":

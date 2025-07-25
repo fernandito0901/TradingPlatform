@@ -7,6 +7,7 @@ from pathlib import Path
 from threading import Thread
 
 from . import scheduler as scheduler_mod
+from . import risk_report
 
 import pandas as pd
 from flask import Flask, redirect, render_template_string, request, url_for
@@ -95,10 +96,14 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     def scoreboard_html() -> str:
         csv = Path(app.static_folder) / "scoreboard.csv"
-        if csv.exists():
-            df = pd.read_csv(csv)
-            return df.to_html(index=False)
-        return "<p>No results yet</p>"
+        if not csv.exists():
+            return "<p>No results yet</p>"
+
+        df = pd.read_csv(csv)
+        if "pnl" in df.columns:
+            metrics = risk_report.risk_metrics(str(csv))
+            df = df.merge(metrics, on="date", how="left")
+        return df.to_html(index=False)
 
     @app.route("/", methods=["GET", "POST"])
     def index():

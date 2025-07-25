@@ -32,6 +32,8 @@ broker = "trading_platform.broker:main"
 webapp = "trading_platform.webapp:main"
 portfolio = "trading_platform.portfolio:main"
 scheduler = "trading_platform.scheduler:main"
+risk-report = "trading_platform.risk_report:main"
+portfolio-stream = "trading_platform.collector.portfolio_stream:main"
 
 [tool.setuptools.packages.find]
 where = ["src", ""]

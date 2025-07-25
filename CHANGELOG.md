@@ -164,3 +164,19 @@
 - Webapp can start and stop the scheduler from the browser.
 - Added scheduler documentation and CLI usage section.
 - Scheduler tests ensure `run_daily` executes on schedule.
+- Review complete; merged scheduler features and docs.
+
+## 2025-09-03
+- Added plan P012 for portfolio risk metrics and created tasks T82-T86.
+- Added `risk_report` CLI for Sharpe and drawdown metrics.
+- Added file existence validation and extra test for `risk_report`.
+- Expanded plan P012 with risk formulas and scoreboard notes; detailed real-time plan P013 and closed T82.
+- Webapp now displays Sharpe ratio and max drawdown on the scoreboard.
+- Broker orders automatically update `portfolio.csv`.
+
+## 2025-09-04
+- Added `portfolio_stream` module streaming quotes for open positions into the database.
+- Alert aggregator now handles position entry and exit messages.
+- New CLI `portfolio-stream` starts real-time streaming based on `portfolio.csv`.
+- Tasks T87 and T91 completed.
+- Review complete; confirmed risk dashboard and trade streaming features.

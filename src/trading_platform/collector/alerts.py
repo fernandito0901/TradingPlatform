@@ -23,6 +23,10 @@ class AlertAggregator:
         """Record a news headline alert."""
         self._messages.append(f"News: {title} {url}")
 
+    def add_position(self, symbol: str, action: str, price: float) -> None:
+        """Record an entry or exit alert."""
+        self._messages.append(f"{action} {symbol} at {price}")
+
     def flush(self) -> None:
         """Send all queued alerts via Slack and clear the queue."""
         if not self._messages:
@@ -30,3 +34,10 @@ class AlertAggregator:
         message = "\n".join(self._messages)
         notifier.send_slack(message, webhook_url=self.webhook_url)
         self._messages.clear()
+
+
+def notify_position(
+    symbol: str, action: str, price: float, webhook_url: str | None = None
+) -> None:
+    """Immediately send a Slack alert for an entry or exit event."""
+    notifier.send_slack(f"{action} {symbol} at {price}", webhook_url=webhook_url)

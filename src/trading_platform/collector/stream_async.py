@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import inspect
 
 import websockets
 
@@ -16,6 +17,7 @@ async def stream_quotes(
     realtime: bool = False,
     alert_agg: AlertAggregator | None = None,
     trade_threshold: int = 10000,
+    on_event: callable | None = None,
 ) -> None:
     """Stream trades and quotes via Polygon's WebSocket asynchronously.
 
@@ -69,3 +71,8 @@ async def stream_quotes(
                     sym = evt.get("sym") or evt.get("symbol")
                     if alert_agg and size and size >= trade_threshold:
                         alert_agg.add_trade(sym, int(size))
+                if on_event:
+                    if inspect.iscoroutinefunction(on_event):
+                        await on_event(evt)
+                    else:
+                        on_event(evt)
