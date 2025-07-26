@@ -1,4 +1,3 @@
-
 """Report generation utilities and constants."""
 
 from pathlib import Path

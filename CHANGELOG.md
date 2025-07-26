@@ -356,3 +356,9 @@
 - Reports directory configurable via `REPORTS_DIR`
 - Docker image creates writable `/app/data/reports`
 - New `smoke-features` tox env and CI job
+
+## 2025-10-06
+- Docker image now copies the `features/` directory so the scheduler can load
+  custom pipelines
+- `trading_platform.features` lazily loads `features_pipeline` or falls back to
+  a no-op implementation

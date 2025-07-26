@@ -7,6 +7,7 @@ FROM base AS builder
 COPY requirements.txt ./
 COPY pyproject.toml ./
 COPY src ./src
+COPY features ./features
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir -e . && \
     python -c "import trading_platform.reports.scoreboard"
@@ -16,6 +17,7 @@ ARG APP_USER=appuser
 RUN useradd -u 1001 -r -s /bin/false $APP_USER
 COPY --from=builder /usr/local /usr/local
 COPY src ./src
+COPY features ./features
 COPY requirements.txt ./
 COPY pyproject.toml ./
 COPY scripts ./scripts

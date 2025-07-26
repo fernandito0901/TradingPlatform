@@ -36,6 +36,12 @@ model training packages are located at the repository root under `features/` and
 compatibility.
 Report generators live in `src/trading_platform/reports`.
 
+### Features
+
+Custom feature logic can live in a `features_pipeline.py` file placed next to
+the package. If missing, a no-op pipeline runs instead so the scheduler starts
+without errors.
+
 ## Configuration
 
 The collector relies on a few environment variables and optional command‑line
