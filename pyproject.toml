@@ -22,6 +22,7 @@ dependencies = [
     "websockets",
     "plotly",
     "flask",
+    "flask-socketio",
     "APScheduler",
 ]
 

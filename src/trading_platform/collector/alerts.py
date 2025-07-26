@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import List, Optional
 
 from .. import notifier
+
+
+ALERT_LOG = "reports/alerts.log"
 
 
 class AlertAggregator:
@@ -27,12 +31,19 @@ class AlertAggregator:
         """Record an entry or exit alert."""
         self._messages.append(f"{action} {symbol} at {price}")
 
+    def _write_log(self, message: str) -> None:
+        Path(ALERT_LOG).parent.mkdir(parents=True, exist_ok=True)
+        with open(ALERT_LOG, "a") as f:
+            f.write(message + "\n")
+
     def flush(self) -> None:
         """Send all queued alerts via Slack and clear the queue."""
         if not self._messages:
             return
-        message = "\n".join(self._messages)
+        lines = ["Alerts:"] + [f"- {m}" for m in self._messages]
+        message = "\n".join(lines)
         notifier.send_slack(message, webhook_url=self.webhook_url)
+        self._write_log(message)
         self._messages.clear()
 
 
@@ -40,4 +51,8 @@ def notify_position(
     symbol: str, action: str, price: float, webhook_url: str | None = None
 ) -> None:
     """Immediately send a Slack alert for an entry or exit event."""
-    notifier.send_slack(f"{action} {symbol} at {price}", webhook_url=webhook_url)
+    msg = f"{action} {symbol} at {price}"
+    notifier.send_slack(msg, webhook_url=webhook_url)
+    Path(ALERT_LOG).parent.mkdir(parents=True, exist_ok=True)
+    with open(ALERT_LOG, "a") as f:
+        f.write(msg + "\n")

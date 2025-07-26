@@ -46,6 +46,8 @@ def test_generate_playbook(tmp_path):
     prob_up = model.predict(df[feature_cols])
     momentum = (df["close"] - df["sma20"]) / df["sma20"]
     expected = df.copy()
+    expected["prob_up"] = prob_up
+    expected["momentum"] = momentum
     expected["score"] = (
         2.5 * prob_up
         + 1.5 * momentum
@@ -54,7 +56,18 @@ def test_generate_playbook(tmp_path):
         + df["uoa"]
         - df["garch_spike"]
     )
-    expected_top = expected.nlargest(5, "score")[["t", "score"]]
+    expected_top = expected.nlargest(5, "score")[
+        [
+            "t",
+            "score",
+            "prob_up",
+            "momentum",
+            "news_sent",
+            "iv_edge",
+            "uoa",
+            "garch_spike",
+        ]
+    ]
 
     pb = json.loads(Path(path).read_text())
     assert pb["date"]
@@ -96,6 +109,11 @@ def test_generate_playbook_missing_columns(tmp_path):
     prob_up = model.predict(filled[feature_cols])
     momentum = (filled["close"] - filled["sma20"]) / filled["sma20"]
     expected = filled.copy()
+    expected["prob_up"] = prob_up
+    expected["momentum"] = momentum
+    expected["news_sent"] = filled.get("news_sent", 0)
+    expected["uoa"] = filled.get("uoa", 0)
+    expected["garch_spike"] = filled.get("garch_spike", 0)
     expected["score"] = (
         2.5 * prob_up
         + 1.5 * momentum
@@ -104,7 +122,18 @@ def test_generate_playbook_missing_columns(tmp_path):
         + filled.get("uoa", 0)
         - filled.get("garch_spike", 0)
     )
-    expected_top = expected.nlargest(5, "score")[["t", "score"]]
+    expected_top = expected.nlargest(5, "score")[
+        [
+            "t",
+            "score",
+            "prob_up",
+            "momentum",
+            "news_sent",
+            "iv_edge",
+            "uoa",
+            "garch_spike",
+        ]
+    ]
 
     pb = json.loads(Path(path).read_text())
     assert pb["trades"] == expected_top.to_dict(orient="records")

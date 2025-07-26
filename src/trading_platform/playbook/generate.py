@@ -46,6 +46,12 @@ def generate_playbook(
     df["score"] = (
         2.5 * prob_up + 1.5 * momentum + news_sent + iv_edge + uoa - garch_spike
     )
+    df["prob_up"] = prob_up
+    df["momentum"] = momentum
+    df["news_sent"] = news_sent
+    df["iv_edge"] = iv_edge
+    df["uoa"] = uoa
+    df["garch_spike"] = garch_spike
     top = df.nlargest(5, "score")
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -53,7 +59,18 @@ def generate_playbook(
     path = Path(out_dir) / f"{date}.json"
     payload = {
         "date": date,
-        "trades": top[["t", "score"]].to_dict(orient="records"),
+        "trades": top[
+            [
+                "t",
+                "score",
+                "prob_up",
+                "momentum",
+                "news_sent",
+                "iv_edge",
+                "uoa",
+                "garch_spike",
+            ]
+        ].to_dict(orient="records"),
     }
     with open(path, "w") as f:
         json.dump(payload, f, indent=2)

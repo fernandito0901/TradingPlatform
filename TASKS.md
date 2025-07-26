@@ -1,7 +1,8 @@
 # Open Tasks
 # (All tasks should have unique IDs in ascending order)
 
-## Upcoming Strategy Features
+- [T99] Document dashboard usage · Acceptance: README screenshots and description.
+- [T100] Review UI redesign · Acceptance: Reviewer approves new interface documentation.
 
 - [T85] Document risk workflow · Acceptance: README explains risk_report usage and risk limits. · Completed by Reviewer on 2025-09-05
 - [T88] Position evaluator engine · Acceptance: open positions monitored and exit signals computed. · Completed by Coder on 2025-09-05
@@ -14,6 +15,9 @@
 - [T86] Risk report tests · Acceptance: pytest covers risk calculations and dashboard output. · Completed by Tester on 2025-09-05
 - [T87] Real-time streaming for portfolio symbols · Acceptance: quotes for held symbols update every minute and log to database. · Completed by DataCollector on 2025-09-04
 - [T91] Real-time alert notifications · Acceptance: user notified via Slack when entry or exit triggers occur. · Completed by DataCollector on 2025-09-04
+- [T96] Modern dashboard design · Acceptance: plan P015 outlines new layout and API routes. · Completed by Planner on 2025-09-10
+- [T97] Implement watchlist and alert streaming · Acceptance: webapp shows watchlist, toasts, and auto-loaded files. · Completed by Coder on 2025-09-10
+- [T98] Update webapp tests for new endpoints · Acceptance: pytest covers watchlist and alerts API. · Completed by Tester on 2025-09-10
 - [T72] Webapp tests · Acceptance: pytest covers new routes and setup flow · Completed by Tester on 2025-08-27
 - [T76] Portfolio tests · Acceptance: pytest validates trade recording and PnL calculations · Completed by Tester on 2025-08-27
 - [T77] Scheduler architecture plan · Acceptance: design doc P011 outlines scheduler and compose setup · Completed by Planner on 2025-08-31

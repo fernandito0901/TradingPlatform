@@ -204,3 +204,33 @@
 ## 2025-09-09
 - Training now uses all feature columns by default so new indicators are picked
   up automatically. Updated schemas and README.
+
+## 2025-09-10
+- Training aborts early when the feature CSV has no rows, explaining that more
+  historical data is required.
+- Feature pipeline raises ``ValueError`` if fewer than sixty days of prices are
+  available.
+
+## 2025-09-11
+- ``run_daily`` now prints recommended trades after generating the playbook to
+  the console for quick review.
+
+## 2025-09-12
+- Slack alerts now include a formatted table of the day’s trade
+  recommendations with probability and momentum details.
+- AlertAggregator messages are grouped with bullet points for easier reading.
+- Playbook JSON stores prediction components for each trade.
+
+## 2025-09-13
+- Web dashboard redesigned with Bootstrap and SocketIO for live trade updates.
+- Dashboard auto-loads playbooks, news and portfolio data from local files.
+- Charts display feature importance, backtest results and equity curve.
+
+## 2025-09-14
+- Dashboard shows watchlist and market overview panels.
+- Toast notifications display recent alerts from `reports/alerts.log`.
+- Forms for simulation and feature dashboard auto-select the latest features CSV.
+
+## 2025-09-15
+- Daily pipeline broadcasts recommended trades via WebSocket so the dashboard
+  updates instantly while the run completes.

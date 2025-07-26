@@ -75,6 +75,10 @@
   playbook generation never fails LightGBM shape checks.
 - 2025-09-09 00:10 UTC: Training now auto-detects feature columns so models work
   with any pipeline output.
+- 2025-09-11 00:10 UTC: `run_daily` prints recommended trades after playbook
+  generation for easier review.
+- 2025-09-12 00:10 UTC: Slack alerts now include a table of trade
+  recommendations and AlertAggregator uses bullet formatting.
 
 # Tester
 - 2025-07-23 00:28 UTC: Created pytest tests for API functions and verified they pass.
@@ -105,6 +109,8 @@
 - 2025-08-11 00:00 UTC: Implemented UOA, IV edge and garch spike features; marked T29 and T30 complete.
 - 2025-08-17 00:00 UTC: Added 5-fold cross-validation training and trade scoreboard. Marked T48 and T52 complete.
 - 2025-09-05 00:30 UTC: Implemented exit simulation algorithm updating unrealized PnL. Closed T90.
+- 2025-09-10 00:15 UTC: Added checks for empty feature data so training fails early if insufficient history.
+
 
 # Synthesizer
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
@@ -125,6 +131,7 @@
 - 2025-09-04 01:30 UTC: Reviewed risk dashboard and portfolio streaming features; all tests pass.
 - 2025-09-05 00:45 UTC: Documented risk workflow, real-time monitoring and evaluator usage in README; closed T85, T92 and T95.
 - 2025-09-06 00:10 UTC: Fixed package import recursion by lazy-loading scheduler and evaluator modules.
+- 2025-09-10 00:20 UTC: Documented minimum data requirements and updated changelog.
 
 # DataCollector
  - 2025-07-30 00:00 UTC: Stored NewsAPI headlines under `data/2025-07-30/news.csv`; schema matches `news` table.
@@ -138,3 +145,13 @@
 - 2025-08-20 00:30 UTC: Implemented alert aggregator and real-time trade/news alerts. Marked T59 and T64 complete.
 - 2025-09-04 00:10 UTC: Added portfolio streaming service and Slack alerts for entry/exit signals. Closed T87 and T91.
 
+### 2025-09-10 – @Planner
+- Planned modern dashboard interface (P015) and opened tasks T96-T100.
+### 2025-09-10 – @Coder
+- Added watchlist, market overview, and toast alerts to webapp.
+### 2025-09-10 – @Tester
+- Extended alert tests to verify log file writing.
+
+### 2025-09-15 – @Coder
+- Broadcast trade events via SocketIO when the daily pipeline completes and
+  updated tests for the new behavior.

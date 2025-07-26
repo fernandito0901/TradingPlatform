@@ -32,6 +32,8 @@ def train(
         the mean cross-validation AUC.
     """
     df = pd.read_csv(features_csv)
+    if df.empty:
+        raise ValueError("no feature rows available")
     if feature_cols is None:
         feature_cols = [c for c in df.columns if c not in {"t", "target"}]
     X = df[feature_cols]
