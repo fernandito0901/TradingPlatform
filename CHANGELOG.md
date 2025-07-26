@@ -5,6 +5,7 @@
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
 
+
 ## 2025-10-03
 - Docs linting job added to CI
 - Architecture diagram embedded in README
