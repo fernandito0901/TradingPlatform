@@ -249,6 +249,7 @@ news headlines and portfolio data. A real-time trade feed updates via WebSocket
  charts show feature importance, backtest results and the equity curve from
  `reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
  overview panel displays the most recent close for each symbol. Toast notifications now deduplicate messages and include *Clear All* / *Mark All as Read* buttons. A dark mode toggle changes the page theme. Trade recommendations refresh live with progress bars for POP and metrics cards show the model version. Scheduler controls remain available and recent results from `reports/scoreboard.csv` are displayed in a table. See `docs/ui_overview.md` for a visual guide to the layout.
+
 ### Strategy Workflow
 
 Use the strategy helpers and dashboard generator to evaluate trades:

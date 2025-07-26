@@ -175,3 +175,7 @@
 - Added lazy loading for equity curve and sortable trades table.
 ### 2025-09-21 – @Synthesizer
 - Documented dashboard layout in `docs/ui_overview.md`.
+
+### 2025-09-22 – @Coder
+- Updated Dockerfile to install `libgomp1` so LightGBM loads correctly in
+  containers.

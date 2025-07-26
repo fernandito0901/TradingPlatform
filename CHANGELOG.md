@@ -262,3 +262,6 @@
 - Equity curve chart loads lazily and refreshes every 10 minutes.
 - Added `docs/ui_overview.md` and updated README with dashboard overview link.
 
+## 2025-09-22
+- Docker image installs `libgomp1` so LightGBM runs without missing library
+  errors.
