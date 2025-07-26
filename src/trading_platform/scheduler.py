@@ -45,10 +45,10 @@ def start(
     """
     sched = BackgroundScheduler()
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
-    if socketio is not None:
+    if socketio is not None and getattr(socketio, "server", None) is not None:
         sched.add_job(lambda: socketio.emit("scheduler-alive"), "interval", seconds=60)
     sched.start()
-    if socketio is not None:
+    if socketio is not None and getattr(socketio, "server", None) is not None:
         socketio.emit("scheduler-alive")
     return sched
 

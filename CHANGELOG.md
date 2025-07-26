@@ -362,3 +362,11 @@
   custom pipelines
 - `trading_platform.features` lazily loads `features_pipeline` or falls back to
   a no-op implementation
+
+## 2025-10-07
+- Added models package, fixed scheduler boot & DB fallback for overview endpoint.
+
+## 2025-10-08
+- Bootstrapped demo CSV data and created helper DB bootstrap
+- Dashboard now shows "No data yet" when empty
+- Smoke test checks `/api/news`

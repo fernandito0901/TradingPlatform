@@ -34,6 +34,7 @@ model training packages are located at the repository root under `features/` and
 `models/`. Wrapper modules under `src/trading_platform/features` and
 `src/trading_platform/models` re-export these packages for backward
 compatibility.
+Models—drop your real training code into `trading_platform/models/train.py`. CI only ships a stub.
 Report generators live in `src/trading_platform/reports`.
 
 ### Features
@@ -409,6 +410,14 @@ make docker-smoke
 ```
 
 View logs afterward with `docker logs trading-test`.
+
+### Quick-start demo
+
+A few CSV files are shipped under `trading_platform/reports/demo/`:
+`news.csv`, `pnl.csv`, `trades.csv`, and `scoreboard.csv`.
+The web app copies these into `reports/` on first launch so the dashboard has
+sample content. Real data will replace them after the scheduler completes a
+pipeline run.
 
 
 ### Scheduler Service

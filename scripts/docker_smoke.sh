@@ -52,3 +52,4 @@ if [ $ready -ne 1 ]; then
 fi
 
 docker exec $CONTAINER python -m trading_platform.run_daily --verify-only
+curl -fs http://localhost:5000/api/news >/dev/null
