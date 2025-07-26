@@ -39,7 +39,8 @@ trap cleanup EXIT
 
 ready=0
 for i in {1..30}; do
-  if curl -fs http://localhost:5000/api/metrics | grep -q '"status":"ready"'; then
+  status=$(curl -fs http://localhost:5000/api/metrics | jq -r '.status') || true
+  if [ "$status" = "ok" ] || [ "$status" = "empty" ]; then
     ready=1
     break
   fi

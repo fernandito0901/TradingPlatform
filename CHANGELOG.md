@@ -2,6 +2,9 @@
 ## Unreleased
 - Scheduler retries Socket.IO connection with backoff and logs `scheduler_heartbeat`
 - Added `/api/heartbeat` endpoint for health checks
+- `seed_demo.py` now populates demo news and PnL on first run
+- `/api/metrics` returns Sharpe, Sortino and equity curve
+
 
 ## 2025-10-03
 - Docs linting job added to CI

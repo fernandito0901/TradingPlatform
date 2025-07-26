@@ -751,17 +751,22 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/metrics")
     def api_metrics():
+        """Return Sharpe, Sortino and equity curve."""
         from .collector import pnl as pnl_mod
 
         try:
             df = pnl_mod.update_pnl(path=Path(app.static_folder) / "pnl.csv")
         except pnl_mod.NoData:
             return jsonify({"status": "empty"})
+
+        equity = df[["date", "equity", "daily_r"]].rename(columns={"daily_r": "pnl"})
+
         return jsonify(
             {
                 "status": "ok",
                 "sharpe": round(float(df["sharpe"].iloc[-1]), 2),
                 "sortino": round(float(df["sortino"].iloc[-1]), 2),
+                "equity": equity.to_dict(orient="records"),
             }
         )
 
