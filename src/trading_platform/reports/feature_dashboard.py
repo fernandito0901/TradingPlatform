@@ -3,10 +3,11 @@
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
+from . import REPORTS_DIR
 
 
 def generate_feature_dashboard(
-    csv_file: str, out_file: str = "reports/feature_dashboard.html"
+    csv_file: str, out_file: str = str(REPORTS_DIR / "feature_dashboard.html")
 ) -> str:
     """Create an interactive dashboard showing feature distributions.
 
@@ -15,7 +16,7 @@ def generate_feature_dashboard(
     csv_file : str
         Path to the features CSV file.
     out_file : str, optional
-        Destination HTML file, by default ``"reports/feature_dashboard.html"``.
+        Destination HTML file, by default ``REPORTS_DIR / 'feature_dashboard.html'``.
 
     Returns
     -------

@@ -11,11 +11,12 @@ fi
 
 if ! command -v docker >/dev/null; then
   echo "SKIPPED – Docker not available"
-  exit 99
+  exit 78
 fi
 
 export DOCKER_BUILDKIT=1
-CACHE_ARGS="--cache-from=type=gha --cache-to=type=gha,mode=max"
+SCOPE=${GITHUB_SHA:-local}
+CACHE_ARGS="--cache-from=type=gha,scope=$SCOPE --cache-to=type=gha,mode=max,scope=$SCOPE"
 
 docker build --target runtime $CACHE_ARGS -t trading-platform . --progress=plain
 

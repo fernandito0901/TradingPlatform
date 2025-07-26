@@ -1,0 +1,12 @@
+@startuml
+!define AWSPUML https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v14.0/Advanced/AWSCommon.puml
+left to right direction
+actor User
+package "Trading Platform" {
+  [Webapp] --> [Scheduler]
+  [Webapp] --> [Collector]
+  [Collector] --> [Database]
+  [Scheduler] --> [Database]
+}
+User --> [Webapp]
+@enduml

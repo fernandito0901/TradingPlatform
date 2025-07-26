@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from reports.scoreboard import update_scoreboard
+from trading_platform.reports.scoreboard import update_scoreboard
 from trading_platform import portfolio
+from trading_platform.reports import REPORTS_DIR
 
 
 STRATEGIES = ["buy_hold"]
@@ -15,7 +16,7 @@ def simulate(
     features_csv: str,
     strategy: str = "buy_hold",
     capital: float = 10_000.0,
-    out_file: str = "reports/scoreboard.csv",
+    out_file: str = str(REPORTS_DIR / "scoreboard.csv"),
     portfolio_file: str = portfolio.PORTFOLIO_FILE,
     pnl_file: str = portfolio.PNL_FILE,
     symbol: str | None = None,
@@ -31,7 +32,7 @@ def simulate(
     capital : float, optional
         Starting capital for the trade, by default ``10000``.
     out_file : str, optional
-        Scoreboard CSV path, by default ``"reports/scoreboard.csv"``.
+        Scoreboard CSV path, by default ``REPORTS_DIR / 'scoreboard.csv'``.
 
     Returns
     -------

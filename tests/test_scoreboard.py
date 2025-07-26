@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from reports.scoreboard import update_scoreboard
+from trading_platform.reports.scoreboard import update_scoreboard
 
 
 def test_update_scoreboard(tmp_path):

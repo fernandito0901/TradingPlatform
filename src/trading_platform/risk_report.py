@@ -1,6 +1,7 @@
 """Risk metrics reporting utilities."""
 
 from pathlib import Path
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 
@@ -11,7 +12,7 @@ def risk_metrics(scoreboard_csv: str) -> pd.DataFrame:
     Parameters
     ----------
     scoreboard_csv : str
-        CSV file produced by :func:`reports.scoreboard.update_scoreboard` and
+        CSV file produced by :func:`trading_platform.reports.scoreboard.update_scoreboard` and
         containing ``pnl`` values.
 
     Returns
@@ -50,7 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compute risk metrics")
     parser.add_argument(
         "--scoreboard",
-        default="reports/scoreboard.csv",
+        default=str(REPORTS_DIR / "scoreboard.csv"),
         help="Path to scoreboard CSV",
     )
     parser.add_argument(

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 
-PORTFOLIO_FILE = "reports/portfolio.csv"
-PNL_FILE = "reports/pnl.csv"
+PORTFOLIO_FILE = str(REPORTS_DIR / "portfolio.csv")
+PNL_FILE = str(REPORTS_DIR / "pnl.csv")
 
 
 def load_portfolio(path: str = PORTFOLIO_FILE) -> pd.DataFrame:

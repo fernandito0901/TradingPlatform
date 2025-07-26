@@ -1,4 +1,4 @@
-from reports.scoreboard import seed_scoreboard
+from trading_platform.reports.scoreboard import seed_scoreboard
 
 
 def main() -> None:

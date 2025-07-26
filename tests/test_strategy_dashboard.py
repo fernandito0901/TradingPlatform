@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from reports.strategy_dashboard import generate_strategy_dashboard
+from trading_platform.reports.strategy_dashboard import generate_strategy_dashboard
 from trading_platform import strategies
 
 
