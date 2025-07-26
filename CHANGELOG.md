@@ -362,3 +362,6 @@
   custom pipelines
 - `trading_platform.features` lazily loads `features_pipeline` or falls back to
   a no-op implementation
+
+## 2025-10-07
+- Added models package, fixed scheduler boot & DB fallback for overview endpoint.

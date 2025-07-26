@@ -41,6 +41,9 @@ jobs:
       - name: Features import
         if: matrix.target == 'tests'
         run: tox -e smoke-features
+      - name: Models import
+        if: matrix.target == 'tests'
+        run: tox -e smoke-models
   docker-smoke:
     runs-on: ubuntu-latest
     steps:
