@@ -1,9 +1,11 @@
 import pandas as pd
+import pytest
 from trading_platform.models import train
 from trading_platform import backtest
 
 
-def test_backtest(tmp_path):
+@pytest.mark.parametrize("days", [5, 10])
+def test_backtest(tmp_path, days):
     dates = pd.date_range("2025-01-01", periods=40)
     df = pd.DataFrame(
         {
@@ -19,6 +21,8 @@ def test_backtest(tmp_path):
     model_dir = tmp_path / "models"
     res = train(str(feat_csv), model_dir=str(model_dir), symbol="T")
     pnl = tmp_path / "pnl.csv"
-    path = backtest.backtest(str(feat_csv), res.model_path, days=5, out_file=str(pnl))
+    path = backtest.backtest(
+        str(feat_csv), res.model_path, days=days, out_file=str(pnl)
+    )
     out_df = pd.read_csv(path)
-    assert len(out_df) >= 5
+    assert len(out_df) >= days

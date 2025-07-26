@@ -29,4 +29,4 @@ def test_overview_empty(monkeypatch, tmp_path):
     conn.close()
     client = app.test_client()
     resp = client.get("/api/overview")
-    assert resp.json[0]["close"] == 100
+    assert resp.json == {"status": "empty"}
