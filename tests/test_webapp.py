@@ -1,5 +1,6 @@
 """Tests for Flask web interface."""
 
+from pathlib import Path
 from trading_platform.webapp import create_app
 
 
@@ -37,7 +38,7 @@ def test_scheduler_controls(tmp_path, monkeypatch):
 
         return Dummy()
 
-    monkeypatch.setattr("trading_platform.webapp.scheduler_mod.start", fake_start)
+    monkeypatch.setattr("trading_platform.scheduler.start", fake_start)
 
     client.post("/start_scheduler")
     assert started
@@ -62,3 +63,37 @@ def test_scoreboard_with_risk_columns(tmp_path, monkeypatch):
     resp = client.get("/")
     assert b"sharpe" in resp.data
     assert b"max_drawdown" in resp.data
+
+
+def test_api_watchlist_and_alerts(tmp_path, monkeypatch):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=abc\nSYMBOLS=AAPL,MSFT\n")
+    log = tmp_path / "alerts.log"
+    log.write_text("Alert one\nAlert two\n")
+    monkeypatch.setattr("trading_platform.collector.alerts.ALERT_LOG", str(log))
+    app = create_app(env_path=env)
+    client = app.test_client()
+
+    resp = client.get("/api/watchlist")
+    assert resp.json == ["AAPL", "MSFT"]
+
+    resp = client.get("/api/alerts")
+    assert resp.json[-1] == "Alert two"
+
+
+def test_api_scoreboard_and_pnl(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=abc\n")
+    app = create_app(env_path=env)
+    csv = Path(app.static_folder) / "scoreboard.csv"
+    pnl = Path("reports/pnl.csv")
+    pnl.parent.mkdir(parents=True, exist_ok=True)
+    csv.write_text("date,playbook,auc\n2025-01-01,p1,0.7\n")
+    pnl.write_text("date,symbol,unrealized,realized,total\n2025-01-01,A,0,0,0\n")
+    client = app.test_client()
+
+    resp = client.get("/api/scoreboard")
+    assert resp.json[0]["auc"] == 0.7
+
+    resp = client.get("/api/pnl")
+    assert resp.json[0]["symbol"] == "A"

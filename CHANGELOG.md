@@ -180,3 +180,84 @@
 - New CLI `portfolio-stream` starts real-time streaming based on `portfolio.csv`.
 - Tasks T87 and T91 completed.
 - Review complete; confirmed risk dashboard and trade streaming features.
+
+## 2025-09-05
+- Added exit simulation algorithm recording unrealized PnL for open positions.
+- Position evaluator engine and CLI implemented with accompanying tests.
+- Documented risk workflow, real-time monitoring and evaluator usage in README.
+
+## 2025-09-06
+- Fixed recursion error when importing :mod:`trading_platform.scheduler` and
+  enabled lazy loading for the new ``evaluator`` module.
+- Webapp now listens on ``0.0.0.0`` so the UI is reachable outside the
+  container. Host and port can be overridden with ``WEBAPP_HOST`` and
+  ``WEBAPP_PORT``.
+
+## 2025-09-07
+- Playbook generator now reads feature names from the trained model, avoiding
+  LightGBM shape mismatch errors during prediction.
+
+## 2025-09-08
+- Missing model features are padded with zeros when generating playbooks so
+  LightGBM predictions work even if some columns are absent.
+
+## 2025-09-09
+- Training now uses all feature columns by default so new indicators are picked
+  up automatically. Updated schemas and README.
+
+## 2025-09-10
+- Training aborts early when the feature CSV has no rows, explaining that more
+  historical data is required.
+- Feature pipeline raises ``ValueError`` if fewer than sixty days of prices are
+  available.
+
+## 2025-09-11
+- ``run_daily`` now prints recommended trades after generating the playbook to
+  the console for quick review.
+
+## 2025-09-12
+- Slack alerts now include a formatted table of the day’s trade
+  recommendations with probability and momentum details.
+- AlertAggregator messages are grouped with bullet points for easier reading.
+- Playbook JSON stores prediction components for each trade.
+
+## 2025-09-13
+- Web dashboard redesigned with Bootstrap and SocketIO for live trade updates.
+- Dashboard auto-loads playbooks, news and portfolio data from local files.
+- Charts display feature importance, backtest results and equity curve.
+
+## 2025-09-14
+- Dashboard shows watchlist and market overview panels.
+- Toast notifications display recent alerts from `reports/alerts.log`.
+- Forms for simulation and feature dashboard auto-select the latest features CSV.
+
+## 2025-09-15
+- Daily pipeline broadcasts recommended trades via WebSocket so the dashboard
+  updates instantly while the run completes.
+
+## 2025-09-16
+- Web interface now passes `allow_unsafe_werkzeug=True` so the Flask server runs
+  inside Docker without errors.
+
+## 2025-09-17
+- Dashboard styling refreshed with Google "Inter" font and dark mode toggle.
+- Alerts are deduplicated and include Clear/Mark buttons.
+- Recommended trades now show probability bars and auto-refresh via AJAX.
+- Scoreboard CSV is created on startup to avoid 404 errors.
+
+## 2025-09-18
+- News feed deduplicates headlines per session with Clear/Mark controls.
+- Placeholder report files prevent 404 errors for dashboards.
+
+## 2025-09-19
+- Added planning doc P016 for delayed Polygon feed and opened tasks T101-T105.
+
+## 2025-09-20
+- Added `backtest` CLI and updated `scripts/run_backtest.py` to use the latest
+  model and features.
+
+## 2025-09-21
+- Polished dashboard layout with Bootstrap grid and Font Awesome icons.
+- Sections collapse when empty and news/alert toasts are deduplicated.
+- Equity curve chart loads lazily and refreshes every 10 minutes.
+- Added `docs/ui_overview.md` and updated README with dashboard overview link.

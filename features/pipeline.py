@@ -60,7 +60,10 @@ def compute_features(
     df["garch_spike"] = (df["garch_sigma"] > df["hv30"] * 1.5).astype(float)
     df["uoa"] = uoa
     df["target"] = (df["close"].shift(-1) > df["close"]).astype(int)
-    return df.dropna()
+    df = df.dropna()
+    if df.empty:
+        raise ValueError("not enough data for features")
+    return df
 
 
 def from_db(conn, symbol: str) -> pd.DataFrame:
@@ -135,4 +138,6 @@ def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
     os.makedirs(path, exist_ok=True)
     csv_path = os.path.join(path, "features.csv")
     df.to_csv(csv_path, index=False)
+    parquet_path = os.path.join(path, "features.parquet")
+    df.to_parquet(parquet_path, index=False)
     return csv_path
