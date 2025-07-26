@@ -288,3 +288,15 @@
 
 ## 2025-09-27
 - Fixed delayed_stream SocketIO import and added gitignore rules for runtime artifacts.
+## 2025-09-28
+- Added `/api/features/latest` for dropdown auto-population.
+- New `/api/options/<date>` serves trimmed option chains.
+- Back-test button replaces simulation form in web UI.
+- Optuna studies persist to `optuna.db` for faster tuning.
+- Equity updates broadcast via Socket.IO during evaluation.
+- Broker stub sends orders to Alpaca when `BROKER_URL` is set.
+## 2025-09-27
+- Added Polygon REST helpers for prev close, open-close, trades, quotes and stock snapshots.
+- Feature pipeline computes gap and intraday metrics using these endpoints.
+- Dashboard overview falls back to snapshot data when no OHLCV rows exist.
+- CI builds the Docker image and runs a smoke check.

@@ -15,6 +15,11 @@ from .portfolio import (
     PNL_FILE,
 )
 
+try:  # optional when running without webapp
+    from .webapp import socketio
+except Exception:  # pragma: no cover - webapp not running
+    socketio = None
+
 
 DEFAULT_INTERVAL = 60
 DEFAULT_STOP_LOSS = 0.05
@@ -65,6 +70,11 @@ def evaluate_loop(
     count = 0
     while True:
         evaluate_positions(conn, portfolio_file, pnl_file)
+        if socketio is not None:
+            from .portfolio import load_pnl
+
+            df = load_pnl(pnl_file)
+            socketio.emit("pnl_update", df.to_dict(orient="records"))
         count += 1
         if iterations and count >= iterations:
             break

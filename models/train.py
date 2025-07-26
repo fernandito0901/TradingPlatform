@@ -70,7 +70,12 @@ def optimize_hyperparams(X: pd.DataFrame, y: pd.Series) -> dict[str, Any]:
         scores = cross_val_score(model, X, y, cv=5, scoring="roc_auc")
         return float(scores.mean())
 
-    study = optuna.create_study(direction="maximize")
+    study = optuna.create_study(
+        direction="maximize",
+        study_name="lgbm_opt",
+        storage="sqlite:///optuna.db",
+        load_if_exists=True,
+    )
     study.optimize(objective, n_trials=100, show_progress_bar=False)
     return study.best_params
 

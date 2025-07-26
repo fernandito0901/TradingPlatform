@@ -47,6 +47,46 @@ def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
     return data
 
 
+def fetch_prev_close(symbol: str) -> dict:
+    """Return the previous day's close data."""
+
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/prev"
+    params = {"apiKey": API_KEY}
+    return rate_limited_get(url, params)
+
+
+def fetch_open_close(symbol: str, date: str) -> dict:
+    """Return OHLC data for ``date``."""
+
+    url = f"https://api.polygon.io/v1/open-close/{symbol}/{date}"
+    params = {"adjusted": "true", "apiKey": API_KEY}
+    return rate_limited_get(url, params)
+
+
+def fetch_trades(symbol: str, limit: int = 50) -> dict:
+    """Return the latest ``limit`` trades."""
+
+    url = f"https://api.polygon.io/v3/trades/{symbol}"
+    params = {"limit": limit, "apiKey": API_KEY}
+    return rate_limited_get(url, params)
+
+
+def fetch_quotes(symbol: str, limit: int = 50) -> dict:
+    """Return the latest ``limit`` quotes."""
+
+    url = f"https://api.polygon.io/v3/quotes/{symbol}"
+    params = {"limit": limit, "apiKey": API_KEY}
+    return rate_limited_get(url, params)
+
+
+def fetch_snapshot_tickers() -> dict:
+    """Return snapshot data for US stock tickers."""
+
+    url = "https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers"
+    params = {"apiKey": API_KEY}
+    return rate_limited_get(url, params)
+
+
 def fetch_ohlcv(conn, symbol: str):
     """Fetch daily OHLCV data incrementally for the last 60 days."""
     logging.info("Fetching OHLCV for %s", symbol)
