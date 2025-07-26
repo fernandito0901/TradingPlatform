@@ -265,3 +265,26 @@
 ## 2025-09-22
 - Docker image installs `libgomp1` so LightGBM runs without missing library
   errors.
+
+## 2025-09-23
+- Dashboard cards hide when no data is available and API routes return `{status:"empty"}` instead of crashing.
+- Added error handler that logs exceptions and returns JSON `{"error":"internal"}`.
+- Web interface polls trades and news every 5 minutes and displays a toast when the daily pipeline finishes.
+- Requirements pin Plotly and Bootstrap versions.
+
+## 2025-09-24
+- Added Polygon endpoint wrappers for previous close, open/close, trades, quotes, option contracts and ticker snapshots.
+- Feature pipeline computes gap-up/down, ATR and VWAP from the new data and saves the nearest-expiry option chain to `options_chain.<date>.csv`.
+- README lists all Polygon endpoints used with delayed vs real-time notes.
+
+## 2025-09-25
+- Feature engineering pulls previous close via `/v1/open-close` for gap calculations.
+- Updated requirements to remove invalid Bootstrap package.
+
+## 2025-09-26
+- Delayed Polygon quote streaming now starts automatically when the pipeline runs
+  and broadcasts quotes over WebSocket.
+- Web dashboard shows live trade ideas while training thanks to the new stream.
+
+## 2025-09-27
+- Fixed delayed_stream SocketIO import and added gitignore rules for runtime artifacts.

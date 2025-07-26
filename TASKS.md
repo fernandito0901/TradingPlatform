@@ -23,6 +23,9 @@
 - [T96] Modern dashboard design · Acceptance: plan P015 outlines new layout and API routes. · Completed by Planner on 2025-09-10
 - [T97] Implement watchlist and alert streaming · Acceptance: webapp shows watchlist, toasts, and auto-loaded files. · Completed by Coder on 2025-09-10
 - [T98] Update webapp tests for new endpoints · Acceptance: pytest covers watchlist and alerts API. · Completed by Tester on 2025-09-10
+- [T96] Modern dashboard design · Acceptance: plan P015 outlines new layout and API routes. · Completed by Planner on 2025-09-10
+- [T97] Implement watchlist and alert streaming · Acceptance: webapp shows watchlist, toasts, and auto-loaded files. · Completed by Coder on 2025-09-10
+- [T98] Update webapp tests for new endpoints · Acceptance: pytest covers watchlist and alerts API. · Completed by Tester on 2025-09-10
 - [T72] Webapp tests · Acceptance: pytest covers new routes and setup flow · Completed by Tester on 2025-08-27
 - [T76] Portfolio tests · Acceptance: pytest validates trade recording and PnL calculations · Completed by Tester on 2025-08-27
 - [T77] Scheduler architecture plan · Acceptance: design doc P011 outlines scheduler and compose setup · Completed by Planner on 2025-08-31
