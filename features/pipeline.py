@@ -1,3 +1,5 @@
+"""Feature engineering pipeline utilities."""
+
 import os
 from typing import Optional
 
@@ -216,3 +218,6 @@ def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
     parquet_path = os.path.join(path, "features.parquet")
     df.to_parquet(parquet_path, index=False)
     return csv_path
+
+
+__all__ = ["compute_features", "from_db", "run_pipeline"]

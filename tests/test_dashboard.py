@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from reports.dashboard import generate_dashboard
+from trading_platform.reports.dashboard import generate_dashboard
 
 
 def test_generate_dashboard(tmp_path):

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="194px" preserveAspectRatio="none" style="width:509px;height:194px;" version="1.1" viewBox="0 0 509 194" width="509px" zoomAndPan="magnify"><defs><filter height="300%" id="fwjuw1g0cmcti" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[02d81bc5f109a606f26613c99f3f594c]
+cluster Trading Platform--><polygon fill="#FFFFFF" filter="url(#fwjuw1g0cmcti)" points="82,24,219,24,226,46.2969,487,46.2969,487,182,82,182,82,24" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="82" x2="226" y1="46.2969" y2="46.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="131" x="86" y="38.9951">Trading Platform</text><!--MD5=[748fe8734f81c225b68b3323baccca5d]
+entity Webapp--><rect fill="#FEFECE" filter="url(#fwjuw1g0cmcti)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="77" x="98" y="95"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="93" y="100"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="93" y="121.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="57" x="108" y="117.9951">Webapp</text><!--MD5=[e3152162072024c50465e7b26cb20ed6]
+entity Scheduler--><rect fill="#FEFECE" filter="url(#fwjuw1g0cmcti)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="90" x="235" y="130"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="230" y="135"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="230" y="156.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="70" x="245" y="152.9951">Scheduler</text><!--MD5=[faf10c77907478292aab895924406d78]
+entity Collector--><rect fill="#FEFECE" filter="url(#fwjuw1g0cmcti)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="81" x="239.5" y="59"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="234.5" y="64"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="234.5" y="85.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="61" x="249.5" y="81.9951">Collector</text><!--MD5=[fa1e3283224feb76407c84b7e90ed808]
+entity Database--><rect fill="#FEFECE" filter="url(#fwjuw1g0cmcti)" height="36.2969" style="stroke: #A80036; stroke-width: 1.5;" width="86" x="385" y="95"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="380" y="100"/><rect fill="#FEFECE" height="5" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="380" y="121.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="66" x="395" y="117.9951">Database</text><!--MD5=[fee662a292a0353a69bd162820bae93b]
+entity User--><ellipse cx="22" cy="82" fill="#FEFECE" filter="url(#fwjuw1g0cmcti)" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M22,90 L22,117 M9,98 L35,98 M22,117 L9,132 M22,117 L35,132 " fill="none" filter="url(#fwjuw1g0cmcti)" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="32" x="6" y="150.4951">User</text><!--MD5=[baf23b872e918d7675eea4c2e00e5127]
+link Webapp to Scheduler--><path d="M175.05,122.29 C191.89,126.45 211.97,131.42 229.98,135.87 " fill="none" id="Webapp-&gt;Scheduler" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="234.99,137.12,227.2162,131.0728,230.1368,135.9174,225.2921,138.838,234.99,137.12" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[9a7c9b3d27c96f143845eb06c8e81274]
+link Webapp to Collector--><path d="M175.05,103.45 C193.16,98.84 215.02,93.28 234.02,88.44 " fill="none" id="Webapp-&gt;Collector" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="239.29,87.1,229.5827,85.4359,234.4435,88.3295,231.5499,93.1903,239.29,87.1" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[bf3f193807cc7752de77dbe77864068d]
+link Collector to Database--><path d="M320.51,86.74 C338.73,91.23 360.5,96.6 379.59,101.31 " fill="none" id="Collector-&gt;Database" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="384.9,102.62,377.1221,96.5781,380.0459,101.4208,375.2033,104.3446,384.9,102.62" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[ad130372fd00749f4b54440ef3262a9e]
+link Scheduler to Database--><path d="M325.2,137.4 C342.54,133.25 362.46,128.47 380.05,124.25 " fill="none" id="Scheduler-&gt;Database" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="384.95,123.08,375.2642,121.2951,380.0886,124.249,377.1347,129.0734,384.95,123.08" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[4bf71bb1b4791dca8bdab2691b5b739a]
+link User to Webapp--><path d="M38.17,113 C52.1,113 73.41,113 92.54,113 " fill="none" id="User-&gt;Webapp" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="97.87,113,88.87,109,92.87,113,88.87,117,97.87,113" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[be702ec82c5d7cdedc85e8d36e759dfc]
+@startuml
+left to right direction
+actor User
+package "Trading Platform" {
+  [Webapp] - -> [Scheduler]
+  [Webapp] - -> [Collector]
+  [Collector] - -> [Database]
+  [Scheduler] - -> [Database]
+}
+User - -> [Webapp]
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 UTC 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 21.0.2+13-58
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: null
+--></g></svg>

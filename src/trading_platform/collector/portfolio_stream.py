@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+from ..secret_filter import SecretFilter
 from pathlib import Path
 import sqlite3
 
@@ -67,6 +68,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--log-level", default="INFO")
     args = parser.parse_args(argv)
     logging.basicConfig(level=args.log_level)
+    logging.getLogger().addFilter(SecretFilter())
     conn = db.init_db(args.db_file)
     asyncio.run(
         stream_portfolio_quotes(conn, args.portfolio_file, realtime=args.realtime)

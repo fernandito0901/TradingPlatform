@@ -1,4 +1,10 @@
 # Changelog
+## 2025-10-03
+- Docs linting job added to CI
+- Architecture diagram embedded in README
+- AGENTS.md trimmed to Planner, Developer and Tester
+- Docker smoke skips with code 78 when Docker is missing
+
 
 ## 2025-07-24
 - Modularized code into collector package and added argparse CLI.
@@ -316,3 +322,44 @@
 - Trades table is accessible and hides skeleton rows once data arrives
 - Pre-PR smoke test runs via `tox -e smoke`
 
+## 2025-09-30
+- CI caches pip packages and Docker layers
+- Scheduler emits a heartbeat for web dashboard health indicator
+- Tests cover stop-loss logic, delayed stream and backtest variations
+
+## 2025-10-01
+- CI workflow runs lint, tests and Docker smoke in parallel with caching
+- API overview and metrics endpoints return `{"status":"empty"}` when no data
+- Strategy metrics API provides Sharpe, Sortino and win-rate
+- Dashboard polls scheduler health and exposes restart button
+
+
+## 2025-10-02
+- Performance card shows Sharpe and Sortino ratios via React
+- Metrics and equity sections use skeleton loaders instead of placeholders
+- Flask and Celery loggers mask secrets
+- CI tests on Python 3.10 and 3.11 with Docker smoke neutral
+- Architecture diagram auto-generated; equity metrics endpoint and Smart Flow card
+
+## 2025-10-03
+- `.env` loaded via `python-dotenv`
+- `/healthz` endpoints for web and scheduler
+- Pip and Docker caches reuse `requirements.lock` and BuildKit layers
+- Packaging includes `reports` module
+
+## 2025-10-04
+- Moved `reports` package under `trading_platform` to fix missing module errors
+- Dockerfile now checks the import during build
+- CI runs `tox -e smoke-reports` to verify packaging
+
+## 2025-10-05
+- Packaged `features` module under `trading_platform`
+- Reports directory configurable via `REPORTS_DIR`
+- Docker image creates writable `/app/data/reports`
+- New `smoke-features` tox env and CI job
+
+## 2025-10-06
+- Docker image now copies the `features/` directory so the scheduler can load
+  custom pipelines
+- `trading_platform.features` lazily loads `features_pipeline` or falls back to
+  a no-op implementation

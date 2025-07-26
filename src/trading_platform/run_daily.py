@@ -12,9 +12,9 @@ from .features import run_pipeline
 from .models import train as train_model
 from .playbook.generate import generate_playbook
 from . import notifier
-from reports.dashboard import generate_dashboard
-from reports.feature_dashboard import generate_feature_dashboard
-from reports.scoreboard import update_scoreboard
+from trading_platform.reports.dashboard import generate_dashboard
+from trading_platform.reports.feature_dashboard import generate_feature_dashboard
+from trading_platform.reports.scoreboard import update_scoreboard
 
 try:  # optional during CLI usage
     from .webapp import socketio

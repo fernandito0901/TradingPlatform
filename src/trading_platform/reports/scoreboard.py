@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
+from . import REPORTS_DIR
 
 
 def update_scoreboard(
@@ -14,7 +15,7 @@ def update_scoreboard(
     cv_auc: float | None = None,
     window_days: int | None = None,
     holdout_auc: float | None = None,
-    out_file: str = "reports/scoreboard.csv",
+    out_file: str = str(REPORTS_DIR / "scoreboard.csv"),
 ) -> str:
     """Append a new entry to the scoreboard CSV.
 
@@ -27,7 +28,7 @@ def update_scoreboard(
     pnl : float, optional
         Profit and loss from paper trading or backtest.
     out_file : str, optional
-        Destination CSV file, by default ``"reports/scoreboard.csv"``.
+        Destination CSV file, by default ``REPORTS_DIR / 'scoreboard.csv'``.
 
     Returns
     -------
@@ -68,7 +69,7 @@ def update_scoreboard(
     return str(csv_path)
 
 
-def seed_scoreboard(out_file: str = "reports/scoreboard.csv") -> str:
+def seed_scoreboard(out_file: str = str(REPORTS_DIR / "scoreboard.csv")) -> str:
     """Ensure scoreboard CSV exists with a dummy row."""
 
     path = Path(out_file)

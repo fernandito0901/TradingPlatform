@@ -1,13 +1,14 @@
 """Simple HTML dashboard for model performance metrics."""
 
 from pathlib import Path
+from . import REPORTS_DIR
 
 
 def generate_dashboard(
     train_auc: float,
     test_auc: float,
     cv_auc: float | None = None,
-    out_file: str = "reports/dashboard.html",
+    out_file: str = str(REPORTS_DIR / "dashboard.html"),
 ) -> str:
     """Write an HTML dashboard with model AUC metrics.
 

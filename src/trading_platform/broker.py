@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 import os
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 import requests
@@ -17,7 +18,7 @@ def place_order(
     side: str,
     qty: float,
     price: float,
-    out_file: str = "reports/orders.csv",
+    out_file: str = str(REPORTS_DIR / "orders.csv"),
     *,
     portfolio_file: str = portfolio.PORTFOLIO_FILE,
     strategy: str = "manual",
@@ -35,7 +36,7 @@ def place_order(
     price : float
         Execution price.
     out_file : str, optional
-        Destination CSV to append the order, by default ``"reports/orders.csv"``.
+        Destination CSV to append the order, by default ``REPORTS_DIR / 'orders.csv'``.
     portfolio_file : str, optional
         Portfolio CSV updated automatically with this trade.
     strategy : str, optional
@@ -104,7 +105,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("symbol")
     parser.add_argument("qty", type=float)
     parser.add_argument("price", type=float)
-    parser.add_argument("--out-file", default="reports/orders.csv")
+    parser.add_argument("--out-file", default=str(REPORTS_DIR / "orders.csv"))
     parser.add_argument("--portfolio-file", default=portfolio.PORTFOLIO_FILE)
     parser.add_argument("--strategy", default="manual")
     args = parser.parse_args(argv)

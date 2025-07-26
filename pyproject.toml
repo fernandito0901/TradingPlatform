@@ -25,6 +25,8 @@ dependencies = [
     "flask-socketio",
     "APScheduler",
     "optuna",
+    "python-dotenv",
+    "pytest-cov",
 ]
 
 [project.scripts]
@@ -41,3 +43,6 @@ backtest = "trading_platform.backtest:main"
 
 [tool.setuptools.packages.find]
 where = ["src", ""]
+include = ["trading_platform*", "features*", "models*", "scripts*"]
+[tool.setuptools]
+include-package-data = true
