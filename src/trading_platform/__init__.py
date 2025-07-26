@@ -3,6 +3,7 @@
 from .load_env import load_env
 from .config import Config, load_config
 from . import broker, simulate, strategies, portfolio, backtest
+from . import metrics
 from . import risk_report
 
 
@@ -23,6 +24,7 @@ __all__ = [
     "strategies",
     "broker",
     "portfolio",
+    "metrics",
     "scheduler",
     "risk_report",
     "evaluator",

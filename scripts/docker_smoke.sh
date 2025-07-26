@@ -11,7 +11,7 @@ fi
 
 if ! command -v docker >/dev/null; then
   echo "SKIPPED – Docker not available"
-  exit 99
+  exit 78
 fi
 
 export DOCKER_BUILDKIT=1
