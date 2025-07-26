@@ -693,9 +693,14 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if not Path(db_path).exists():
             return jsonify([])
         conn = get_connection(db_path)
-        df = pd.read_sql(
-            "SELECT title, url FROM news ORDER BY published_at DESC LIMIT 5", conn
-        )
+        try:
+            df = pd.read_sql(
+                "SELECT title, url FROM news ORDER BY published_at DESC LIMIT 5",
+                conn,
+            )
+        except Exception:
+            conn.close()
+            return jsonify([])
         conn.close()
         return jsonify(df.to_dict(orient="records"))
 

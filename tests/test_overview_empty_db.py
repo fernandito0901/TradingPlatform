@@ -1,5 +1,5 @@
 from trading_platform.webapp import create_app
-import sqlite3, tempfile, os
+import tempfile
 
 
 def test_overview_empty_db(monkeypatch):

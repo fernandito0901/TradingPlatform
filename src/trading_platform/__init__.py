@@ -1,11 +1,9 @@
 """Trading platform package."""
 
-from pathlib import Path
 import importlib
 
 from .load_env import load_env
 from .config import Config, load_config
-from .reports import REPORTS_DIR
 
 
 def __getattr__(name: str):
