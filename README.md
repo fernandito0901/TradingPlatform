@@ -407,6 +407,9 @@ python -m trading_platform.scheduler
 ```
 
 Use the web interface to start or stop the scheduler at any time.
+The dashboard polls `/api/scheduler/alive` every 30 seconds and shows a green or
+red badge. If the scheduler stops responding a **Restart** button becomes
+visible and sends `POST /api/scheduler/restart` to attempt recovery.
 ## Planning Documents
 
 Design notes are tracked in `design/plans/` using sequential IDs (e.g. `P001.md`).

@@ -316,3 +316,14 @@
 - Trades table is accessible and hides skeleton rows once data arrives
 - Pre-PR smoke test runs via `tox -e smoke`
 
+## 2025-09-30
+- CI caches pip packages and Docker layers
+- Scheduler emits a heartbeat for web dashboard health indicator
+- Tests cover stop-loss logic, delayed stream and backtest variations
+
+## 2025-10-01
+- CI workflow runs lint, tests and Docker smoke in parallel with caching
+- API overview and metrics endpoints return `{"status":"empty"}` when no data
+- Strategy metrics API provides Sharpe, Sortino and win-rate
+- Dashboard polls scheduler health and exposes restart button
+
