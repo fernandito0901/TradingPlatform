@@ -1,4 +1,10 @@
 # Changelog
+## 2025-10-03
+- Docs linting job added to CI
+- Architecture diagram embedded in README
+- AGENTS.md trimmed to Planner, Developer and Tester
+- Docker smoke skips with code 78 when Docker is missing
+
 
 ## 2025-07-24
 - Modularized code into collector package and added argparse CLI.
@@ -327,3 +333,8 @@
 - Strategy metrics API provides Sharpe, Sortino and win-rate
 - Dashboard polls scheduler health and exposes restart button
 
+## 2025-10-02
+- Performance card shows Sharpe and Sortino ratios via React
+- Metrics and equity sections use skeleton loaders instead of placeholders
+- Flask and Celery loggers mask secrets
+- CI tests on Python 3.10 and 3.11 with Docker smoke neutral

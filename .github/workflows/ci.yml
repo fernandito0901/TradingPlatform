@@ -5,29 +5,22 @@ on:
     branches: [ main ]
 
 jobs:
-  ci:
+  lint_unit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [lint, tests, smoke]
+        python-version: ['3.10', '3.11']
+        target: [lint, tests]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: "${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'pyproject.toml') }}"
           restore-keys: "${{ runner.os }}-pip-"
-      - uses: docker/setup-buildx-action@v3
-        if: matrix.target == 'smoke'
-      - uses: actions/cache@v4
-        if: matrix.target == 'smoke'
-        with:
-          path: /tmp/.buildx-cache
-          key: "${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}"
-          restore-keys: "${{ runner.os }}-docker-"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -42,7 +35,35 @@ jobs:
       - name: Unit tests
         if: matrix.target == 'tests'
         run: pytest -q
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - uses: docker/setup-buildx-action@v3
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: "${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}"
+          restore-keys: "${{ runner.os }}-docker-"
       - name: Docker smoke
-        if: matrix.target == 'smoke'
         run: |
           scripts/docker_smoke.sh --ci || { CODE=$?; [ $CODE -eq 78 ] || exit $CODE; }
+
+  docs-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g markdownlint-cli
+      - name: Lint docs
+        run: markdownlint '**/*.md'
+      - name: Check links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: "--no-progress README.md docs/**/*.md"

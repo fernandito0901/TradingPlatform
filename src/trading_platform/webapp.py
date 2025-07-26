@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import logging
 from pathlib import Path
 from threading import Thread
 import json
@@ -10,6 +11,7 @@ import sqlite3
 import subprocess
 
 from . import risk_report
+from .secret_filter import SecretFilter
 
 import pandas as pd
 from flask import (
@@ -57,6 +59,8 @@ DASH_TEMPLATE = """
   <!-- Plotly loaded on demand -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
+  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
 </head>
 <body class="p-3">
 <nav class="navbar navbar-expand-lg bg-light mb-3 rounded shadow-sm px-3">
@@ -117,8 +121,10 @@ DASH_TEMPLATE = """
         <div id="metrics-empty" class="text-muted">Loading…</div>
         <div id="metrics-upd" class="small text-muted"></div>
       </div>
+      <div class="card p-3 shadow-sm mb-3" id="performance-card"></div>
       <div class="card p-3 shadow-sm" id="equity-card">
         <h5 class="card-title"><i class="fa fa-chart-area me-2"></i>Equity Curve</h5>
+        <div id="equity-skel" class="placeholder-wave" style="height:200px"></div>
         <div id="equity"></div>
         <div id="equity-upd" class="small text-muted"></div>
       </div>
@@ -192,6 +198,7 @@ function load(){
   }
   fetch('/api/metrics').then(r=>r.json()).then(showMetrics);
   fetch('/api/metrics/strategy').then(r=>r.json()).then(showStrategy);
+  fetch('/api/metrics/performance').then(r=>r.json()).then(renderPerformance);
   fetch('/api/positions').then(r=>r.json()).then(showPositions);
   fetch('/api/watchlist').then(r=>r.json()).then(showWatchlist);
   fetch('/api/overview').then(r=>r.json()).then(showOverview);
@@ -265,13 +272,13 @@ function showMetrics(m){
   const div=document.getElementById('metrics');
   const empty=document.getElementById('metrics-empty');
   document.getElementById('metrics-card').style.display='block';
-  skel.style.display='none';
   if(m.status==='empty'||!m.train_auc){
     div.innerHTML='';
-    empty.textContent='No data yet';
-    empty.style.display='block';
+    empty.style.display='none';
+    skel.style.display='block';
     return;
   }
+  skel.style.display='none';
   empty.style.display='none';
   div.innerHTML=`Last trained ${m.date||''}<br>Train ${badge(m.train_auc)} Test ${badge(m.test_auc)} CV ${badge(m.cv_auc)}`;
   document.getElementById('metrics-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
@@ -285,6 +292,20 @@ function showStrategy(m){
   const div=document.getElementById('strategy-metrics');
   if(m.status==='empty'){div.innerHTML='';return;}
   div.innerHTML=`Sharpe ${tag(m.sharpe)} Sortino ${tag(m.sortino)} Win ${tag(m.win_rate)}`;
+}
+function renderPerformance(m){
+  if(m.status==='empty') return;
+  const cls=v=>v>1?'text-success':v>=0.5?'text-warning':'text-danger';
+  const card=React.createElement(
+    'div',
+    null,
+    React.createElement('h5',{className:'card-title'},React.createElement('i',{className:'fa fa-trophy me-2'}),'Performance'),
+    React.createElement('div',null,
+      React.createElement('span',{className:cls(m.sharpe)},'Sharpe '+m.sharpe.toFixed(2)+' '),
+      React.createElement('span',{className:cls(m.sortino)},'Sortino '+m.sortino.toFixed(2))
+    )
+  );
+  ReactDOM.render(card, document.getElementById('performance-card'));
 }
 function showPositions(data){
   const tbl=document.getElementById('positions');
@@ -336,13 +357,19 @@ function showAlerts(msgs){
   });
 }
 function showEquity(data){
-  if(!data.length){return;}
+  const skel=document.getElementById('equity-skel');
+  if(!data.length){
+    skel.style.display='block';
+    return;
+  }
+  skel.style.display='none';
   const trace={x:data.map(r=>r.date),y:data.map(r=>r.total),type:'scatter'};
   Plotly.newPlot('equity',[trace]);
   document.getElementById('equity-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 let plotlyLoaded=false;
 function refreshEquity(){
+  document.getElementById('equity-skel').style.display='block';
   if(!plotlyLoaded){
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.24.1';
@@ -445,6 +472,15 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     app = Flask(__name__, static_folder="reports", static_url_path="/reports")
     socketio.init_app(app)
+    flt = SecretFilter()
+    app.logger.addFilter(flt)
+    logging.getLogger("werkzeug").addFilter(flt)
+    try:
+        from celery.signals import after_setup_logger
+
+        after_setup_logger.connect(lambda logger, **_: logger.addFilter(flt))
+    except Exception:
+        pass
     app.config["ENV_PATH"] = Path(env_path)
     app.config["SCHED"] = None
 
@@ -674,6 +710,25 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         }
         return jsonify(out)
 
+    @app.route("/api/metrics/performance")
+    def api_performance_metrics():
+        pnl_csv = Path("reports/pnl.csv")
+        if not pnl_csv.exists():
+            return jsonify({"status": "empty"})
+        df = pd.read_csv(pnl_csv)
+        if df.empty:
+            return jsonify({"status": "empty"})
+        returns = df["total"].astype(float).diff().dropna()
+        if returns.empty or returns.isna().all():
+            return jsonify({"status": "empty"})
+        from . import metrics as m
+
+        out = {
+            "sharpe": round(m.sharpe_ratio(returns), 2),
+            "sortino": round(m.sortino_ratio(returns), 2),
+        }
+        return jsonify(out)
+
     @app.route("/api/features/latest")
     def api_features_latest():
         feat = latest_file("features", ".csv")
@@ -754,37 +809,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         except Exception:
             df = pd.DataFrame()
         if df.empty:
-            from .collector.api import fetch_prev_close
-
-            today = pd.Timestamp.utcnow().date().isoformat()
-            rows = []
-            for sym in syms:
-                cur = conn.execute(
-                    "SELECT close FROM prev_close WHERE symbol=? AND date=?",
-                    (sym, today),
-                )
-                r = cur.fetchone()
-                if r:
-                    close = r[0]
-                else:
-                    try:
-                        data = fetch_prev_close(sym)
-                        close = data.get("results", [{}])[0].get("c")
-                        if close is not None:
-                            conn.execute(
-                                "INSERT OR REPLACE INTO prev_close VALUES (?,?,?)",
-                                (sym, today, close),
-                            )
-                    except Exception:
-                        close = None
-                rows.append({"symbol": sym, "close": close})
-            conn.commit()
             conn.close()
-            df = pd.DataFrame(rows)
-        else:
-            conn.close()
+            return jsonify({"status": "empty"})
 
-        if df.empty or pd.isna(df["close"]).all():
+        conn.close()
+        if pd.isna(df["close"]).all():
             return jsonify({"status": "empty"})
         return jsonify(df.to_dict(orient="records"))
 

@@ -22,6 +22,10 @@ python3 -m pip install -r requirements.txt
 
 ## Project Layout
 
+## Architecture
+
+![Architecture](docs/arch.puml)
+
 Core collector code lives under `src/trading_platform`. Feature engineering and
 model training packages are located at the repository root under `features/` and
 `models/`. Wrapper modules under `src/trading_platform/features` and
@@ -315,6 +319,7 @@ news headlines and portfolio data. A real-time trade feed updates via WebSocket
  charts show feature importance, backtest results and the equity curve from
  `reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
  overview panel displays the most recent close for each symbol. Toast notifications now deduplicate messages and include *Clear All* / *Mark All as Read* buttons. A dark mode toggle changes the page theme. Trade recommendations refresh live with progress bars for POP and metrics cards show the model version. Scheduler controls remain available and recent results from `reports/scoreboard.csv` are displayed in a table. See `docs/ui_overview.md` for a visual guide to the layout.
+The dashboard now includes a **Performance** card showing Sharpe and Sortino ratios.
 
 ### Strategy Workflow
 
