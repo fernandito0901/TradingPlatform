@@ -25,6 +25,8 @@ dependencies = [
     "flask-socketio",
     "APScheduler",
     "optuna",
+    "python-dotenv",
+    "pytest-cov",
 ]
 
 [project.scripts]
