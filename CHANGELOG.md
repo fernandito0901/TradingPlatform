@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+- Scheduler retries Socket.IO connection with backoff and logs `scheduler_heartbeat`
+- Added `/api/heartbeat` endpoint for health checks
+
 ## 2025-10-03
 - Docs linting job added to CI
 - Architecture diagram embedded in README

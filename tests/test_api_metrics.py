@@ -32,4 +32,3 @@ def test_api_metrics_missing_file(tmp_path):
     client = app.test_client()
     resp = client.get("/api/metrics")
     assert resp.json == {"status": "empty"}
-

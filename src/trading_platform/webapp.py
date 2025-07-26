@@ -876,6 +876,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         df = pd.read_csv(path)
         return jsonify(df.to_dict(orient="records"))
 
+    @app.route("/api/heartbeat")
+    def api_heartbeat():
+        return jsonify({"status": "ok"})
+
     @app.route("/healthz")
     def healthz():
         return jsonify({"status": "ok"})
