@@ -27,6 +27,16 @@ def get_connection(db_path: Path):
         return sqlite3.connect(db_path, check_same_thread=False)
 
 
+
+def get_connection(db_path: Path):
+    """Return writable SQLite connection, creating file if needed."""
+    try:
+        return sqlite3.connect(db_path, check_same_thread=False)
+    except sqlite3.OperationalError:  # pragma: no cover - touch fallback
+        db_path.touch()
+        return sqlite3.connect(db_path, check_same_thread=False)
+
+
 import pandas as pd
 from flask import (
     Flask,
