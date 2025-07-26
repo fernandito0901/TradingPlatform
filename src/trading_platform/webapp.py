@@ -14,6 +14,16 @@ from . import risk_report
 from .secret_filter import SecretFilter
 from trading_platform.reports import REPORTS_DIR
 
+
+def get_connection(db_path: Path):
+    """Return writable SQLite connection, creating file if needed."""
+    try:
+        return sqlite3.connect(db_path, check_same_thread=False)
+    except sqlite3.OperationalError:  # pragma: no cover - touch fallback
+        db_path.touch()
+        return sqlite3.connect(db_path, check_same_thread=False)
+
+
 import pandas as pd
 from flask import (
     Flask,
@@ -498,6 +508,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     load_dotenv(env_path)
     app.config["SCHED"] = None
 
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    db_path = Path(os.getenv("TP_DB", REPORTS_DIR / "scoreboard.db"))
+    app.config["DB_URI"] = f"sqlite:///{db_path}"
+    app.config["DB_FILE"] = db_path
+
     # ensure scoreboard CSV and placeholder reports exist to avoid broken links
     sb_csv = Path(app.static_folder) / "scoreboard.csv"
     if not sb_csv.exists():
@@ -674,10 +689,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/news")
     def api_news():
-        db_path = "market_data.db"
+        db_path = app.config.get("DB_FILE", Path("market_data.db"))
         if not Path(db_path).exists():
             return jsonify([])
-        conn = sqlite3.connect(db_path)
+        conn = get_connection(db_path)
         df = pd.read_sql(
             "SELECT title, url FROM news ORDER BY published_at DESC LIMIT 5", conn
         )
@@ -834,8 +849,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     @app.route("/api/overview")
     def api_overview():
         path = Path(app.config["ENV_PATH"])
-        db_path = "market_data.db"
-        conn = sqlite3.connect(db_path)
+        db_path = app.config.get("DB_FILE", Path("market_data.db"))
+        conn = get_connection(db_path)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS prev_close (symbol TEXT, date TEXT, close REAL, UNIQUE(symbol, date))"
         )
