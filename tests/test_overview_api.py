@@ -35,3 +35,12 @@ def test_overview_empty_when_nan(monkeypatch, tmp_path):
     client = app.test_client()
     resp = client.get("/api/overview")
     assert resp.json == {"status": "empty"}
+
+
+def test_overview_empty_csv(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=abc\n")
+    app = create_app(env_path=env)
+    client = app.test_client()
+    resp = client.get("/api/overview")
+    assert resp.json == {"status": "empty"}

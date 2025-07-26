@@ -27,7 +27,7 @@ from flask_socketio import SocketIO
 socketio = SocketIO()
 
 from .config import load_config
-from .load_env import load_env
+from dotenv import load_dotenv
 
 SETUP_TEMPLATE = """
 <!doctype html>
@@ -494,6 +494,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     except Exception:
         pass
     app.config["ENV_PATH"] = Path(env_path)
+    load_dotenv(env_path)
     app.config["SCHED"] = None
 
     # ensure scoreboard CSV and placeholder reports exist to avoid broken links
@@ -532,7 +533,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/", methods=["GET", "POST"])
     def index():
-        load_env(app.config["ENV_PATH"])
+        load_dotenv(app.config["ENV_PATH"])
         if request.method == "POST":
             save_env(
                 {
@@ -865,6 +866,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             return jsonify([])
         df = pd.read_csv(path)
         return jsonify(df.to_dict(orient="records"))
+
+    @app.route("/healthz")
+    def healthz():
+        return jsonify({"status": "ok"})
 
     @socketio.on("connect")
     def on_connect():

@@ -1,4 +1,5 @@
 # Market Data Collector
+![health](https://img.shields.io/badge/health-passing-brightgreen)
 
 This script polls the [Polygon](https://polygon.io) REST API to collect
 historical bars, minute aggregates, delayed real‑time quotes and option
@@ -411,6 +412,7 @@ Use the web interface to start or stop the scheduler at any time.
 The dashboard polls `/api/scheduler/alive` every 30 seconds and shows a green or
 red badge. If the scheduler stops responding a **Restart** button becomes
 visible and sends `POST /api/scheduler/restart` to attempt recovery.
+Both the web server and scheduler expose `/healthz` for liveness probes.
 ## Planning Documents
 
 Design notes are tracked in `design/plans/` using sequential IDs (e.g. `P001.md`).

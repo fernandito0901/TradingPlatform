@@ -339,3 +339,9 @@
 - Flask and Celery loggers mask secrets
 - CI tests on Python 3.10 and 3.11 with Docker smoke neutral
 - Architecture diagram auto-generated; equity metrics endpoint and Smart Flow card
+
+## 2025-10-03
+- `.env` loaded via `python-dotenv`
+- `/healthz` endpoints for web and scheduler
+- Pip and Docker caches reuse `requirements.lock` and BuildKit layers
+- Packaging includes `reports` module
