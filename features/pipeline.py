@@ -192,6 +192,9 @@ def from_db(conn, symbol: str) -> pd.DataFrame:
     return feats
 
 
+from trading_platform.collector.api import NoData
+
+
 def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
     """Run full feature pipeline and write CSV.
 
@@ -209,7 +212,13 @@ def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
     str
         Path to the written CSV file.
     """
-    df = from_db(conn, symbol)
+    try:
+        df = from_db(conn, symbol)
+    except NoData:
+        import logging
+
+        logging.warning("No data for %s", symbol)
+        return ""
     date = pd.Timestamp.utcnow().date().isoformat()
     path = os.path.join(out_dir, date)
     os.makedirs(path, exist_ok=True)

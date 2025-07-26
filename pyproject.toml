@@ -43,6 +43,13 @@ backtest = "trading_platform.backtest:main"
 
 [tool.setuptools.packages.find]
 where = ["src", ""]
-include = ["trading_platform*", "features*", "models*", "scripts*"]
+include = [
+    "trading_platform*",
+    "features*",
+    "models*",
+    "scripts*",
+    "trading_platform.features*",
+    "trading_platform.models*",
+]
 [tool.setuptools]
 include-package-data = true
