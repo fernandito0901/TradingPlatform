@@ -107,12 +107,11 @@ def init_db(db_file: str) -> sqlite3.Connection:
     )
     c.execute(
         """CREATE TABLE IF NOT EXISTS news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             symbol TEXT,
-            published_at TEXT,
             title TEXT,
             url TEXT,
-            source TEXT,
-            PRIMARY KEY(symbol, published_at, title)
+            published_at DATETIME
         )"""
     )
     conn.commit()

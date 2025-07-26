@@ -13,9 +13,10 @@ def bootstrap(path: Path) -> sqlite3.Connection:
     conn.execute(
         """CREATE TABLE IF NOT EXISTS news(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            symbol TEXT,
             title TEXT NOT NULL,
             url TEXT NOT NULL,
-            published_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            published_at DATETIME
         )"""
     )
     conn.commit()

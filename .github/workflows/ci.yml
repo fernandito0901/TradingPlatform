@@ -44,6 +44,9 @@ jobs:
       - name: Models import
         if: matrix.target == 'tests'
         run: tox -e smoke-models
+      - name: News seed
+        if: matrix.target == 'tests'
+        run: tox -e smoke-news
   docker-smoke:
     runs-on: ubuntu-latest
     steps:

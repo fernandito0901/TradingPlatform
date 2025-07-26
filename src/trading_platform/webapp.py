@@ -27,16 +27,6 @@ def get_connection(db_path: Path):
         return sqlite3.connect(db_path, check_same_thread=False)
 
 
-
-def get_connection(db_path: Path):
-    """Return writable SQLite connection, creating file if needed."""
-    try:
-        return sqlite3.connect(db_path, check_same_thread=False)
-    except sqlite3.OperationalError:  # pragma: no cover - touch fallback
-        db_path.touch()
-        return sqlite3.connect(db_path, check_same_thread=False)
-
-
 import pandas as pd
 from flask import (
     Flask,
@@ -79,7 +69,7 @@ DASH_TEMPLATE = """
   <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap\" rel=\"stylesheet\">
   <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/reports/style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <!-- Plotly loaded on demand -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
@@ -545,7 +535,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     style = Path(app.static_folder) / "style.css"
     if not style.exists():
-        style.write_text("")
+        src = Path(__file__).resolve().parent / "reports" / "style.css"
+        if src.exists():
+            style.write_text(src.read_text())
+        else:
+            style.write_text("")
 
     for name in ["dashboard.html", "feature_dashboard.html", "strategies.html"]:
         path = Path(app.static_folder) / name
@@ -727,8 +721,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             demo = DEMO_DIR / "news.csv"
             if demo.exists():
                 df = pd.read_csv(demo)
-                return jsonify(df.to_dict(orient="records"))
-            return jsonify([])
+                return jsonify({"items": df.to_dict(orient="records")})
+            return jsonify({"items": []})
         conn = get_connection(db_path)
         try:
             df = pd.read_sql(
@@ -740,10 +734,12 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             demo = DEMO_DIR / "news.csv"
             if demo.exists():
                 df = pd.read_csv(demo)
-                return jsonify(df.to_dict(orient="records"))
-            return jsonify([])
+                return jsonify({"items": df.to_dict(orient="records")})
+            return jsonify({"items": []})
         conn.close()
-        return jsonify(df.to_dict(orient="records"))
+        if df.empty:
+            return jsonify({"items": []})
+        return jsonify({"items": df.to_dict(orient="records")})
 
     @app.route("/api/flow")
     def api_flow():
@@ -755,31 +751,15 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/metrics")
     def api_metrics():
-        csv = Path(app.static_folder) / "scoreboard.csv"
-        if not csv.exists():
-            demo = DEMO_DIR / "scoreboard.csv"
-            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
-                csv.write_text(demo.read_text())
-            else:
-                return jsonify({"status": "empty"})
-        df = pd.read_csv(csv)
-        if df.shape[0] == 0 or df.isna().all().all():
-            return jsonify({"status": "empty"})
-        try:
-            last = df.tail(1).squeeze()
-        except IndexError:
-            return jsonify({"status": "empty"})
-        if all(
-            pd.isna(last.get(col)) for col in ["train_auc", "test_auc", "cv_auc", "auc"]
-        ):
-            return jsonify({"status": "empty"})
-        res = {
-            "date": last.get("date", ""),
-            "train_auc": float(last.get("train_auc", last.get("auc", 0))),
-            "test_auc": float(last.get("test_auc", 0)),
-            "cv_auc": float(last.get("cv_auc", 0)),
-        }
-        return jsonify(res)
+        pnl_csv = Path(app.static_folder) / "pnl.csv"
+        if not pnl_csv.exists():
+            return jsonify({"total_return": 0.0, "pnl": 0.0})
+        df = pd.read_csv(pnl_csv)
+        if df.empty:
+            return jsonify({"total_return": 0.0, "pnl": 0.0})
+        pnl = float(df["total"].iloc[-1])
+        total_return = float(df["total"].iloc[-1] - df["total"].iloc[0])
+        return jsonify({"total_return": total_return, "pnl": pnl})
 
     @app.route("/api/metrics/strategy")
     def api_strategy_metrics():

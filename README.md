@@ -418,6 +418,8 @@ A few CSV files are shipped under `trading_platform/reports/demo/`:
 The web app copies these into `reports/` on first launch so the dashboard has
 sample content. Real data will replace them after the scheduler completes a
 pipeline run.
+Run `python tasks/seed_news.py` to insert the sample headlines if the news table
+is empty.
 
 
 ### Scheduler Service

@@ -18,7 +18,7 @@ export DOCKER_BUILDKIT=1
 SCOPE=${GITHUB_SHA:-local}
 CACHE_ARGS="--cache-from=type=gha,scope=$SCOPE --cache-to=type=gha,mode=max,scope=$SCOPE"
 
-docker build --target runtime $CACHE_ARGS -t trading-platform . --progress=plain
+docker build --target runtime $CACHE_ARGS -t trading-platform . --progress=plain --build-arg POLYGON_API_KEY=${POLYGON_API_KEY:-dummy}
 
 CONTAINER=trading-test
 docker run -d --rm --name $CONTAINER -p 5000:5000 -e POLYGON_API_KEY=dummy trading-platform

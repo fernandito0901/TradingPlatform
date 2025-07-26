@@ -8,10 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 
-try:  # optional Socket.IO integration
-    from .webapp import socketio
-except Exception:  # pragma: no cover - webapp not running
-    socketio = None
+socketio = None
 
 from .config import load_config, Config
 from .run_daily import run as run_daily
@@ -43,13 +40,19 @@ def start(
     BackgroundScheduler
         The started scheduler instance.
     """
+    from .webapp import socketio as sio
+
     sched = BackgroundScheduler()
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
-    if socketio is not None and getattr(socketio, "server", None) is not None:
-        sched.add_job(lambda: socketio.emit("scheduler-alive"), "interval", seconds=60)
+    if getattr(sio, "server", None) is not None:
+        sched.add_job(lambda: sio.emit("scheduler-alive"), "interval", seconds=60)
     sched.start()
-    if socketio is not None and getattr(socketio, "server", None) is not None:
-        socketio.emit("scheduler-alive")
+    if getattr(sio, "server", None) is not None:
+        sio.emit("scheduler-alive")
+    else:
+        import logging
+
+        logging.getLogger(__name__).warning("SocketIO not initialized")
     return sched
 
 

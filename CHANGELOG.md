@@ -371,3 +371,8 @@
 - Dashboard now shows "No data yet" when empty
 - Smoke test checks `/api/news`
 
+## 2025-07-26
+- Switched Polygon open/close endpoint to v2 and handle 404 with `NoData`
+- Added news table migration and seeder
+- Scheduler defers SocketIO import until runtime
+- Metrics API returns placeholders when PnL missing
