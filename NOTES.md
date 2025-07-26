@@ -154,3 +154,6 @@
 ### 2025-09-15 – @Coder
 - Broadcast trade events via SocketIO when the daily pipeline completes and
   updated tests for the new behavior.
+
+### 2025-09-16 – @Coder
+- Enabled unsafe Werkzeug mode in webapp so it runs inside Docker containers.

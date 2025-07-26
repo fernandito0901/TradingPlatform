@@ -217,6 +217,9 @@ webapp
 
 The server binds to `0.0.0.0:5000` by default so it can be reached from outside
 the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`.
+The entrypoint enables Flask's built-in server with
+``allow_unsafe_werkzeug=True`` so the dashboard works when launched under
+Docker.
 
 On first launch, the page prompts for API keys and saves them to `.env`.
 After setup you can run the daily pipeline or connectivity checks with

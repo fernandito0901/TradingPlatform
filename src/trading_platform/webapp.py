@@ -452,7 +452,7 @@ def main() -> None:
     app = create_app()
     host = os.getenv("WEBAPP_HOST", "0.0.0.0")
     port = int(os.getenv("WEBAPP_PORT", "5000"))
-    socketio.run(app, host=host, port=port)
+    socketio.run(app, host=host, port=port, allow_unsafe_werkzeug=True)
 
 
 if __name__ == "__main__":

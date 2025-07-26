@@ -234,3 +234,7 @@
 ## 2025-09-15
 - Daily pipeline broadcasts recommended trades via WebSocket so the dashboard
   updates instantly while the run completes.
+
+## 2025-09-16
+- Web interface now passes `allow_unsafe_werkzeug=True` so the Flask server runs
+  inside Docker without errors.
