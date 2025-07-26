@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+import os
 
 import pandas as pd
+import requests
 
 from . import portfolio
 
@@ -51,6 +53,26 @@ def place_order(
         "qty": qty,
         "price": price,
     }
+    broker_url = os.getenv("BROKER_URL")
+    if broker_url:
+        url = broker_url.rstrip("/") + "/v2/orders"
+        headers = {
+            "APCA-API-KEY-ID": os.getenv("APCA_KEY", ""),
+            "APCA-API-SECRET-KEY": os.getenv("APCA_SECRET", ""),
+        }
+        payload = {
+            "symbol": symbol,
+            "qty": qty,
+            "side": side.lower(),
+            "type": "market",
+            "time_in_force": "day",
+        }
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=5)
+            resp.raise_for_status()
+        except Exception:
+            pass
+
     df = pd.DataFrame([order])
     path = Path(out_file)
     path.parent.mkdir(parents=True, exist_ok=True)

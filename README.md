@@ -103,6 +103,10 @@ The REST API calls include:
 - `/v3/reference/options/contracts?underlying_ticker={symbol}` – option contracts
 - `/v2/snapshot/locale/us/markets/stocks/tickers` – stock snapshot
 
+The feature pipeline calls these endpoints via helper functions
+`fetch_prev_close`, `fetch_open_close`, `fetch_trades`, `fetch_quotes`, and
+`fetch_snapshot_tickers` to remain compatible with the Starter plan.
+
 ## Reports
 
 Model training metrics are written to `reports/dashboard.html`. Open this file

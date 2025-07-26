@@ -152,6 +152,8 @@ DASH_TEMPLATE = """
 <script>
 const socket=io();
 socket.on('trade',t=>addTradeRow(t));
+socket.on('pnl_update',d=>showEquity(d));
+socket.on('overview_quote',q=>updateOverview(q));
 let seenAlerts=new Set();
 let seenNews=new Set();
 let trades=[];
@@ -235,6 +237,20 @@ function showOverview(data){
   empty.style.display='none';
   tbl.innerHTML='<tr><th>Symbol</th><th>Close</th></tr>'+data.map(d=>`<tr><td>${d.symbol}</td><td>${d.close}</td></tr>`).join('');
 }
+function updateOverview(q){
+  const tbl=document.getElementById('overview');
+  const empty=document.getElementById('overview-empty');
+  empty.style.display='none';
+  let row=tbl.querySelector(`tr[data-sym="${q.symbol}"]`);
+  if(!row){
+    row=document.createElement('tr');
+    row.dataset.sym=q.symbol;
+    row.innerHTML=`<td>${q.symbol}</td><td>${q.p}</td>`;
+    tbl.appendChild(row);
+  }else{
+    row.children[1].textContent=q.p;
+  }
+}
 function showAlerts(msgs){
   const container=document.getElementById('alerts');
   msgs.forEach(m=>{
@@ -300,10 +316,10 @@ MAIN_TEMPLATE = """
   <input name=end placeholder="YYYY-MM-DD">
   <input type=submit value=Backfill>
 </form>
-<h2>Simulate</h2>
-<form action="{{ url_for('simulate_route') }}" method=post>
-  <input name=capital placeholder=Capital>
-  <input type=submit value=Simulate>
+<h2>Back-test</h2>
+<form action="{{ url_for('simulate_route') }}" method=get>
+  <input name=days placeholder=Days>
+  <input type=submit value="Run Back-test">
 </form>
 <h2>Dashboards</h2>
 <form action="{{ url_for('feature_dash') }}" method=post>
@@ -446,15 +462,16 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         Thread(target=task).start()
         return redirect(url_for("index"))
 
-    @app.route("/simulate", methods=["POST"])
+    @app.route("/simulate", methods=["GET"])
     def simulate_route():
-        csv_file = request.form.get("csv_file") or latest_file("features", ".csv")
-        capital = float(request.form.get("capital", "10000"))
-        if not csv_file:
+        days = int(request.args.get("days", "30"))
+        csv_file = latest_file("features", ".csv")
+        model_path = latest_file("models", ".txt")
+        if not csv_file or not model_path:
             return redirect(url_for("index"))
-        from . import simulate as sim
+        from . import backtest as bt
 
-        Thread(target=sim.simulate, args=(csv_file, "buy_hold", capital)).start()
+        Thread(target=bt.backtest, args=(csv_file, model_path, days)).start()
         return redirect(url_for("index"))
 
     @app.route("/feature_dashboard", methods=["POST"])
@@ -507,7 +524,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def api_metrics():
         csv = Path(app.static_folder) / "scoreboard.csv"
         if not csv.exists():
-            return jsonify({})
+            return jsonify({"status": "empty"})
         df = pd.read_csv(csv)
         last = df.iloc[-1]
         res = {
@@ -517,6 +534,16 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             "cv_auc": float(last.get("cv_auc", 0)),
         }
         return jsonify(res)
+
+    @app.route("/api/features/latest")
+    def api_features_latest():
+        feat = latest_file("features", ".csv")
+        meta = latest_file("models", "_metadata.json")
+        if not feat or not meta:
+            return jsonify({})
+        data = json.loads(Path(meta).read_text())
+        data["features"] = feat
+        return jsonify(data)
 
     @app.route("/api/scoreboard")
     def api_scoreboard():
@@ -568,7 +595,13 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         path = Path(app.config["ENV_PATH"])
         db_path = "market_data.db"
         if not Path(db_path).exists():
-            return jsonify([])
+            try:
+                from .collector.api import fetch_snapshot_tickers
+
+                data = fetch_snapshot_tickers()
+                return jsonify(data.get("tickers", []))
+            except Exception:
+                return jsonify([])
         conn = sqlite3.connect(db_path)
         syms = []
         if path.exists():
@@ -584,6 +617,22 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         )
         df = pd.read_sql(query, conn, params=syms)
         conn.close()
+        if df.empty:
+            try:
+                from .collector.api import fetch_snapshot_tickers
+
+                data = fetch_snapshot_tickers()
+                return jsonify(data.get("tickers", []))
+            except Exception:
+                return jsonify([])
+        return jsonify(df.to_dict(orient="records"))
+
+    @app.route("/api/options/<date>")
+    def api_options(date: str):
+        path = Path(app.static_folder) / f"options_chain.{date}.csv"
+        if not path.exists():
+            return jsonify([])
+        df = pd.read_csv(path)
         return jsonify(df.to_dict(orient="records"))
 
     @socketio.on("connect")

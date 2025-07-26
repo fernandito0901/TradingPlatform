@@ -202,3 +202,13 @@
 ### 2025-09-22 – @Coder
 - Updated Dockerfile to install `libgomp1` so LightGBM loads correctly in
   containers.
+### 2025-09-23 – @Coder
+- Added API endpoints for latest features metadata and option chains.
+- Back-test button replaces simulate form and triggers `/simulate?days=`.
+- Evaluator emits `pnl_update` over Socket.IO for live equity charts.
+- Broker stub hits Alpaca when `BROKER_URL` is configured.
+### 2025-09-27 – @Coder
+- Added Polygon helper wrappers and intraday features in the pipeline.
+- Delayed stream pushes quotes to Market Overview via Socket.IO.
+- `/api/overview` falls back to snapshot tickers when DB is empty.
+- Added Docker smoke test workflow.

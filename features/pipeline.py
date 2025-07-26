@@ -1,6 +1,13 @@
 import os
 from typing import Optional
 
+from trading_platform.collector.api import (
+    fetch_open_close,
+    fetch_prev_close,
+    fetch_quotes,
+    fetch_trades,
+)
+
 import pandas as pd
 from arch import arch_model
 
@@ -81,7 +88,9 @@ def from_db(conn, symbol: str) -> pd.DataFrame:
     pandas.DataFrame
         DataFrame with feature columns computed by :func:`compute_features`.
     """
-    query = "SELECT t, close FROM ohlcv WHERE symbol=? ORDER BY t"
+    query = (
+        "SELECT t, open, high, low, close, volume FROM ohlcv WHERE symbol=? ORDER BY t"
+    )
     df = pd.read_sql_query(query, conn, params=(symbol,))
     if df.empty:
         raise ValueError("no data for symbol")
@@ -112,7 +121,73 @@ def from_db(conn, symbol: str) -> pd.DataFrame:
         if scores:
             news_sent = sum(scores) / len(scores)
 
-    return compute_features(df, iv=iv, news_sent=news_sent, uoa=uoa)
+    feats = compute_features(df[["t", "close"]], iv=iv, news_sent=news_sent, uoa=uoa)
+
+    today = pd.Timestamp.utcnow().date().isoformat()
+    data = fetch_open_close(symbol, today)
+    if not data:
+        data = fetch_prev_close(symbol)
+    if not data:
+        raise ValueError("open/close endpoints returned empty arrays")
+    prev_close = data.get("previousClose")
+    if prev_close is None:
+        results = data.get("results", [])
+        if results:
+            prev_close = results[0].get("c")
+    if prev_close is None:
+        raise ValueError("open/close endpoints returned empty arrays")
+    open_p = data.get("open") or (data.get("results", [{}])[0].get("o"))
+    if open_p is None:
+        open_p = float("nan")
+    gap = (open_p - prev_close) / prev_close
+
+    df["prev_close"] = df["close"].shift(1)
+    tr1 = df["high"] - df["low"]
+    tr2 = (df["high"] - df["prev_close"]).abs()
+    tr3 = (df["low"] - df["prev_close"]).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    atr14 = tr.rolling(14).mean().iloc[-1]
+
+    try:
+        tdata = fetch_trades(symbol)
+        tresults = tdata.get("results", [])
+        if not tresults:
+            raise ValueError
+        prices = [
+            r.get("p") or r.get("price")
+            for r in tresults
+            if r.get("p") or r.get("price")
+        ]
+        sizes = [r.get("s") or r.get("size") or 1 for r in tresults]
+        intraday_atr = max(prices) - min(prices)
+        vwap = sum(p * s for p, s in zip(prices, sizes)) / sum(sizes)
+    except Exception:
+        intraday_atr = None
+        vwap = None
+
+    try:
+        qdata = fetch_quotes(symbol)
+        qresults = qdata.get("results", [])
+        if not qresults:
+            raise ValueError
+        spreads = []
+        for q in qresults:
+            bid = q.get("bp") or q.get("bid_price")
+            ask = q.get("ap") or q.get("ask_price")
+            if bid is not None and ask is not None:
+                spreads.append(ask - bid)
+        spread = sum(spreads) / len(spreads) if spreads else None
+    except Exception:
+        spread = None
+
+    feats["prev_close"] = prev_close
+    feats["gap_up"] = max(gap, 0)
+    feats["gap_down"] = abs(min(gap, 0))
+    feats["atr14"] = atr14
+    feats["intraday_atr"] = intraday_atr
+    feats["vwap"] = vwap
+    feats["spread"] = spread
+    return feats
 
 
 def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
