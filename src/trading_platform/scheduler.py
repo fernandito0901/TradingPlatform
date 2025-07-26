@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from threading import Thread
+from threading import Thread
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify
 from dotenv import load_dotenv
@@ -15,6 +16,13 @@ except Exception:  # pragma: no cover - webapp not running
 
 from .config import load_config, Config
 from .run_daily import run as run_daily
+
+health_app = Flask(__name__)
+
+
+@health_app.route("/healthz")
+def healthz():
+    return jsonify(status="ok")
 
 health_app = Flask(__name__)
 
@@ -47,7 +55,11 @@ def start(
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
     if socketio is not None:
         sched.add_job(lambda: socketio.emit("scheduler-alive"), "interval", seconds=60)
+    if socketio is not None:
+        sched.add_job(lambda: socketio.emit("scheduler-alive"), "interval", seconds=60)
     sched.start()
+    if socketio is not None:
+        socketio.emit("scheduler-alive")
     if socketio is not None:
         socketio.emit("scheduler-alive")
     return sched
@@ -56,8 +68,10 @@ def start(
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point for the scheduler."""
     load_dotenv()
+    load_dotenv()
     cfg = load_config(argv)
     start(cfg)
+    Thread(target=health_app.run, kwargs={"host": "0.0.0.0", "port": 8001}).start()
     Thread(target=health_app.run, kwargs={"host": "0.0.0.0", "port": 8001}).start()
     try:
         while True:
