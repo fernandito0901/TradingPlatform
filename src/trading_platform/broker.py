@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 import os
-from . import REPORTS_DIR
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 import requests

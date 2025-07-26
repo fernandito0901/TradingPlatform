@@ -1,7 +1,7 @@
 """Risk metrics reporting utilities."""
 
 from pathlib import Path
-from . import REPORTS_DIR
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 

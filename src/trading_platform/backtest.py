@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import argparse
-from . import REPORTS_DIR
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 import lightgbm as lgb

@@ -1,7 +1,7 @@
 """Simple HTML dashboard for model performance metrics."""
 
 from pathlib import Path
-from .. import REPORTS_DIR
+from . import REPORTS_DIR
 
 
 def generate_dashboard(

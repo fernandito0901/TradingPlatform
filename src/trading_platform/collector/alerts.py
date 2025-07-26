@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import List, Optional
-from .. import REPORTS_DIR
+from trading_platform.reports import REPORTS_DIR
 
 from .. import notifier
 

@@ -42,6 +42,8 @@ The collector relies on a few environment variables and optional command‑line
 flags. Example values can be found in [.env.example](.env.example). These are
 merged into a single ``Config`` dataclass loaded via
 ``trading_platform.load_config``.
+The ``REPORTS_DIR`` variable controls where generated reports are written. It
+defaults to the package's ``reports/`` folder.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
@@ -378,6 +380,8 @@ Start the web interface and scheduler together using the provided compose file:
 docker compose build
 docker compose up -d
 ```
+
+After running `make quick-start`, use the command above to launch the stack.
 
 Both services load variables from `.env` and share the `data/` and `reports/` directories.
 ## Docker Quick-start

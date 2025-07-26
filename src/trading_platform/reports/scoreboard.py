@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
-from .. import REPORTS_DIR
+from . import REPORTS_DIR
 
 
 def update_scoreboard(

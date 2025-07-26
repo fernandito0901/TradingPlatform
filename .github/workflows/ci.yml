@@ -6,12 +6,7 @@ on:
 
 jobs:
   lint_unit:
-  lint_unit:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.10', '3.11']
-        target: [lint, tests]
     strategy:
       matrix:
         python-version: ['3.10', '3.11']
@@ -20,12 +15,6 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.lock') }}
-          restore-keys: pip-
           python-version: ${{ matrix.python-version }}
       - uses: actions/cache@v4
         with:
@@ -46,17 +35,16 @@ jobs:
         - name: Unit tests
           if: matrix.target == 'tests'
           run: pytest -q
-        - name: Reports import
-          if: matrix.target == 'tests'
-          run: tox -e smoke-reports
-
+      - name: Reports import
+        if: matrix.target == 'tests'
+        run: tox -e smoke-reports
+      - name: Features import
+        if: matrix.target == 'tests'
+        run: tox -e smoke-features
   docker-smoke:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -67,51 +55,7 @@ jobs:
           key: "${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}"
           restore-keys: "${{ runner.os }}-docker-"
       - name: Docker smoke
-          key: "${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}"
-          restore-keys: "${{ runner.os }}-docker-"
-      - name: Docker smoke
         run: |
-          scripts/docker_smoke.sh --ci || { CODE=$?; [ $CODE -eq 78 ] || exit $CODE; }
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-
-  docs-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install -g markdownlint-cli
-      - name: Lint docs
-        run: markdownlint '**/*.md'
-      - name: Check links
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: "--no-progress README.md docs/**/*.md"
-      - name: Install PlantUML
-        run: sudo apt-get update && sudo apt-get install -y plantuml
-      - name: Build architecture diagram
-        run: scripts/gen_arch_svg.sh
-      - name: Check diagram committed
-        run: git diff --exit-code docs/arch.svg
-
-  backtest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.lock') }}
-          restore-keys: pip-
-      - run: |
-          python -m pip install --upgrade pip
-          pip install -e .
-      - run: python scripts/run_backtest.py
           scripts/docker_smoke.sh --ci || { CODE=$?; [ $CODE -eq 78 ] || exit $CODE; }
         env:
           GITHUB_SHA: ${{ github.sha }}

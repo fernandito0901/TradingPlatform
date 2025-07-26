@@ -3,7 +3,7 @@
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
-from .. import REPORTS_DIR
+from . import REPORTS_DIR
 
 
 def generate_feature_dashboard(

@@ -5,13 +5,6 @@
 - AGENTS.md trimmed to Planner, Developer and Tester
 - Docker smoke skips with code 78 when Docker is missing
 
-## 2025-10-03
-- Docs linting job added to CI
-- Architecture diagram embedded in README
-- AGENTS.md trimmed to Planner, Developer and Tester
-- Docker smoke skips with code 78 when Docker is missing
-
-
 ## 2025-07-24
 - Modularized code into collector package and added argparse CLI.
 - Collector now requires the `POLYGON_API_KEY` environment variable.
@@ -357,3 +350,9 @@
 - Moved `reports` package under `trading_platform` to fix missing module errors
 - Dockerfile now checks the import during build
 - CI runs `tox -e smoke-reports` to verify packaging
+
+## 2025-10-05
+- Packaged `features` module under `trading_platform`
+- Reports directory configurable via `REPORTS_DIR`
+- Docker image creates writable `/app/data/reports`
+- New `smoke-features` tox env and CI job

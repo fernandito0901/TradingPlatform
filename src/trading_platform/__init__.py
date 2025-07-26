@@ -5,8 +5,7 @@ import importlib
 
 from .load_env import load_env
 from .config import Config, load_config
-
-REPORTS_DIR = Path(__file__).resolve().parent / "reports"
+from .reports import REPORTS_DIR
 
 
 def __getattr__(name: str):
@@ -39,5 +38,4 @@ __all__ = [
     "risk_report",
     "scheduler",
     "evaluator",
-    "REPORTS_DIR",
 ]

@@ -4,17 +4,15 @@ from __future__ import annotations
 
 import os
 import logging
-import logging
 from pathlib import Path
 from threading import Thread
 import json
 import sqlite3
 import subprocess
-import subprocess
 
 from . import risk_report
 from .secret_filter import SecretFilter
-from .secret_filter import SecretFilter
+from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 from flask import (
@@ -30,7 +28,6 @@ from flask_socketio import SocketIO
 socketio = SocketIO()
 
 from .config import load_config
-from dotenv import load_dotenv
 from dotenv import load_dotenv
 
 SETUP_TEMPLATE = """
@@ -63,8 +60,6 @@ DASH_TEMPLATE = """
   <!-- Plotly loaded on demand -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
-  <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
 </head>
@@ -124,12 +119,9 @@ DASH_TEMPLATE = """
         <div id="metrics-skel" class="placeholder-wave" style="height:2rem"></div>
         <div id="metrics"></div>
         <div id="strategy-metrics" class="mt-2"></div>
-        <div id="strategy-metrics" class="mt-2"></div>
         <div id="metrics-empty" class="text-muted">Loading…</div>
         <div id="metrics-upd" class="small text-muted"></div>
       </div>
-      <div class="card p-3 shadow-sm mb-3" id="performance-card"></div>
-      <div class="card p-3 shadow-sm" id="equity-card"></div>
       <div class="card p-3 shadow-sm mb-3" id="performance-card"></div>
       <div class="card p-3 shadow-sm" id="equity-card"></div>
     </div>
@@ -141,7 +133,6 @@ DASH_TEMPLATE = """
         <div id="overview-empty" class="text-muted">Loading…</div>
         <div id="overview-upd" class="small text-muted"></div>
       </div>
-      <div class="card p-3 shadow-sm mb-3" id="flow-card"></div>
       <div class="card p-3 shadow-sm mb-3" id="flow-card"></div>
       <div class="card p-3 shadow-sm" id="alerts-card">
         <div class="d-flex justify-content-between mb-2">
@@ -157,7 +148,6 @@ DASH_TEMPLATE = """
   </div>
   <div class="mt-4" id="scheduler-section">
     <h5><i class="fa fa-calendar me-2"></i>Scheduler <span id="sched-badge">🔴</span></h5>
-    <h5><i class="fa fa-calendar me-2"></i>Scheduler <span id="sched-badge">🔴</span></h5>
     {% if scheduler %}
     <form action="{{ url_for('stop_scheduler_route') }}" method=post>
       <input type=submit value="Stop Scheduler" class="btn btn-warning">
@@ -167,9 +157,6 @@ DASH_TEMPLATE = """
       <input type=submit value="Start Scheduler" class="btn btn-success">
     </form>
     {% endif %}
-    <form id="restart-sched" action="{{ url_for('start_scheduler_route') }}" method=post style="display:none">
-      <input type=submit value="Restart" class="btn btn-danger mt-2">
-    </form>
     <form id="restart-sched" action="{{ url_for('start_scheduler_route') }}" method=post style="display:none">
       <input type=submit value="Restart" class="btn btn-danger mt-2">
     </form>
@@ -187,7 +174,6 @@ socket.on('overview_quote',q=>updateOverview(q));
 let seenAlerts=new Set();
 let seenNews=new Set();
 let trades=[];
-let lastTradesFetch=0;
 let lastTradesFetch=0;
 let sortKey='score';
 let sortAsc=false;
@@ -207,20 +193,12 @@ function load(){
     lastTradesFetch=now;
     fetch('/api/trades').then(r=>r.json()).then(showTrades);
   }
-  const now=Date.now();
-  if(now-lastTradesFetch>300000){
-    lastTradesFetch=now;
-    fetch('/api/trades').then(r=>r.json()).then(showTrades);
-  }
   fetch('/api/metrics').then(r=>r.json()).then(showMetrics);
-  fetch('/api/metrics/strategy').then(r=>r.json()).then(showStrategy);
-  fetch('/api/metrics/performance').then(r=>r.json()).then(renderPerformance);
   fetch('/api/metrics/strategy').then(r=>r.json()).then(showStrategy);
   fetch('/api/metrics/performance').then(r=>r.json()).then(renderPerformance);
   fetch('/api/positions').then(r=>r.json()).then(showPositions);
   fetch('/api/watchlist').then(r=>r.json()).then(showWatchlist);
   fetch('/api/overview').then(r=>r.json()).then(showOverview);
-  fetch('/api/flow').then(r=>r.json()).then(showFlow);
   fetch('/api/flow').then(r=>r.json()).then(showFlow);
 }
 function refreshNews(){fetch('/api/news').then(r=>r.json()).then(showNews);}
@@ -296,39 +274,12 @@ function showMetrics(m){
     div.innerHTML='';
     empty.style.display='none';
     skel.style.display='block';
-    empty.style.display='none';
-    skel.style.display='block';
     return;
   }
-  skel.style.display='none';
   skel.style.display='none';
   empty.style.display='none';
   div.innerHTML=`Last trained ${m.date||''}<br>Train ${badge(m.train_auc)} Test ${badge(m.test_auc)} CV ${badge(m.cv_auc)}`;
   document.getElementById('metrics-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-}
-function tag(v){
-  if(v>1) return `<span class="badge bg-success">${v.toFixed(2)}</span>`;
-  if(v>=0.5) return `<span class="badge bg-warning text-dark">${v.toFixed(2)}</span>`;
-  return `<span class="badge bg-danger">${v.toFixed(2)}</span>`;
-}
-function showStrategy(m){
-  const div=document.getElementById('strategy-metrics');
-  if(m.status==='empty'){div.innerHTML='';return;}
-  div.innerHTML=`Sharpe ${tag(m.sharpe)} Sortino ${tag(m.sortino)} Win ${tag(m.win_rate)}`;
-}
-function renderPerformance(m){
-  if(m.status==='empty') return;
-  const cls=v=>v>1?'text-success':v>=0.5?'text-warning':'text-danger';
-  const card=React.createElement(
-    'div',
-    null,
-    React.createElement('h5',{className:'card-title'},React.createElement('i',{className:'fa fa-trophy me-2'}),'Performance'),
-    React.createElement('div',null,
-      React.createElement('span',{className:cls(m.sharpe)},'Sharpe '+m.sharpe.toFixed(2)+' '),
-      React.createElement('span',{className:cls(m.sortino)},'Sortino '+m.sortino.toFixed(2))
-    )
-  );
-  ReactDOM.render(card, document.getElementById('performance-card'));
 }
 function tag(v){
   if(v>1) return `<span class="badge bg-success">${v.toFixed(2)}</span>`;
@@ -397,13 +348,6 @@ function showFlow(data){
   card.style.display='block';
   card.innerHTML=`<h5 class="card-title"><i class="fa fa-bolt me-2"></i>Smart Flow</h5><div>Call/Put ${item.call_ratio}/${item.put_ratio}</div>`;
 }
-function showFlow(data){
-  const card=document.getElementById('flow-card');
-  if(!data.length){card.style.display='none';return;}
-  const item=data[0];
-  card.style.display='block';
-  card.innerHTML=`<h5 class="card-title"><i class="fa fa-bolt me-2"></i>Smart Flow</h5><div>Call/Put ${item.call_ratio}/${item.put_ratio}</div>`;
-}
 function showAlerts(msgs){
   const container=document.getElementById('alerts');
   msgs.forEach(m=>{
@@ -432,39 +376,19 @@ function renderEquity(data){
     React.createElement('div',{id:'equity-upd',className:'small text-muted'},'Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))
   );
   ReactDOM.render(card,container);
-function renderEquity(data){
-  const container=document.getElementById('equity-card');
-  if(!data.length){
-    ReactDOM.render(React.createElement('div',{className:'placeholder-wave',style:{height:'200px'}}),container);
-    return;
-  }
-  const plot=React.createElement('div',{id:'eq-chart'});
-  const card=React.createElement(
-    'div',
-    null,
-    React.createElement('h5',{className:'card-title'},React.createElement('i',{className:'fa fa-chart-area me-2'}),'Equity Curve'),
-    plot,
-    React.createElement('div',{id:'equity-upd',className:'small text-muted'},'Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))
-  );
-  ReactDOM.render(card,container);
   const trace={x:data.map(r=>r.date),y:data.map(r=>r.total),type:'scatter'};
-  Plotly.newPlot('eq-chart',[trace]);
   Plotly.newPlot('eq-chart',[trace]);
 }
 let plotlyLoaded=false;
 function refreshEquity(){
   const container=document.getElementById('equity-card');
   ReactDOM.render(React.createElement('div',{className:'placeholder-wave',style:{height:'200px'}}),container);
-  const container=document.getElementById('equity-card');
-  ReactDOM.render(React.createElement('div',{className:'placeholder-wave',style:{height:'200px'}}),container);
   if(!plotlyLoaded){
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.24.1';
     s.onload=()=>{plotlyLoaded=true;fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);};
-    s.onload=()=>{plotlyLoaded=true;fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);};
     document.head.appendChild(s);
   }else{
-    fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);
     fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);
   }
 }
@@ -490,34 +414,15 @@ function checkScheduler(){
     document.getElementById('restart-sched').style.display='block';
   });
 }
-function checkScheduler(){
-  fetch('/api/scheduler/alive').then(r=>r.json()).then(d=>{
-    const badge=document.getElementById('sched-badge');
-    const restart=document.getElementById('restart-sched');
-    if(d.alive){
-      badge.textContent='🟢';
-      restart.style.display='none';
-    }else{
-      badge.textContent='🔴';
-      restart.style.display='block';
-    }
-  }).catch(()=>{
-    document.getElementById('sched-badge').textContent='🔴';
-    document.getElementById('restart-sched').style.display='block';
-  });
-}
 load();
 refreshNews();
 refreshAlerts();
 const obs=new IntersectionObserver(e=>{if(e[0].isIntersecting){refreshEquity();obs.disconnect();}},{});
 obs.observe(document.getElementById('equity-card'));
-obs.observe(document.getElementById('equity-card'));
 setInterval(load,10000);
 setInterval(refreshNews,300000);
 setInterval(refreshAlerts,300000);
 setInterval(refreshEquity,600000);
-setInterval(checkScheduler,30000);
-checkScheduler();
 setInterval(checkScheduler,30000);
 checkScheduler();
 </script>
@@ -578,7 +483,7 @@ MAIN_TEMPLATE = """
 def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     """Create configured Flask application."""
 
-    app = Flask(__name__, static_folder="reports", static_url_path="/reports")
+    app = Flask(__name__, static_folder=str(REPORTS_DIR), static_url_path="/reports")
     socketio.init_app(app)
     flt = SecretFilter()
     app.logger.addFilter(flt)
@@ -589,17 +494,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         after_setup_logger.connect(lambda logger, **_: logger.addFilter(flt))
     except Exception:
         pass
-    flt = SecretFilter()
-    app.logger.addFilter(flt)
-    logging.getLogger("werkzeug").addFilter(flt)
-    try:
-        from celery.signals import after_setup_logger
-
-        after_setup_logger.connect(lambda logger, **_: logger.addFilter(flt))
-    except Exception:
-        pass
     app.config["ENV_PATH"] = Path(env_path)
-    load_dotenv(env_path)
     load_dotenv(env_path)
     app.config["SCHED"] = None
 
@@ -639,7 +534,6 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/", methods=["GET", "POST"])
     def index():
-        load_dotenv(app.config["ENV_PATH"])
         load_dotenv(app.config["ENV_PATH"])
         if request.method == "POST":
             save_env(
@@ -690,21 +584,6 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if sched is not None:
             sched.shutdown()
         return redirect(url_for("index"))
-
-    @app.route("/api/scheduler/alive")
-    def scheduler_alive_api():
-        return jsonify({"alive": app.config.get("SCHED") is not None})
-
-    @app.route("/api/scheduler/restart", methods=["POST"])
-    def scheduler_restart_api():
-        try:
-            subprocess.run(["supervisorctl", "restart", "scheduler"], check=True)
-            return jsonify({"status": "restarted"})
-        except Exception as exc:
-            return (
-                jsonify({"status": "error", "detail": str(exc)}),
-                500,
-            )
 
     @app.route("/api/scheduler/alive")
     def scheduler_alive_api():
@@ -803,14 +682,6 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             "SELECT title, url FROM news ORDER BY published_at DESC LIMIT 5", conn
         )
         conn.close()
-        return jsonify(df.to_dict(orient="records"))
-
-    @app.route("/api/flow")
-    def api_flow():
-        from . import flow
-
-        syms = os.getenv("SYMBOLS", "AAPL").split(",")[0]
-        df = flow.fetch_flow(syms)
         return jsonify(df.to_dict(orient="records"))
 
     @app.route("/api/flow")
@@ -937,27 +808,6 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
                 df["date"] = df["date"].dt.date.astype(str)
         return jsonify(df.to_dict(orient="records"))
 
-    @app.route("/api/metrics/equity")
-    def api_equity_curve():
-        from . import portfolio
-
-        days = request.args.get("last")
-        df = portfolio.load_pnl()
-        if df.empty:
-            return jsonify([])
-        if days and days.endswith("d"):
-            try:
-                n = int(days[:-1])
-            except ValueError:
-                n = None
-            if n:
-                df["date"] = pd.to_datetime(df["date"])
-                cutoff = pd.Timestamp.utcnow().normalize() - pd.Timedelta(days=n)
-                cutoff = cutoff.tz_localize(None)
-                df = df[df["date"] >= cutoff]
-                df["date"] = df["date"].dt.date.astype(str)
-        return jsonify(df.to_dict(orient="records"))
-
     @app.route("/api/alerts")
     def api_alerts():
         from .collector import alerts as alert_mod
@@ -1009,11 +859,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             conn.close()
             return jsonify({"status": "empty"})
 
-            return jsonify({"status": "empty"})
-
         conn.close()
-        if pd.isna(df["close"]).all():
-            return jsonify({"status": "empty"})
         if pd.isna(df["close"]).all():
             return jsonify({"status": "empty"})
         return jsonify(df.to_dict(orient="records"))
@@ -1025,10 +871,6 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             return jsonify([])
         df = pd.read_csv(path)
         return jsonify(df.to_dict(orient="records"))
-
-    @app.route("/healthz")
-    def healthz():
-        return jsonify({"status": "ok"})
 
     @app.route("/healthz")
     def healthz():

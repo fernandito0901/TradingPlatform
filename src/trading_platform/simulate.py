@@ -5,7 +5,8 @@ from pathlib import Path
 import pandas as pd
 
 from trading_platform.reports.scoreboard import update_scoreboard
-from trading_platform import portfolio, REPORTS_DIR
+from trading_platform import portfolio
+from trading_platform.reports import REPORTS_DIR
 
 
 STRATEGIES = ["buy_hold"]
