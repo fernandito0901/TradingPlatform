@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+from pathlib import Path
 
 from .config import Config, load_config
 
@@ -15,6 +16,7 @@ from . import notifier
 from trading_platform.reports.dashboard import generate_dashboard
 from trading_platform.reports.feature_dashboard import generate_feature_dashboard
 from trading_platform.reports.scoreboard import update_scoreboard
+from trading_platform.reports import REPORTS_DIR
 
 try:  # optional during CLI usage
     from .webapp import socketio
@@ -106,8 +108,17 @@ def run(config: Config) -> str:
         raise
 
     logging.info("Pipeline completed: %s", pb_path)
+    demo_dir = Path(__file__).resolve().parent / "reports" / "demo"
+    for name in ["pnl.csv", "trades.csv", "scoreboard.csv", "news.csv"]:
+        dest = REPORTS_DIR / name
+        if not dest.exists():
+            src = demo_dir / name
+            if src.exists():
+                dest.write_text(src.read_text())
     agg.flush()
     notifier.send_slack(f"Pipeline completed: {pb_path}")
+    if socketio:
+        socketio.emit("dashboard-refresh", {})
     return pb_path
 
 
