@@ -19,7 +19,7 @@ def _import_pipeline_module():
     for name in ("features_pipeline", "features.pipeline"):
         try:
             return import_module(name)
-        except ModuleNotFoundError:
+        except (ModuleNotFoundError, SystemExit):
             continue
     return None
 

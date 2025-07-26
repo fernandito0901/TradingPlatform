@@ -13,6 +13,19 @@ import subprocess
 from . import risk_report
 from .secret_filter import SecretFilter
 from trading_platform.reports import REPORTS_DIR
+from .db import bootstrap as bootstrap_db
+
+DEMO_DIR = Path(__file__).resolve().parent / "reports" / "demo"
+
+
+def get_connection(db_path: Path):
+    """Return writable SQLite connection, creating file if needed."""
+    try:
+        return sqlite3.connect(db_path, check_same_thread=False)
+    except sqlite3.OperationalError:  # pragma: no cover - touch fallback
+        db_path.touch()
+        return sqlite3.connect(db_path, check_same_thread=False)
+
 
 import pandas as pd
 from flask import (
@@ -56,7 +69,7 @@ DASH_TEMPLATE = """
   <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap\" rel=\"stylesheet\">
   <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="/reports/style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <!-- Plotly loaded on demand -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
@@ -498,12 +511,35 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     load_dotenv(env_path)
     app.config["SCHED"] = None
 
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    db_path = Path(os.getenv("TP_DB", REPORTS_DIR / "scoreboard.db"))
+    app.config["DB_URI"] = f"sqlite:///{db_path}"
+    app.config["DB_FILE"] = db_path
+    try:
+        bootstrap_db(db_path)
+    except Exception:
+        pass
+
     # ensure scoreboard CSV and placeholder reports exist to avoid broken links
     sb_csv = Path(app.static_folder) / "scoreboard.csv"
     if not sb_csv.exists():
         sb_csv.parent.mkdir(parents=True, exist_ok=True)
         if not sb_csv.exists():
             sb_csv.write_text("date,playbook,auc\n")
+
+    for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
+        demo = DEMO_DIR / name
+        dest = Path(app.static_folder) / name
+        if not dest.exists() and demo.exists():
+            dest.write_text(demo.read_text())
+
+    style = Path(app.static_folder) / "style.css"
+    if not style.exists():
+        src = Path(__file__).resolve().parent / "reports" / "style.css"
+        if src.exists():
+            style.write_text(src.read_text())
+        else:
+            style.write_text("")
 
     for name in ["dashboard.html", "feature_dashboard.html", "strategies.html"]:
         path = Path(app.static_folder) / name
@@ -663,6 +699,12 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def api_trades():
         pb = latest_file("playbooks", ".json")
         if not pb:
+            demo = DEMO_DIR / "trades.csv"
+            if demo.exists():
+                import pandas as pd
+
+                df = pd.read_csv(demo)
+                return jsonify(df.to_dict(orient="records"))
             return jsonify([])
         data = json.loads(Path(pb).read_text())
         trades = data.get("trades", [])
@@ -674,15 +716,30 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/news")
     def api_news():
-        db_path = "market_data.db"
+        db_path = app.config.get("DB_FILE", Path("market_data.db"))
         if not Path(db_path).exists():
-            return jsonify([])
-        conn = sqlite3.connect(db_path)
-        df = pd.read_sql(
-            "SELECT title, url FROM news ORDER BY published_at DESC LIMIT 5", conn
-        )
+            demo = DEMO_DIR / "news.csv"
+            if demo.exists():
+                df = pd.read_csv(demo)
+                return jsonify({"items": df.to_dict(orient="records")})
+            return jsonify({"items": []})
+        conn = get_connection(db_path)
+        try:
+            df = pd.read_sql(
+                "SELECT title, url FROM news ORDER BY published_at DESC LIMIT 5",
+                conn,
+            )
+        except Exception:
+            conn.close()
+            demo = DEMO_DIR / "news.csv"
+            if demo.exists():
+                df = pd.read_csv(demo)
+                return jsonify({"items": df.to_dict(orient="records")})
+            return jsonify({"items": []})
         conn.close()
-        return jsonify(df.to_dict(orient="records"))
+        if df.empty:
+            return jsonify({"items": []})
+        return jsonify({"items": df.to_dict(orient="records")})
 
     @app.route("/api/flow")
     def api_flow():
@@ -694,33 +751,25 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/metrics")
     def api_metrics():
-        csv = Path(app.static_folder) / "scoreboard.csv"
-        if not csv.exists():
-            return jsonify({"status": "empty"})
-        df = pd.read_csv(csv)
-        if df.shape[0] == 0 or df.isna().all().all():
-            return jsonify({"status": "empty"})
-        try:
-            last = df.tail(1).squeeze()
-        except IndexError:
-            return jsonify({"status": "empty"})
-        if all(
-            pd.isna(last.get(col)) for col in ["train_auc", "test_auc", "cv_auc", "auc"]
-        ):
-            return jsonify({"status": "empty"})
-        res = {
-            "date": last.get("date", ""),
-            "train_auc": float(last.get("train_auc", last.get("auc", 0))),
-            "test_auc": float(last.get("test_auc", 0)),
-            "cv_auc": float(last.get("cv_auc", 0)),
-        }
-        return jsonify(res)
+        pnl_csv = Path(app.static_folder) / "pnl.csv"
+        if not pnl_csv.exists():
+            return jsonify({"total_return": 0.0, "pnl": 0.0})
+        df = pd.read_csv(pnl_csv)
+        if df.empty:
+            return jsonify({"total_return": 0.0, "pnl": 0.0})
+        pnl = float(df["total"].iloc[-1])
+        total_return = float(df["total"].iloc[-1] - df["total"].iloc[0])
+        return jsonify({"total_return": total_return, "pnl": pnl})
 
     @app.route("/api/metrics/strategy")
     def api_strategy_metrics():
         pnl_csv = Path(app.static_folder) / "pnl.csv"
         if not pnl_csv.exists():
-            return jsonify({"status": "empty"})
+            demo = DEMO_DIR / "pnl.csv"
+            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
+                pnl_csv.write_text(demo.read_text())
+            else:
+                return jsonify({"status": "empty"})
         df = pd.read_csv(pnl_csv)
         if df.empty:
             return jsonify({"status": "empty"})
@@ -740,7 +789,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def api_performance_metrics():
         pnl_csv = Path(app.static_folder) / "pnl.csv"
         if not pnl_csv.exists():
-            return jsonify({"status": "empty"})
+            demo = DEMO_DIR / "pnl.csv"
+            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
+                pnl_csv.write_text(demo.read_text())
+            else:
+                return jsonify({"status": "empty"})
         df = pd.read_csv(pnl_csv)
         if df.empty:
             return jsonify({"status": "empty"})
@@ -769,7 +822,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def api_scoreboard():
         csv = Path(app.static_folder) / "scoreboard.csv"
         if not csv.exists():
-            return jsonify([])
+            demo = DEMO_DIR / "scoreboard.csv"
+            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
+                csv.write_text(demo.read_text())
+            else:
+                return jsonify([])
         df = pd.read_csv(csv)
         return jsonify(df.to_dict(orient="records"))
 
@@ -834,8 +891,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     @app.route("/api/overview")
     def api_overview():
         path = Path(app.config["ENV_PATH"])
-        db_path = "market_data.db"
-        conn = sqlite3.connect(db_path)
+        db_path = app.config.get("DB_FILE", Path("market_data.db"))
+        conn = get_connection(db_path)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS prev_close (symbol TEXT, date TEXT, close REAL, UNIQUE(symbol, date))"
         )
