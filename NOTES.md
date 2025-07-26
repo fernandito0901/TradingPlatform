@@ -111,7 +111,6 @@
 - 2025-09-05 00:30 UTC: Implemented exit simulation algorithm updating unrealized PnL. Closed T90.
 - 2025-09-10 00:15 UTC: Added checks for empty feature data so training fails early if insufficient history.
 
-
 # Synthesizer
 - 2025-07-23 01:56 UTC: Implemented playbook generation using model predictions and scoring rule.
 - 2025-08-05 00:10 UTC: Updated scoring rule to incorporate news_sent, iv_edge, uoa and garch_spike; added tests verifying weighting.
