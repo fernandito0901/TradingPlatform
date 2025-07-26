@@ -1,4 +1,6 @@
 import sqlite3
+from pathlib import Path
+from trading_platform.reports import REPORTS_DIR
 
 
 def init_db(db_file: str) -> sqlite3.Connection:
@@ -16,7 +18,19 @@ def init_db(db_file: str) -> sqlite3.Connection:
       bid, ask, iv, delta, volume, open_interest)
     - ``news`` (symbol, published_at, title, url, source)
     """
-    conn = sqlite3.connect(db_file)
+    if db_file == ":memory:" or db_file.startswith("file::memory"):
+        conn = sqlite3.connect(db_file, uri=db_file.startswith("file:"))
+    else:
+        path = Path(db_file)
+        if not path.is_absolute():
+            path = REPORTS_DIR / path
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            conn = sqlite3.connect(path)
+        except sqlite3.OperationalError:
+            path.touch()
+            conn = sqlite3.connect(path)
+
     c = conn.cursor()
     c.execute(
         """CREATE TABLE IF NOT EXISTS ohlcv (
@@ -93,12 +107,11 @@ def init_db(db_file: str) -> sqlite3.Connection:
     )
     c.execute(
         """CREATE TABLE IF NOT EXISTS news (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             symbol TEXT,
-            published_at TEXT,
             title TEXT,
             url TEXT,
-            source TEXT,
-            PRIMARY KEY(symbol, published_at, title)
+            published_at DATETIME
         )"""
     )
     conn.commit()
