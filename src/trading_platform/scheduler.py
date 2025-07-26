@@ -42,6 +42,8 @@ def start(
     BackgroundScheduler
         The started scheduler instance.
     """
+    from .webapp import socketio as sio
+
     sched = BackgroundScheduler()
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
     sched.start()
