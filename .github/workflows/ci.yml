@@ -41,7 +41,6 @@ jobs:
       - name: Features import
         if: matrix.target == 'tests'
         run: tox -e smoke-features
-
   docker-smoke:
     runs-on: ubuntu-latest
     steps:
