@@ -4,3 +4,6 @@ run.log
 reports/scoreboard.csv
 reports/*.html
 market_data_collector.egg-info/
+models/best_params.json
+reports/pnl.csv
+src/trading_platform/reports/

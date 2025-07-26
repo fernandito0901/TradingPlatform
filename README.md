@@ -94,6 +94,15 @@ by 15 minutes. Option snapshots may omit bid/ask data. Additional fundamentals,
 corporate actions and technical indicators are fetched for future use when
 available.
 
+The REST API calls include:
+
+- `/v2/aggs/ticker/{symbol}/prev` – previous close (delayed)
+- `/v1/open-close/{symbol}/{date}` – daily open and close (delayed)
+- `/v3/trades/{symbol}?limit=50` – recent trades (delayed)
+- `/v3/quotes/{symbol}?limit=50` – recent quotes (delayed)
+- `/v3/reference/options/contracts?underlying_ticker={symbol}` – option contracts
+- `/v2/snapshot/locale/us/markets/stocks/tickers` – stock snapshot
+
 ## Reports
 
 Model training metrics are written to `reports/dashboard.html`. Open this file
@@ -101,10 +110,19 @@ in a browser to view recent AUC scores. Pass ``cv=True`` to
 ``models.train`` to compute a 5-fold average AUC that appears as **CV AUC**.
 The trainer automatically uses all feature columns (except ``t`` and
 ``target``), so new features are picked up without code changes.
+The trainer automatically uses all feature columns (except ``t`` and
+``target``), so new features are picked up without code changes.
 Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
 Use ``generate_strategy_dashboard`` to write `reports/strategies.html` summarizing POP for available trades.
+Risk metrics can be computed from `reports/scoreboard.csv` using the risk report CLI:
+
+```bash
+risk-report --scoreboard reports/scoreboard.csv --out-file reports/scoreboard_risk.csv
+```
+The `MAX_RISK` environment variable specifies per-strategy risk limits applied during simulations and evaluation.
+
 Risk metrics can be computed from `reports/scoreboard.csv` using the risk report CLI:
 
 ```bash
@@ -133,6 +151,16 @@ python run_daily.py --symbols AAPL,MSFT --db-file market_data.db
 The script aborts if the preflight connectivity check fails.
 If ``SLACK_WEBHOOK_URL`` is set, a message is posted on success or failure.
 Large trades and breaking news are detected during execution and aggregated into
+a Slack alert if ``SLACK_WEBHOOK_URL`` is configured. The completion message
+includes a table of the day’s top trades with probability, momentum and other
+factors so you can quickly review the rationale behind each recommendation.
+The playbook generator automatically pads any missing model features with zeros
+so LightGBM predictions run smoothly even if some columns are absent.
+The feature pipeline requires at least sixty days of historical bars; if too few
+rows are available ``models.train`` raises ``ValueError`` and the pipeline
+aborts.
+When the run completes, the top trades are printed to the console in the same
+table format for local review.
 a Slack alert if ``SLACK_WEBHOOK_URL`` is configured. The completion message
 includes a table of the day’s top trades with probability, momentum and other
 factors so you can quickly review the rationale behind each recommendation.
@@ -178,9 +206,33 @@ You can also backtest the latest features and model with:
 backtest features/2025-01-01/features.csv models/model_20250101_1200.txt
 ```
 
+You can also backtest the latest features and model with:
+
+```bash
+backtest features/2025-01-01/features.csv models/model_20250101_1200.txt
+```
+
 The CSV at `reports/scoreboard.csv` tracks daily AUC and optional PnL values.
 Simulated trades are also logged in `reports/portfolio.csv` and realized
 profits appended to `reports/pnl.csv`.
+
+### Makefile Shortcuts
+
+Common tasks are wrapped with Make targets:
+
+```bash
+make train ARGS="features.csv"
+make tune ARGS="features.csv --symbol AAPL"
+make backtest
+make daily ARGS="--symbols AAPL"
+```
+
+`make backtest` runs `scripts/run_backtest.py`, which loads the latest features
+and model to update `reports/pnl.csv`.
+
+The web dashboard periodically fetches `/api/scoreboard` and `/api/pnl` so
+`reports/scoreboard.csv` and `reports/pnl.csv` stay up to date without manual
+uploads.
 
 ### Makefile Shortcuts
 
@@ -220,6 +272,16 @@ portfolio close AAPL 150 --portfolio-file reports/portfolio.csv --pnl-file repor
 ```
 
 Closing a position updates `reports/pnl.csv` so dashboards can track PnL over time.
+### Real-time Monitoring
+
+Stream quotes for open positions and evaluate them continuously:
+
+```bash
+portfolio-stream --db-file market_data.db --portfolio-file reports/portfolio.csv
+evaluator --portfolio-file reports/portfolio.csv --pnl-file reports/pnl.csv
+```
+`portfolio-stream` records real-time quotes in the database. The `evaluator` closes positions when stop-loss or take-profit thresholds are reached and appends PnL to `reports/pnl.csv`. Set `SLACK_WEBHOOK_URL` to receive alerts for entry and exit events.
+
 ### Real-time Monitoring
 
 Stream quotes for open positions and evaluate them continuously:
