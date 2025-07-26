@@ -11,4 +11,4 @@ daily:
 	python -m trading_platform.run_daily $(ARGS)
 
 docker-smoke:
-	@./scripts/docker_smoke.sh
+	 scripts/docker_smoke.sh --ci || { CODE=$$?; [ $$CODE -eq 99 ] || exit $$CODE; }

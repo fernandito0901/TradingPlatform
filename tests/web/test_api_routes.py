@@ -18,8 +18,8 @@ def test_overview_empty(monkeypatch, tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=abc\n")
     monkeypatch.setattr(
-        "trading_platform.collector.api.fetch_snapshot_tickers",
-        lambda: {"tickers": []},
+        "trading_platform.collector.api.fetch_prev_close",
+        lambda s: {"results": [{"c": 100}]},
     )
     app = create_app(env_path=env)
     conn = sqlite3.connect("market_data.db")
@@ -29,4 +29,4 @@ def test_overview_empty(monkeypatch, tmp_path):
     conn.close()
     client = app.test_client()
     resp = client.get("/api/overview")
-    assert resp.json == []
+    assert resp.json[0]["close"] == 100

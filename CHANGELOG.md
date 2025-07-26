@@ -309,3 +309,10 @@
 - Dashboard UI polished with placeholders, dark-mode toggle persistence and last-updated badges
 - Metrics and overview APIs handle empty states correctly
 
+## 2025-09-29
+- `/api/metrics` handles empty DataFrames without crashing
+- Docker entrypoint seeds `reports/scoreboard.csv`
+- Market overview queries previous close prices when OHLCV data is missing
+- Trades table is accessible and hides skeleton rows once data arrives
+- Pre-PR smoke test runs via `tox -e smoke`
+

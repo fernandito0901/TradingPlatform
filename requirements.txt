@@ -8,7 +8,7 @@ lightgbm
 arch
 pytest-asyncio
 websockets
-plotly
+plotly>=5.22
 flask
 flask-socketio
 APScheduler

@@ -2,13 +2,16 @@
 set -euo pipefail
 
 CI_MODE=false
+ART_DIR=""
 if [[ ${1:-} == "--ci" ]]; then
   CI_MODE=true
+  ART_DIR="artifacts"
+
 fi
 
 if ! command -v docker >/dev/null; then
   echo "SKIPPED – Docker not available"
-  exit 0
+  exit 99
 fi
 
 export DOCKER_BUILDKIT=1
@@ -20,10 +23,16 @@ CONTAINER=trading-test
 docker run -d --rm --name $CONTAINER -p 5000:5000 -e POLYGON_API_KEY=dummy trading-platform
 
 cleanup() {
+  status=$?
   if [ "$CI_MODE" = true ]; then
     docker logs $CONTAINER || true
+    if [ -n "$ART_DIR" ]; then
+      mkdir -p "$ART_DIR"
+      docker logs $CONTAINER >"$ART_DIR/smoke.log" 2>&1 || true
+    fi
   fi
   docker stop $CONTAINER || true
+  exit $status
 }
 trap cleanup EXIT
 

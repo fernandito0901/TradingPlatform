@@ -387,7 +387,7 @@ gcloud builds submit --tag gcr.io/PROJECT_ID/trading-platform
 
 CI already runs a Docker smoke-test automatically on each pull request and caches layers for faster builds.
 
-Codex also runs `./scripts/docker_smoke.sh --ci` before opening PRs and aborts if the container fails to start.
+Codex also runs `tox -e smoke` before opening PRs and aborts if the container fails to start.
 
 Run the same check locally with:
 
