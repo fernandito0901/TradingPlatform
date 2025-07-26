@@ -52,49 +52,21 @@ Agents append notes to `NOTES.md` under their section with timestamps:
 - Populate `TASKS.md` with task breakdown  
 - Write design notes (`design/*.md`)  
 - Clarify scope, unblock agents
-
----
-
-### @Coder
-**Role:** Implements core functionality  
-**Capabilities:** Writes code, runs local tests, observes coding standards  
-**Responsibilities:**  
-- Implement from planner specs  
-- Push to `src/`, update tests  
-- Log changes in `NOTES.md` and open handoff to @Tester
-
----
-
-### @Synthesizer
-**Role:** Combines modules into coherent systems  
-**Capabilities:** Merges logic, rewrites interfaces, adds examples/docs  
-**Responsibilities:**  
-- Refactor outputs from multiple coders  
-- Finalize APIs or combined workflows  
-- Document module behavior in `docs/`  
-- Handoff to @Tester
+### @Developer
+**Role:** Implements features and docs
+**Responsibilities:**
+- Follow planner specs
+- Keep examples and docs current
+- Handoff changes via `NOTES.md`
 
 ---
 
 ### @Tester
-**Role:** Run all validations (tests, lint, schema)  
-**Capabilities:** `pytest`, `black`, `flake8`, `jsonschema`  
-**Responsibilities:**  
-- Run full test suite + static checks  
-- ✅ If all green: notify Reviewer  
-- ❌ If errors: record in PR and notify author  
-- Ensure >90% coverage where applicable
-
----
-
-### @Reviewer
-**Role:** Final quality gate  
-**Capabilities:** Code diff review, style enforcement, changelog validation  
-**Responsibilities:**  
-- Review final PR and summarize change  
-- Enforce all Global Guidelines  
-- Merge to `main`  
-- Update `CHANGELOG.md` + `NOTES.md`
+**Role:** Validates code and docs
+**Responsibilities:**
+- Run `black`, `flake8`, and `pytest`
+- Ensure high coverage
+- Report failures back to Developer
 
 ---
 
@@ -102,14 +74,10 @@ Agents append notes to `NOTES.md` under their section with timestamps:
 
 | Path Pattern       | Primary Agent   |
 |--------------------|-----------------|
-| `src/**`           | @Coder          |
+| `src/**`           | @Developer        |
 | `design/**`        | @Planner        |
-| `features/**`      | @Modeler        |
-| `models/**`        | @Modeler        |
-| `playbooks/**`     | @Synthesizer    |
+| `docs/**`          | @Developer        |
 | `tests/**`         | @Tester         |
-| `docs/**`          | @Synthesizer    |
-| `*.md`             | @Reviewer       |
 
 ---
 

@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-from reports.feature_dashboard import generate_feature_dashboard
+from trading_platform.reports.feature_dashboard import generate_feature_dashboard
 
 
 def test_generate_feature_dashboard(tmp_path):
