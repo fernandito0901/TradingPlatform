@@ -1,28 +1,31 @@
 """Tests for model training utilities."""
 
 import pandas as pd
+from pathlib import Path
 
-from trading_platform.models import train as train_model
+from trading_platform.models import train as train_model, TrainResult
 
 
 def test_train_model(tmp_path):
     data = {
-        "sma20": [1, 2, 3, 4, 5, 6],
-        "rsi14": [40, 50, 60, 55, 65, 70],
-        "target": [0, 1, 0, 1, 0, 1],
+        "t": pd.date_range("2025-01-01", periods=12),
+        "sma20": list(range(12)),
+        "rsi14": list(range(12, 24)),
+        "target": [0, 1] * 6,
     }
     df = pd.DataFrame(data)
     fpath = tmp_path / "features.csv"
     df.to_csv(fpath, index=False)
-    model_path = tmp_path / "model.txt"
-    train_auc, test_auc = train_model(str(fpath), str(model_path))
-    assert 0.0 <= train_auc <= 1.0
-    assert 0.0 <= test_auc <= 1.0
-    assert model_path.exists()
+    res = train_model(str(fpath), model_dir=str(tmp_path), symbol="A")
+    assert isinstance(res, TrainResult)
+    assert 0.0 <= res.train_auc <= 1.0
+    assert 0.0 <= res.test_auc <= 1.0
+    assert Path(res.model_path).exists()
 
 
 def test_train_model_cv(tmp_path):
     data = {
+        "t": pd.date_range("2025-01-01", periods=20),
         "sma20": list(range(1, 21)),
         "rsi14": list(range(20, 40)),
         "target": [0, 1] * 10,
@@ -30,7 +33,18 @@ def test_train_model_cv(tmp_path):
     df = pd.DataFrame(data)
     fpath = tmp_path / "features.csv"
     df.to_csv(fpath, index=False)
-    model_path = tmp_path / "model.txt"
-    mean_auc, _ = train_model(str(fpath), str(model_path), cv=True)
-    assert 0.0 <= mean_auc <= 1.0
-    assert model_path.exists()
+    res = train_model(str(fpath), model_dir=str(tmp_path), cv=True, symbol="B")
+    assert 0.0 <= res.cv_auc <= 1.0
+    assert Path(res.model_path).exists()
+
+
+def test_train_window_filter(tmp_path):
+    dates = pd.date_range("2025-01-01", periods=100)
+    df = pd.DataFrame(
+        {"t": dates, "sma20": range(100), "rsi14": range(100), "target": [0, 1] * 50}
+    )
+    fpath = tmp_path / "f.csv"
+    df.to_csv(fpath, index=False)
+    res = train_model(str(fpath), model_dir=str(tmp_path), window_days=30, symbol="C")
+    assert res.window_days == 30
+    assert Path(res.model_path).exists()

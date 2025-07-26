@@ -8,6 +8,9 @@ Columns produced by `features.pipeline`:
 - `hv30`: 30 day historical volatility
 - `garch_sigma`: volatility estimate from GARCH(1,1)
 - `news_sent`: news sentiment score
+- `iv_edge`: difference between implied and historical volatility
+- `garch_spike`: binary indicator when GARCH volatility exceeds HV
+- `uoa`: unusual options activity ratio
 - `target`: binary next-day up indicator
 
 ## Playbook JSON

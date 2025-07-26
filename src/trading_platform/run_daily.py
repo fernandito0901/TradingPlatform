@@ -1,8 +1,8 @@
 """Daily pipeline orchestration."""
 
 import asyncio
+import json
 import logging
-from pathlib import Path
 
 from .config import Config, load_config
 
@@ -15,6 +15,11 @@ from . import notifier
 from reports.dashboard import generate_dashboard
 from reports.feature_dashboard import generate_feature_dashboard
 from reports.scoreboard import update_scoreboard
+
+try:  # optional during CLI usage
+    from .webapp import socketio
+except Exception:  # pragma: no cover - webapp not running
+    socketio = None
 
 
 def run(config: Config) -> str:
@@ -46,12 +51,55 @@ def run(config: Config) -> str:
 
     try:
         feat_csv = run_pipeline(conn, config.symbols.split(",")[0])
-        model_path = str(Path(__file__).resolve().parent / "models" / "model.txt")
-        train_auc, test_auc = train_model(feat_csv, model_path)
-        generate_dashboard(train_auc, test_auc)
+        res = train_model(feat_csv, "models", symbol=config.symbols.split(",")[0])
+        if not res.model_path:
+            raise RuntimeError("drift guard triggered")
+        generate_dashboard(res.train_auc, res.test_auc, cv_auc=res.cv_auc)
         generate_feature_dashboard(feat_csv)
-        pb_path = generate_playbook(feat_csv, model_path)
-        update_scoreboard(pb_path, test_auc)
+        pb_path = generate_playbook(feat_csv, res.model_path)
+        update_scoreboard(
+            pb_path,
+            res.test_auc,
+            model_path=res.model_path,
+            train_auc=res.train_auc,
+            test_auc=res.test_auc,
+            cv_auc=res.cv_auc,
+            window_days=res.window_days,
+            holdout_auc=res.holdout_auc,
+        )
+        with open(pb_path) as f:
+            pb = json.load(f)
+        headers = [
+            "Symbol",
+            "Score",
+            "ProbUp",
+            "Mom",
+            "News",
+            "IV",
+            "UOA",
+            "Garch",
+        ]
+        print("Recommended trades:")
+        print(" | ".join(headers))
+        rows = []
+        for trade in pb.get("trades", []):
+            row = (
+                str(trade.get("t", "")),
+                f"{trade.get('score', 0.0):.2f}",
+                f"{trade.get('prob_up', 0.0):.2f}",
+                f"{trade.get('momentum', 0.0):.2f}",
+                f"{trade.get('news_sent', 0.0):.2f}",
+                f"{trade.get('iv_edge', 0.0):.2f}",
+                f"{trade.get('uoa', 0.0):.2f}",
+                f"{trade.get('garch_spike', 0.0):.2f}",
+            )
+            rows.append(" | ".join(row))
+            print(rows[-1])
+        slack_message = ["Recommended trades:", " | ".join(headers)] + rows
+        notifier.send_slack("\n".join(slack_message))
+        if socketio:
+            for trade in pb.get("trades", []):
+                socketio.emit("trade", trade)
     except Exception as exc:
         agg.flush()
         notifier.send_slack(f"Pipeline failed: {exc}")

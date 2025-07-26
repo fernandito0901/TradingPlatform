@@ -8,6 +8,12 @@ def update_scoreboard(
     playbook_path: str,
     auc: float,
     pnl: float | None = None,
+    model_path: str | None = None,
+    train_auc: float | None = None,
+    test_auc: float | None = None,
+    cv_auc: float | None = None,
+    window_days: int | None = None,
+    holdout_auc: float | None = None,
     out_file: str = "reports/scoreboard.csv",
 ) -> str:
     """Append a new entry to the scoreboard CSV.
@@ -32,6 +38,18 @@ def update_scoreboard(
     entry = {"date": date, "playbook": playbook_path, "auc": auc}
     if pnl is not None:
         entry["pnl"] = pnl
+    if model_path is not None:
+        entry["model"] = model_path
+    if train_auc is not None:
+        entry["train_auc"] = train_auc
+    if test_auc is not None:
+        entry["test_auc"] = test_auc
+    if cv_auc is not None:
+        entry["cv_auc"] = cv_auc
+    if window_days is not None:
+        entry["window_days"] = window_days
+    if holdout_auc is not None:
+        entry["holdout_auc"] = holdout_auc
     entry_df = pd.DataFrame([entry])
     csv_path = Path(out_file)
     csv_path.parent.mkdir(parents=True, exist_ok=True)
