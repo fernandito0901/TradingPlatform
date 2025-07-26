@@ -365,3 +365,9 @@
 
 ## 2025-10-07
 - Added models package, fixed scheduler boot & DB fallback for overview endpoint.
+
+## 2025-10-08
+- Bootstrapped demo CSV data and created helper DB bootstrap
+- Dashboard now shows "No data yet" when empty
+- Smoke test checks `/api/news`
+
