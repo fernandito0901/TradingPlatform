@@ -1,4 +1,10 @@
 # Changelog
+## 2025-10-03
+- Docs linting job added to CI
+- Architecture diagram embedded in README
+- AGENTS.md trimmed to Planner, Developer and Tester
+- Docker smoke skips with code 78 when Docker is missing
+
 
 ## 2025-07-24
 - Modularized code into collector package and added argparse CLI.
@@ -316,3 +322,21 @@
 - Trades table is accessible and hides skeleton rows once data arrives
 - Pre-PR smoke test runs via `tox -e smoke`
 
+## 2025-09-30
+- CI caches pip packages and Docker layers
+- Scheduler emits a heartbeat for web dashboard health indicator
+- Tests cover stop-loss logic, delayed stream and backtest variations
+
+## 2025-10-01
+- CI workflow runs lint, tests and Docker smoke in parallel with caching
+- API overview and metrics endpoints return `{"status":"empty"}` when no data
+- Strategy metrics API provides Sharpe, Sortino and win-rate
+- Dashboard polls scheduler health and exposes restart button
+
+
+## 2025-10-02
+- Performance card shows Sharpe and Sortino ratios via React
+- Metrics and equity sections use skeleton loaders instead of placeholders
+- Flask and Celery loggers mask secrets
+- CI tests on Python 3.10 and 3.11 with Docker smoke neutral
+- Architecture diagram auto-generated; equity metrics endpoint and Smart Flow card
