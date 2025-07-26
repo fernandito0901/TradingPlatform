@@ -100,6 +100,19 @@ def test_api_scoreboard_and_pnl(tmp_path):
     assert resp.json[0]["symbol"] == "A"
 
 
+def test_metrics_empty_no_rows(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=abc\n")
+    app = create_app(env_path=env)
+    app.static_folder = str(tmp_path)
+    csv = Path(app.static_folder) / "scoreboard.csv"
+    csv.write_text("date,auc\n")
+    client = app.test_client()
+    resp = client.get("/api/metrics")
+    assert resp.status_code == 200
+    assert resp.json == {"status": "empty"}
+
+
 def test_api_latest_features_and_options(tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=abc\n")

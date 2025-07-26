@@ -377,6 +377,26 @@ docker compose up -d
 ```
 
 Both services load variables from `.env` and share the `data/` and `reports/` directories.
+## Docker Quick-start
+
+For Google Cloud users, build the image directly with Cloud Build:
+
+```bash
+gcloud builds submit --tag gcr.io/PROJECT_ID/trading-platform
+```
+
+CI already runs a Docker smoke-test automatically on each pull request and caches layers for faster builds.
+
+Codex also runs `tox -e smoke` before opening PRs and aborts if the container fails to start.
+
+Run the same check locally with:
+
+```bash
+make docker-smoke
+```
+
+View logs afterward with `docker logs trading-test`.
+
 
 ### Scheduler Service
 

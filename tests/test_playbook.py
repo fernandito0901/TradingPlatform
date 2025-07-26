@@ -67,7 +67,7 @@ def test_generate_playbook(tmp_path):
             "uoa",
             "garch_spike",
         ]
-    ]
+    ].round(4)
 
     pb = json.loads(Path(path).read_text())
     assert pb["date"]
@@ -133,7 +133,7 @@ def test_generate_playbook_missing_columns(tmp_path):
             "uoa",
             "garch_spike",
         ]
-    ]
+    ].round(4)
 
     pb = json.loads(Path(path).read_text())
     assert pb["trades"] == expected_top.to_dict(orient="records")

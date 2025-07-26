@@ -53,25 +53,23 @@ def generate_playbook(
     df["uoa"] = uoa
     df["garch_spike"] = garch_spike
     top = df.nlargest(5, "score")
+    top_rounded = top[
+        [
+            "t",
+            "score",
+            "prob_up",
+            "momentum",
+            "news_sent",
+            "iv_edge",
+            "uoa",
+            "garch_spike",
+        ]
+    ].round(4)
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     date = pd.Timestamp.utcnow().date().isoformat()
     path = Path(out_dir) / f"{date}.json"
-    payload = {
-        "date": date,
-        "trades": top[
-            [
-                "t",
-                "score",
-                "prob_up",
-                "momentum",
-                "news_sent",
-                "iv_edge",
-                "uoa",
-                "garch_spike",
-            ]
-        ].to_dict(orient="records"),
-    }
+    payload = {"date": date, "trades": top_rounded.to_dict(orient="records")}
     with open(path, "w") as f:
         json.dump(payload, f, indent=2)
     return str(path)

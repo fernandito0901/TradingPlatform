@@ -6,9 +6,9 @@ numpy
 scikit-learn
 lightgbm
 arch
-pytest -asyncio
+pytest-asyncio
 websockets
-plotly
+plotly>=5.22
 flask
 flask-socketio
 APScheduler

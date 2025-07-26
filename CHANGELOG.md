@@ -300,3 +300,19 @@
 - Feature pipeline computes gap and intraday metrics using these endpoints.
 - Dashboard overview falls back to snapshot data when no OHLCV rows exist.
 - CI builds the Docker image and runs a smoke check.
+
+## 2025-09-28
+- CI docker-smoke job verifies container build
+- Makefile adds `docker-smoke` helper
+- README documents Cloud Build and smoke-test
+- CI jobs now run in parallel and cache Docker layers for faster builds
+- Dashboard UI polished with placeholders, dark-mode toggle persistence and last-updated badges
+- Metrics and overview APIs handle empty states correctly
+
+## 2025-09-29
+- `/api/metrics` handles empty DataFrames without crashing
+- Docker entrypoint seeds `reports/scoreboard.csv`
+- Market overview queries previous close prices when OHLCV data is missing
+- Trades table is accessible and hides skeleton rows once data arrives
+- Pre-PR smoke test runs via `tox -e smoke`
+

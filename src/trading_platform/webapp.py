@@ -52,6 +52,7 @@ DASH_TEMPLATE = """
   <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap\" rel=\"stylesheet\">
   <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/reports/style.css">
   <!-- Plotly loaded on demand -->
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
@@ -71,7 +72,7 @@ DASH_TEMPLATE = """
   </div>
 </nav>
 <div class="container-fluid">
-  <div class="row g-3">
+  <div class="row row-cols-lg-3 row-cols-1 g-3">
     <div class="col-lg-3">
       <div class="card p-3 shadow-sm mb-3" id="trades-card">
         <h5 class="card-title"><i class="fa fa-lightbulb me-2"></i>Recommended Trades</h5>
@@ -84,8 +85,10 @@ DASH_TEMPLATE = """
               <th role="button" onclick="sortTrades('score')">Score</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody aria-busy="true"></tbody>
         </table>
+        <div id="trades-loading" class="text-muted">Loading…</div>
+        <div id="trades-upd" class="small text-muted"></div>
       </div>
       <div class="card p-3 shadow-sm mb-3" id="news-card">
         <div class="d-flex justify-content-between mb-2">
@@ -96,7 +99,8 @@ DASH_TEMPLATE = """
           </div>
         </div>
         <ul id="news" class="list-unstyled mb-0"></ul>
-        <div id="news-empty" class="text-muted">No data yet</div>
+        <div id="news-empty" class="text-muted">Loading…</div>
+        <div id="news-upd" class="small text-muted"></div>
       </div>
       <div class="card p-3 shadow-sm" id="watch-card">
         <h5 class="card-title"><i class="fa fa-eye me-2"></i>Watchlist</h5>
@@ -106,19 +110,24 @@ DASH_TEMPLATE = """
     <div class="col-lg-5">
       <div class="card p-3 shadow-sm mb-3" id="metrics-card">
         <h5 class="card-title"><i class="fa fa-chart-line me-2"></i>Metrics</h5>
+        <div id="metrics-skel" class="placeholder-wave" style="height:2rem"></div>
         <div id="metrics"></div>
-        <div id="metrics-empty" class="text-muted">No data yet</div>
+        <div id="metrics-empty" class="text-muted">Loading…</div>
+        <div id="metrics-upd" class="small text-muted"></div>
       </div>
       <div class="card p-3 shadow-sm" id="equity-card">
         <h5 class="card-title"><i class="fa fa-chart-area me-2"></i>Equity Curve</h5>
         <div id="equity"></div>
+        <div id="equity-upd" class="small text-muted"></div>
       </div>
     </div>
     <div class="col-lg-4">
       <div class="card p-3 shadow-sm mb-3" id="overview-card">
         <h5 class="card-title"><i class="fa fa-chart-pie me-2"></i>Market Overview</h5>
+        <div id="overview-skel" class="placeholder-wave" style="height:2rem"></div>
         <table class="table table-sm" id="overview"></table>
-        <div id="overview-empty" class="text-muted">No data yet</div>
+        <div id="overview-empty" class="text-muted">Loading…</div>
+        <div id="overview-upd" class="small text-muted"></div>
       </div>
       <div class="card p-3 shadow-sm" id="alerts-card">
         <div class="d-flex justify-content-between mb-2">
@@ -160,8 +169,12 @@ let trades=[];
 let sortKey='score';
 let sortAsc=false;
 function toggleDark(){
-  document.body.classList.toggle('bg-dark');
+  const dark=document.body.classList.toggle('bg-dark');
   document.body.classList.toggle('text-white');
+  localStorage.setItem('dark',dark);
+}
+if(localStorage.getItem('dark')==='true'){
+  document.body.classList.add('bg-dark','text-white');
 }
 function startRun(){fetch('/run',{method:'POST'})}
 function verifyConn(){fetch('/verify',{method:'POST'})}
@@ -183,21 +196,42 @@ function renderTrades(){
     if(typeof av==='string') return av.localeCompare(bv)*(sortAsc?1:-1);
     return (av-bv)*(sortAsc?1:-1);
   });
-  tbl.innerHTML=rows.map(d=>`<tr><td>${d.t}</td><td>${d.strategy||'Spread'}</td><td><div class="progress"><div class="progress-bar" style="width:${(d.prob_up*100).toFixed(0)}%">${(d.prob_up*100).toFixed(0)}%</div></div></td><td>${d.score.toFixed(2)}</td></tr>`).join('');
+  tbl.innerHTML=rows.map(d=>{
+    const hasProb=isFinite(d.prob_up);
+    const prob=hasProb?d.prob_up*100:0;
+    const score=isNaN(d.score)?'—':d.score.toFixed(2);
+    const bar=`<div class="progress"><div class="progress-bar bg-success text-dark${hasProb?'':' opacity-50'}" role="progressbar" aria-label="Probability of Profit" aria-valuenow="${hasProb?prob.toFixed(0):0}" aria-valuemin="0" aria-valuemax="100" style="width:${hasProb?prob.toFixed(0):0}%">${hasProb?prob.toFixed(0)+'%':'N/A'}</div></div>`;
+    return `<tr><td>${d.t}</td><td>${d.strategy||'Spread'}</td><td>${bar}</td><td>${score}</td></tr>`;
+  }).join('');
 }
 function sortTrades(key){
   if(sortKey===key){sortAsc=!sortAsc;}else{sortKey=key;sortAsc=false;}
   renderTrades();
 }
 function showTrades(data){
+  const tbl=document.getElementById('trades').querySelector('tbody');
+  tbl.setAttribute('aria-busy','false');
+  if(data.status==='empty'){
+    document.getElementById('trades-loading').style.display='block';
+    trades=[];
+    tbl.innerHTML='';
+    return;
+  }
+  document.getElementById('trades-loading').style.display='none';
+  document.getElementById('trades-card').style.display='block';
   trades=data;renderTrades();
+  document.getElementById('trades-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function addTradeRow(d){
+  const tbl=document.getElementById('trades').querySelector('tbody');
+  tbl.setAttribute('aria-busy','false');
+  document.getElementById('trades-loading').style.display='none';
   trades.unshift(d);renderTrades();
 }
 function showNews(data){
   const ul=document.getElementById('news');
   const empty=document.getElementById('news-empty');
+  empty.style.display='none';
   data.forEach(n=>{
     const id=n.url+(n.published_at||'');
     if(seenNews.has(id)) return;
@@ -208,6 +242,7 @@ function showNews(data){
     while(ul.children.length>5) ul.lastElementChild.remove();
   });
   empty.style.display=ul.children.length? 'none':'block';
+  document.getElementById('news-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function badge(v){
   if(v>0.8) return `<span class="badge bg-success">${v.toFixed(2)}</span>`;
@@ -215,11 +250,20 @@ function badge(v){
   return `<span class="badge bg-danger">${v.toFixed(2)}</span>`;
 }
 function showMetrics(m){
+  const skel=document.getElementById('metrics-skel');
   const div=document.getElementById('metrics');
   const empty=document.getElementById('metrics-empty');
-  if(!m.train_auc){div.innerHTML='';empty.style.display='block';return;}
+  document.getElementById('metrics-card').style.display='block';
+  skel.style.display='none';
+  if(m.status==='empty'||!m.train_auc){
+    div.innerHTML='';
+    empty.textContent='No data yet';
+    empty.style.display='block';
+    return;
+  }
   empty.style.display='none';
   div.innerHTML=`Last trained ${m.date||''}<br>Train ${badge(m.train_auc)} Test ${badge(m.test_auc)} CV ${badge(m.cv_auc)}`;
+  document.getElementById('metrics-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function showPositions(data){
   const tbl=document.getElementById('positions');
@@ -233,9 +277,14 @@ function showWatchlist(list){
 function showOverview(data){
   const tbl=document.getElementById('overview');
   const empty=document.getElementById('overview-empty');
+  const skel=document.getElementById('overview-skel');
+  if(data.status==='empty'){document.getElementById('overview-card').style.display='none';return;}
   if(!data.length){tbl.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-  tbl.innerHTML='<tr><th>Symbol</th><th>Close</th></tr>'+data.map(d=>`<tr><td>${d.symbol}</td><td>${d.close}</td></tr>`).join('');
+  skel.style.display='none';
+  document.getElementById('overview-card').style.display='block';
+  tbl.innerHTML='<tr><th>Symbol</th><th>Close</th></tr>'+data.map(d=>`<tr data-sym="${d.ticker||d.symbol}"><td>${d.ticker||d.symbol}</td><td>${d.close??'—'}</td></tr>`).join('');
+  document.getElementById('overview-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function updateOverview(q){
   const tbl=document.getElementById('overview');
@@ -245,11 +294,12 @@ function updateOverview(q){
   if(!row){
     row=document.createElement('tr');
     row.dataset.sym=q.symbol;
-    row.innerHTML=`<td>${q.symbol}</td><td>${q.p}</td>`;
+    row.innerHTML=`<td>${q.symbol}</td><td>${q.p??'—'}</td>`;
     tbl.appendChild(row);
   }else{
-    row.children[1].textContent=q.p;
+    row.children[1].textContent=q.p??'—';
   }
+  document.getElementById('overview-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 function showAlerts(msgs){
   const container=document.getElementById('alerts');
@@ -258,7 +308,7 @@ function showAlerts(msgs){
     seenAlerts.add(m);
     const toast=document.createElement('div');
     toast.className='toast align-items-center text-bg-info border-0';
-    toast.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+    toast.innerHTML=`<div class="d-flex"><div class="toast-body text-truncate">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
     container.prepend(toast);
     if(container.children.length>5) container.lastElementChild.remove();
     new bootstrap.Toast(toast,{delay:5000}).show();
@@ -268,6 +318,7 @@ function showEquity(data){
   if(!data.length){return;}
   const trace={x:data.map(r=>r.date),y:data.map(r=>r.total),type:'scatter'};
   Plotly.newPlot('equity',[trace]);
+  document.getElementById('equity-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 let plotlyLoaded=false;
 function refreshEquity(){
@@ -506,7 +557,12 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if not pb:
             return jsonify([])
         data = json.loads(Path(pb).read_text())
-        return jsonify(data.get("trades", []))
+        trades = data.get("trades", [])
+        for t in trades:
+            for k, v in t.items():
+                if isinstance(v, float):
+                    t[k] = round(v, 4)
+        return jsonify(trades)
 
     @app.route("/api/news")
     def api_news():
@@ -526,7 +582,16 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if not csv.exists():
             return jsonify({"status": "empty"})
         df = pd.read_csv(csv)
-        last = df.iloc[-1]
+        if df.shape[0] == 0 or df.isna().all().all():
+            return jsonify({"status": "empty"})
+        try:
+            last = df.tail(1).squeeze()
+        except IndexError:
+            return jsonify({"status": "empty"})
+        if all(
+            pd.isna(last.get(col)) for col in ["train_auc", "test_auc", "cv_auc", "auc"]
+        ):
+            return jsonify({"status": "empty"})
         res = {
             "date": last.get("date", ""),
             "train_auc": float(last.get("train_auc", last.get("auc", 0))),
@@ -594,15 +659,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def api_overview():
         path = Path(app.config["ENV_PATH"])
         db_path = "market_data.db"
-        if not Path(db_path).exists():
-            try:
-                from .collector.api import fetch_snapshot_tickers
-
-                data = fetch_snapshot_tickers()
-                return jsonify(data.get("tickers", []))
-            except Exception:
-                return jsonify([])
         conn = sqlite3.connect(db_path)
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS prev_close (symbol TEXT, date TEXT, close REAL, UNIQUE(symbol, date))"
+        )
         syms = []
         if path.exists():
             for line in path.read_text().splitlines():
@@ -615,16 +675,39 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             "SELECT symbol, close FROM ohlcv WHERE t=(SELECT MAX(t) FROM ohlcv) "
             "AND symbol IN (%s)" % ",".join("?" * len(syms))
         )
-        df = pd.read_sql(query, conn, params=syms)
-        conn.close()
+        try:
+            df = pd.read_sql(query, conn, params=syms)
+        except Exception:
+            df = pd.DataFrame()
         if df.empty:
-            try:
-                from .collector.api import fetch_snapshot_tickers
+            from .collector.api import fetch_prev_close
 
-                data = fetch_snapshot_tickers()
-                return jsonify(data.get("tickers", []))
-            except Exception:
-                return jsonify([])
+            today = pd.Timestamp.utcnow().date().isoformat()
+            rows = []
+            for sym in syms:
+                cur = conn.execute(
+                    "SELECT close FROM prev_close WHERE symbol=? AND date=?",
+                    (sym, today),
+                )
+                r = cur.fetchone()
+                if r:
+                    rows.append({"symbol": sym, "close": r[0]})
+                    continue
+                try:
+                    data = fetch_prev_close(sym)
+                    close = data.get("results", [{}])[0].get("c")
+                    if close is not None:
+                        conn.execute(
+                            "INSERT OR REPLACE INTO prev_close VALUES (?,?,?)",
+                            (sym, today, close),
+                        )
+                    rows.append({"symbol": sym, "close": close})
+                except Exception:
+                    rows.append({"symbol": sym, "close": None})
+            conn.commit()
+            conn.close()
+            return jsonify(rows)
+        conn.close()
         return jsonify(df.to_dict(orient="records"))
 
     @app.route("/api/options/<date>")

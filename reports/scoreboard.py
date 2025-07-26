@@ -59,4 +59,27 @@ def update_scoreboard(
     else:
         df = entry_df
     df.to_csv(csv_path, index=False)
+    try:
+        from trading_platform.webapp import socketio
+    except Exception:
+        socketio = None
+    if socketio:
+        socketio.emit("metric")
     return str(csv_path)
+
+
+def seed_scoreboard(out_file: str = "reports/scoreboard.csv") -> str:
+    """Ensure scoreboard CSV exists with a dummy row."""
+
+    path = Path(out_file)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        df = pd.DataFrame(columns=["date", "auc"])
+        df.to_csv(path, index=False)
+    df = pd.read_csv(path)
+    if df.empty:
+        df = pd.DataFrame(
+            [{"date": pd.Timestamp.utcnow().date().isoformat(), "auc": ""}]
+        )
+    df.to_csv(path, index=False)
+    return str(path)

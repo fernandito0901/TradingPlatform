@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  lint-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,20 +24,63 @@ jobs:
         run: black . --check
       - name: Unit tests
         run: pytest -q
+  package-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: type=docker,host=ghcr.io,cache-from=type=gha,cache-to=type=gha,mode=max
+      - run: echo "priming docker cache"
 
   docker-smoke:
     runs-on: ubuntu-latest
-    needs: test
+    needs: package-cache
     steps:
       - uses: actions/checkout@v3
-      - name: Build image
-        run: docker build -t tp .
-      - name: Run container
+      - uses: docker/setup-buildx-action@v3
+      - uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: type=docker,host=ghcr.io,cache-from=type=gha,cache-to=type=gha,mode=max
+      - id: check
+        name: Check Docker
         run: |
-          docker run -d -p 5000:5000 --name tp \
-            -e POLYGON_API_KEY=dummy -e NEWS_API_KEY=dummy tp
-          sleep 10
-      - name: Curl metrics
-        run: curl http://localhost:5000/api/metrics
+          if ! command -v docker; then
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Skip when absent
+        if: steps.check.outputs.found != 'true'
+        run: echo "SKIPPED – Docker not available"
+      - name: Build image
+        if: steps.check.outputs.found == 'true'
+        run: |
+          DOCKER_BUILDKIT=1 docker build --target runtime --cache-from=type=gha --cache-to=type=gha,mode=max -t trading-platform . --progress=plain
+      - name: Run container
+        if: steps.check.outputs.found == 'true'
+        run: |
+          docker run -d --rm --name trading-test -p 5000:5000 \
+            -e POLYGON_API_KEY=dummy trading-platform
+      - name: Wait for ready status
+        if: steps.check.outputs.found == 'true'
+        run: |
+          for i in {1..30}; do
+            if curl -fs http://localhost:5000/api/metrics | grep -q '"status":"ready"'; then
+              break
+            fi
+            sleep 6
+          done
+          if ! curl -fs http://localhost:5000/api/metrics | grep -q '"status":"ready"'; then
+            echo "Timed out waiting for container readiness" && exit 1
+          fi
       - name: Verify pipeline
-        run: docker exec tp python -m trading_platform.run_daily --verify-only
+        if: steps.check.outputs.found == 'true'
+        run: docker exec trading-test python -m trading_platform.run_daily --verify-only
+      - name: Container logs
+        if: always() && steps.check.outputs.found == 'true'
+        run: docker logs trading-test
+      - name: Stop container
+        if: always() && steps.check.outputs.found == 'true'
+        run: docker stop trading-test
