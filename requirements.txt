@@ -6,7 +6,7 @@ numpy
 scikit-learn
 lightgbm
 arch
-pytest -asyncio
+pytest-asyncio
 websockets
 plotly
 flask
