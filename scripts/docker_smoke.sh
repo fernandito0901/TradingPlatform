@@ -6,6 +6,7 @@ ART_DIR=""
 if [[ ${1:-} == "--ci" ]]; then
   CI_MODE=true
   ART_DIR="artifacts"
+
 fi
 
 if ! command -v docker >/dev/null; then

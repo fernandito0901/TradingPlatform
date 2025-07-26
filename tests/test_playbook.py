@@ -56,16 +56,18 @@ def test_generate_playbook(tmp_path):
         + df["uoa"]
         - df["garch_spike"]
     )
-    expected_top = expected.nlargest(5, "score")[
-        [
-            "t",
-            "score",
-            "prob_up",
-            "momentum",
-            "news_sent",
-            "iv_edge",
-            "uoa",
-            "garch_spike",
+    expected_top = (
+        expected.nlargest(5, "score")[
+            [
+                "t",
+                "score",
+                "prob_up",
+                "momentum",
+                "news_sent",
+                "iv_edge",
+                "uoa",
+                "garch_spike",
+            ]
         ]
     ].round(4)
 
@@ -122,16 +124,18 @@ def test_generate_playbook_missing_columns(tmp_path):
         + filled.get("uoa", 0)
         - filled.get("garch_spike", 0)
     )
-    expected_top = expected.nlargest(5, "score")[
-        [
-            "t",
-            "score",
-            "prob_up",
-            "momentum",
-            "news_sent",
-            "iv_edge",
-            "uoa",
-            "garch_spike",
+    expected_top = (
+        expected.nlargest(5, "score")[
+            [
+                "t",
+                "score",
+                "prob_up",
+                "momentum",
+                "news_sent",
+                "iv_edge",
+                "uoa",
+                "garch_spike",
+            ]
         ]
     ].round(4)
 
