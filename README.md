@@ -215,11 +215,7 @@ Launch a local web UI for running commands:
 webapp
 ```
 
-The server binds to `0.0.0.0:5000` by default so it can be reached from outside
-the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`.
-The entrypoint enables Flask's built-in server with
-``allow_unsafe_werkzeug=True`` so the dashboard works when launched under
-Docker.
+The server binds to `0.0.0.0:5000` by default so it can be reached from outside the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`. The entrypoint enables Flask's built-in server with ``allow_unsafe_werkzeug=True`` so the dashboard works when launched under Docker.
 
 On first launch, the page prompts for API keys and saves them to `.env`.
 After setup you can run the daily pipeline or connectivity checks with
@@ -228,10 +224,7 @@ news headlines and portfolio data. A real-time trade feed updates via WebSocket
 (the pipeline broadcasts each recommended trade to connected clients) while
 charts show feature importance, backtest results and the equity curve from
 `reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
-overview panel displays the most recent close for each symbol. Toast
-notifications appear whenever new alerts are logged. Scheduler controls remain
-available and recent results from `reports/scoreboard.csv` are displayed in a
-table.
+overview panel displays the most recent close for each symbol. Toast notifications now deduplicate messages and include *Clear All* / *Mark All as Read* buttons. A dark mode toggle changes the page theme. Trade recommendations refresh live with progress bars for POP and metrics cards show the model version. Scheduler controls remain available and recent results from `reports/scoreboard.csv` are displayed in a table.
 
 ### Strategy Workflow
 

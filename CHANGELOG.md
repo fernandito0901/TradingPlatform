@@ -238,3 +238,13 @@
 ## 2025-09-16
 - Web interface now passes `allow_unsafe_werkzeug=True` so the Flask server runs
   inside Docker without errors.
+
+## 2025-09-17
+- Dashboard styling refreshed with Google "Inter" font and dark mode toggle.
+- Alerts are deduplicated and include Clear/Mark buttons.
+- Recommended trades now show probability bars and auto-refresh via AJAX.
+- Scoreboard CSV is created on startup to avoid 404 errors.
+
+## 2025-09-18
+- News feed deduplicates headlines per session with Clear/Mark controls.
+- Placeholder report files prevent 404 errors for dashboards.

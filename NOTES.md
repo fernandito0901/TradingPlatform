@@ -157,3 +157,11 @@
 
 ### 2025-09-16 – @Coder
 - Enabled unsafe Werkzeug mode in webapp so it runs inside Docker containers.
+
+### 2025-09-17 – @Coder
+- Refined dashboard JS with dark mode toggle and deduplicated alerts.
+- Created scoreboard.csv on app startup and added POP progress bars.
+
+### 2025-09-18 – @Coder
+- Added news deduplication and buttons to clear or mark headlines.
+- Created placeholder report files to avoid 404s.

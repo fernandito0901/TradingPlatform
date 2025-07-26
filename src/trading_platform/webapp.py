@@ -45,7 +45,11 @@ DASH_TEMPLATE = """
 <head>
   <meta charset=utf-8>
   <meta name=viewport content=\"width=device-width, initial-scale=1\">
-  <title>Trading Dashboard</title>
+  <title>Trading AI Dashboard</title>
+  <link rel=\"icon\" href=\"/reports/favicon.ico\">
+  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">
+  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
+  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap\" rel=\"stylesheet\">
   <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\">
   <script src=\"https://cdn.jsdelivr.net/npm/plotly.js-dist@2.24.1\"></script>
   <script src=\"https://cdn.socket.io/4.5.4/socket.io.min.js\"></script>
@@ -56,13 +60,18 @@ DASH_TEMPLATE = """
   <h1 class=\"mb-4\">Trading Dashboard</h1>
   <div class=\"mb-3\">
     <button class=\"btn btn-primary me-2\" onclick=\"fetch('/run',{method:'POST'})\">Run Daily Pipeline</button>
-    <button class=\"btn btn-secondary\" onclick=\"fetch('/verify',{method:'POST'})\">Verify Connectivity</button>
+    <button class=\"btn btn-secondary me-2\" onclick=\"fetch('/verify',{method:'POST'})\">Verify Connectivity</button>
+    <button class=\"btn btn-outline-dark\" onclick=\"toggleDark()\">Dark Mode</button>
   </div>
   <div class=\"row\">
     <div class=\"col-md-4\">
       <h2>Recommended Trades</h2>
       <table class=\"table\" id=\"trades\"></table>
       <h2>News</h2>
+      <div class=\"d-flex justify-content-end mb-2\">
+        <button class=\"btn btn-sm btn-outline-secondary me-2\" onclick=\"clearNews()\">Clear All</button>
+        <button class=\"btn btn-sm btn-outline-secondary\" onclick=\"markNewsRead()\">Mark All as Read</button>
+      </div>
       <ul id=\"news\"></ul>
       <h2>Watchlist</h2>
       <ul id=\"watchlist\"></ul>
@@ -92,37 +101,53 @@ DASH_TEMPLATE = """
   {% endif %}
   <h2 class=\"mt-4\">Scoreboard</h2>
   {{ scoreboard|safe }}
+  <div class="d-flex justify-content-end mb-2">
+    <button class="btn btn-sm btn-outline-secondary me-2" onclick="clearAlerts()">Clear All</button>
+    <button class="btn btn-sm btn-outline-secondary" onclick="markAlertsRead()">Mark All as Read</button>
+  </div>
   <div id=\"alerts\" class=\"toast-container position-fixed top-0 end-0 p-3\"></div>
 </div>
 <script>
 const socket=io();
 socket.on('trade',t=>addTradeRow(t));
+let seenAlerts=new Set();
+let seenNews=new Set();
+function toggleDark(){
+  document.body.classList.toggle('bg-dark');
+  document.body.classList.toggle('text-white');
+}
 function load(){
   fetch('/api/trades').then(r=>r.json()).then(showTrades);
-  fetch('/api/news').then(r=>r.json()).then(showNews);
   fetch('/api/metrics').then(r=>r.json()).then(showMetrics);
   fetch('/api/positions').then(r=>r.json()).then(showPositions);
   fetch('/api/pnl').then(r=>r.json()).then(showEquity);
   fetch('/api/watchlist').then(r=>r.json()).then(showWatchlist);
   fetch('/api/overview').then(r=>r.json()).then(showOverview);
-  fetch('/api/alerts').then(r=>r.json()).then(showAlerts);
 }
+function refreshNews(){fetch('/api/news').then(r=>r.json()).then(showNews);}
+function refreshAlerts(){fetch('/api/alerts').then(r=>r.json()).then(showAlerts);}
 function showTrades(data){
   const tbl=document.getElementById('trades');
-  tbl.innerHTML='<tr><th>Symbol</th><th>Score</th></tr>'+data.map(d=>`<tr><td>${d.t}</td><td>${d.score.toFixed(2)}</td></tr>`).join('');
+  tbl.innerHTML='<tr><th>Ticker</th><th>Strategy</th><th>POP</th><th>Score</th></tr>'+data.map(d=>`<tr><td>${d.t}</td><td>${d.strategy||'Spread'}</td><td><div class="progress"><div class="progress-bar" style="width:${(d.prob_up*100).toFixed(0)}%"></div></div></td><td>${d.score.toFixed(2)}</td></tr>`).join('');
 }
 function addTradeRow(d){
   const tbl=document.getElementById('trades');
   const row=document.createElement('tr');
-  row.innerHTML=`<td>${d.t}</td><td>${d.score.toFixed(2)}</td>`;
+  row.innerHTML=`<td>${d.t}</td><td>${d.strategy||'Spread'}</td><td><div class="progress"><div class="progress-bar" style="width:${(d.prob_up*100).toFixed(0)}%"></div></div></td><td>${d.score.toFixed(2)}</td>`;
   tbl.prepend(row);
 }
 function showNews(data){
   const ul=document.getElementById('news');
-  ul.innerHTML=data.map(n=>`<li><a href="${n.url}" target="_blank">${n.title}</a></li>`).join('');
+  data.forEach(n=>{
+    if(seenNews.has(n.url)) return;
+    seenNews.add(n.url);
+    const li=document.createElement('li');
+    li.innerHTML=`<a href="${n.url}" target="_blank">${n.title}</a>`;
+    ul.prepend(li);
+  });
 }
 function showMetrics(m){
-  document.getElementById('metrics').innerHTML=`Train AUC: ${m.train_auc??''} Test AUC: ${m.test_auc??''} CV AUC: ${m.cv_auc??''}`;
+  document.getElementById('metrics').innerHTML=`<strong>Model ${m.date||''}</strong><br>Train AUC: ${m.train_auc??''} Test AUC: ${m.test_auc??''} CV AUC: ${m.cv_auc??''}`;
 }
 function showPositions(data){
   const tbl=document.getElementById('positions');
@@ -138,6 +163,8 @@ function showOverview(data){
 }
 function showAlerts(msgs){
   msgs.forEach(m=>{
+    if(seenAlerts.has(m)) return;
+    seenAlerts.add(m);
     const container=document.getElementById('alerts');
     const toast=document.createElement('div');
     toast.className='toast align-items-center text-bg-info border-0';
@@ -151,8 +178,18 @@ function showEquity(data){
   const trace={x:data.map(r=>r.date),y:data.map(r=>r.total),type:'scatter'};
   Plotly.newPlot('equity',[trace]);
 }
+function clearAlerts(){document.getElementById('alerts').innerHTML='';}
+function markAlertsRead(){seenAlerts.clear();clearAlerts();}
+function clearNews(){document.getElementById('news').innerHTML='';seenNews.clear();}
+function markNewsRead(){
+  document.querySelectorAll('#news a').forEach(a=>seenNews.add(a.href));
+}
 load();
+refreshNews();
+refreshAlerts();
 setInterval(load,10000);
+setInterval(refreshNews,300000);
+setInterval(refreshAlerts,300000);
 </script>
 </body></html>
 """
@@ -215,6 +252,18 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     socketio.init_app(app)
     app.config["ENV_PATH"] = Path(env_path)
     app.config["SCHED"] = None
+
+    # ensure scoreboard CSV and placeholder reports exist to avoid broken links
+    sb_csv = Path(app.static_folder) / "scoreboard.csv"
+    if not sb_csv.exists():
+        sb_csv.parent.mkdir(parents=True, exist_ok=True)
+        if not sb_csv.exists():
+            sb_csv.write_text("date,playbook,auc\n")
+
+    for name in ["dashboard.html", "feature_dashboard.html", "strategies.html"]:
+        path = Path(app.static_folder) / name
+        if not path.exists():
+            path.write_text("<p>No report yet</p>")
 
     def save_env(data: dict[str, str]) -> None:
         lines = [f"{k}={v}" for k, v in data.items() if v]
@@ -373,6 +422,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         df = pd.read_csv(csv)
         last = df.iloc[-1]
         res = {
+            "date": last.get("date", ""),
             "train_auc": float(last.get("train_auc", last.get("auc", 0))),
             "test_auc": float(last.get("test_auc", 0)),
             "cv_auc": float(last.get("cv_auc", 0)),

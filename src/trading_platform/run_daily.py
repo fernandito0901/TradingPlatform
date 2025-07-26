@@ -75,7 +75,7 @@ def run(config: Config) -> str:
         rows = []
         for trade in pb.get("trades", []):
             row = (
-                trade.get("t"),
+                str(trade.get("t", "")),
                 f"{trade.get('score', 0.0):.2f}",
                 f"{trade.get('prob_up', 0.0):.2f}",
                 f"{trade.get('momentum', 0.0):.2f}",
