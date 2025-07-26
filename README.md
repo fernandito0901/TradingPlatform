@@ -1,4 +1,5 @@
 # Market Data Collector
+![health](https://img.shields.io/badge/health-passing-brightgreen)
 
 This script polls the [Polygon](https://polygon.io) REST API to collect
 historical bars, minute aggregates, delayed real‑time quotes and option
@@ -20,26 +21,27 @@ pip install -e .
 python3 -m pip install -r requirements.txt
 ```
 
+Additional platform-specific tips are available in [docs/SETUP.md](docs/SETUP.md).
+
 ## Project Layout
+
+## Architecture
+
+![Architecture](docs/arch.svg)
 
 Core collector code lives under `src/trading_platform`. Feature engineering and
 model training packages are located at the repository root under `features/` and
 `models/`. Wrapper modules under `src/trading_platform/features` and
 `src/trading_platform/models` re-export these packages for backward
 compatibility.
+Report generators live in `src/trading_platform/reports`.
 
 ## Configuration
 
-The collector relies on a couple of environment variables and optional
-command‑line flags. These are merged into a single ``Config`` dataclass
-loaded via ``trading_platform.load_config``:
-
-- **`POLYGON_API_KEY`**: API key required for all REST and WebSocket requests.
-- **`CACHE_TTL`**: Time‑to‑live in seconds for HTTP response caching. Set to
-  `0` to disable caching.
-- **`SLACK_WEBHOOK_URL`**: Incoming webhook for pipeline notifications.
-- **`MAX_RISK`**: Comma-separated per-strategy limits like ``call=100,condor=50``.
-- `.env` files are loaded automatically if present so secrets can be stored locally.
+The collector relies on a few environment variables and optional command‑line
+flags. Example values can be found in [.env.example](.env.example). These are
+merged into a single ``Config`` dataclass loaded via
+``trading_platform.load_config``.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
@@ -315,6 +317,7 @@ news headlines and portfolio data. A real-time trade feed updates via WebSocket
  charts show feature importance, backtest results and the equity curve from
  `reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
  overview panel displays the most recent close for each symbol. Toast notifications now deduplicate messages and include *Clear All* / *Mark All as Read* buttons. A dark mode toggle changes the page theme. Trade recommendations refresh live with progress bars for POP and metrics cards show the model version. Scheduler controls remain available and recent results from `reports/scoreboard.csv` are displayed in a table. See `docs/ui_overview.md` for a visual guide to the layout.
+The dashboard now includes a **Performance** card showing Sharpe and Sortino ratios.
 
 ### Strategy Workflow
 
@@ -407,6 +410,10 @@ python -m trading_platform.scheduler
 ```
 
 Use the web interface to start or stop the scheduler at any time.
+The dashboard polls `/api/scheduler/alive` every 30 seconds and shows a green or
+red badge. If the scheduler stops responding a **Restart** button becomes
+visible and sends `POST /api/scheduler/restart` to attempt recovery.
+Both the web server and scheduler expose `/healthz` for liveness probes.
 ## Planning Documents
 
 Design notes are tracked in `design/plans/` using sequential IDs (e.g. `P001.md`).

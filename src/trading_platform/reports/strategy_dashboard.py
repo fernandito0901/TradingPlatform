@@ -2,12 +2,13 @@
 
 from pathlib import Path
 from typing import Iterable
+from .. import REPORTS_DIR
 
 from trading_platform import strategies as strat
 
 
 def generate_strategy_dashboard(
-    strategies: Iterable[dict], out_file: str = "reports/strategies.html"
+    strategies: Iterable[dict], out_file: str = str(REPORTS_DIR / "strategies.html")
 ) -> str:
     """Create an interactive dashboard for option strategies.
 

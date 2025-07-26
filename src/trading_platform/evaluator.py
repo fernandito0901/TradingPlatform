@@ -6,6 +6,8 @@ import argparse
 import logging
 import time
 
+from .secret_filter import SecretFilter
+
 from .collector import db, api
 from .collector.alerts import notify_position
 from .portfolio import (
@@ -95,6 +97,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=args.log_level)
+    logging.getLogger().addFilter(SecretFilter())
     conn = db.init_db(args.db_file)
     try:
         evaluate_loop(

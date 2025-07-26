@@ -5,13 +5,22 @@ on:
     branches: [ main ]
 
 jobs:
-  lint-test:
+  lint_unit:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+        target: [lint, tests]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.lock') }}
+          restore-keys: pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -21,66 +30,68 @@ jobs:
       - name: Check PLAN_INDEX
         run: python scripts/gen_plan_index.py --check
       - name: Lint
-        run: black . --check
-      - name: Unit tests
-        run: pytest -q
-  package-cache:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: type=docker,host=ghcr.io,cache-from=type=gha,cache-to=type=gha,mode=max
-      - run: echo "priming docker cache"
+        if: matrix.target == 'lint'
+        run: black . --check && flake8
+        - name: Unit tests
+          if: matrix.target == 'tests'
+          run: pytest -q
+        - name: Reports import
+          if: matrix.target == 'tests'
+          run: tox -e smoke-reports
 
   docker-smoke:
     runs-on: ubuntu-latest
-    needs: package-cache
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
       - uses: docker/setup-buildx-action@v3
       - uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: type=docker,host=ghcr.io,cache-from=type=gha,cache-to=type=gha,mode=max
-      - id: check
-        name: Check Docker
+          key: "${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}"
+          restore-keys: "${{ runner.os }}-docker-"
+      - name: Docker smoke
         run: |
-          if ! command -v docker; then
-            echo "found=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "found=true" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Skip when absent
-        if: steps.check.outputs.found != 'true'
-        run: echo "SKIPPED – Docker not available"
-      - name: Build image
-        if: steps.check.outputs.found == 'true'
-        run: |
-          DOCKER_BUILDKIT=1 docker build --target runtime --cache-from=type=gha --cache-to=type=gha,mode=max -t trading-platform . --progress=plain
-      - name: Run container
-        if: steps.check.outputs.found == 'true'
-        run: |
-          docker run -d --rm --name trading-test -p 5000:5000 \
-            -e POLYGON_API_KEY=dummy trading-platform
-      - name: Wait for ready status
-        if: steps.check.outputs.found == 'true'
-        run: |
-          for i in {1..30}; do
-            if curl -fs http://localhost:5000/api/metrics | grep -q '"status":"ready"'; then
-              break
-            fi
-            sleep 6
-          done
-          if ! curl -fs http://localhost:5000/api/metrics | grep -q '"status":"ready"'; then
-            echo "Timed out waiting for container readiness" && exit 1
-          fi
-      - name: Verify pipeline
-        if: steps.check.outputs.found == 'true'
-        run: docker exec trading-test python -m trading_platform.run_daily --verify-only
-      - name: Container logs
-        if: always() && steps.check.outputs.found == 'true'
-        run: docker logs trading-test
-      - name: Stop container
-        if: always() && steps.check.outputs.found == 'true'
-        run: docker stop trading-test
+          scripts/docker_smoke.sh --ci || { CODE=$?; [ $CODE -eq 78 ] || exit $CODE; }
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
+  docs-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g markdownlint-cli
+      - name: Lint docs
+        run: markdownlint '**/*.md'
+      - name: Check links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: "--no-progress README.md docs/**/*.md"
+      - name: Install PlantUML
+        run: sudo apt-get update && sudo apt-get install -y plantuml
+      - name: Build architecture diagram
+        run: scripts/gen_arch_svg.sh
+      - name: Check diagram committed
+        run: git diff --exit-code docs/arch.svg
+
+  backtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.lock') }}
+          restore-keys: pip-
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - run: python scripts/run_backtest.py
