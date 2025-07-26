@@ -31,23 +31,12 @@ def generate_playbook(
     df = pd.read_csv(features_csv)
     model = lgb.Booster(model_file=model_file)
 
-    feature_cols = [
-        c
-        for c in [
-            "sma20",
-            "rsi14",
-            "iv30",
-            "hv30",
-            "garch_sigma",
-            "news_sent",
-            "iv_edge",
-            "uoa",
-            "garch_spike",
-        ]
-        if c in df.columns
-    ]
+    model_features = list(model.feature_name())
+    for feat in model_features:
+        if feat not in df.columns:
+            df[feat] = 0
 
-    X = df[feature_cols]
+    X = df[model_features]
     prob_up = model.predict(X)
     momentum = (df["close"] - df["sma20"]) / df["sma20"]
     news_sent = df.get("news_sent", 0)
@@ -57,6 +46,12 @@ def generate_playbook(
     df["score"] = (
         2.5 * prob_up + 1.5 * momentum + news_sent + iv_edge + uoa - garch_spike
     )
+    df["prob_up"] = prob_up
+    df["momentum"] = momentum
+    df["news_sent"] = news_sent
+    df["iv_edge"] = iv_edge
+    df["uoa"] = uoa
+    df["garch_spike"] = garch_spike
     top = df.nlargest(5, "score")
 
     Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -64,7 +59,18 @@ def generate_playbook(
     path = Path(out_dir) / f"{date}.json"
     payload = {
         "date": date,
-        "trades": top[["t", "score"]].to_dict(orient="records"),
+        "trades": top[
+            [
+                "t",
+                "score",
+                "prob_up",
+                "momentum",
+                "news_sent",
+                "iv_edge",
+                "uoa",
+                "garch_spike",
+            ]
+        ].to_dict(orient="records"),
     }
     with open(path, "w") as f:
         json.dump(payload, f, indent=2)

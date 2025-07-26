@@ -99,10 +99,19 @@ available.
 Model training metrics are written to `reports/dashboard.html`. Open this file
 in a browser to view recent AUC scores. Pass ``cv=True`` to
 ``models.train`` to compute a 5-fold average AUC that appears as **CV AUC**.
+The trainer automatically uses all feature columns (except ``t`` and
+``target``), so new features are picked up without code changes.
 Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
 Use ``generate_strategy_dashboard`` to write `reports/strategies.html` summarizing POP for available trades.
+Risk metrics can be computed from `reports/scoreboard.csv` using the risk report CLI:
+
+```bash
+risk-report --scoreboard reports/scoreboard.csv --out-file reports/scoreboard_risk.csv
+```
+The `MAX_RISK` environment variable specifies per-strategy risk limits applied during simulations and evaluation.
+
 
 ## Preflight Connectivity Check
 Run a quick smoke test before the full pipeline to validate your API keys:
@@ -124,7 +133,16 @@ python run_daily.py --symbols AAPL,MSFT --db-file market_data.db
 The script aborts if the preflight connectivity check fails.
 If ``SLACK_WEBHOOK_URL`` is set, a message is posted on success or failure.
 Large trades and breaking news are detected during execution and aggregated into
-a Slack alert if ``SLACK_WEBHOOK_URL`` is configured.
+a Slack alert if ``SLACK_WEBHOOK_URL`` is configured. The completion message
+includes a table of the day’s top trades with probability, momentum and other
+factors so you can quickly review the rationale behind each recommendation.
+The playbook generator automatically pads any missing model features with zeros
+so LightGBM predictions run smoothly even if some columns are absent.
+The feature pipeline requires at least sixty days of historical bars; if too few
+rows are available ``models.train`` raises ``ValueError`` and the pipeline
+aborts.
+When the run completes, the top trades are printed to the console in the same
+table format for local review.
 
 ## Data Utilities
 
@@ -178,6 +196,16 @@ portfolio close AAPL 150 --portfolio-file reports/portfolio.csv --pnl-file repor
 ```
 
 Closing a position updates `reports/pnl.csv` so dashboards can track PnL over time.
+### Real-time Monitoring
+
+Stream quotes for open positions and evaluate them continuously:
+
+```bash
+portfolio-stream --db-file market_data.db --portfolio-file reports/portfolio.csv
+evaluator --portfolio-file reports/portfolio.csv --pnl-file reports/pnl.csv
+```
+`portfolio-stream` records real-time quotes in the database. The `evaluator` closes positions when stop-loss or take-profit thresholds are reached and appends PnL to `reports/pnl.csv`. Set `SLACK_WEBHOOK_URL` to receive alerts for entry and exit events.
+
 
 ### Web Interface
 
@@ -187,9 +215,20 @@ Launch a local web UI for running commands:
 webapp
 ```
 
+The server binds to `0.0.0.0:5000` by default so it can be reached from outside
+the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`.
+
 On first launch, the page prompts for API keys and saves them to `.env`.
 After setup you can run the daily pipeline or connectivity checks with
-buttons on the homepage. You can also backfill historical bars, run simulations, and generate feature or strategy dashboards directly from the site. Recent results from `reports/scoreboard.csv` are displayed with links to all reports.
+buttons on the homepage. The dashboard automatically loads the latest playbook,
+news headlines and portfolio data. A real-time trade feed updates via WebSocket
+(the pipeline broadcasts each recommended trade to connected clients) while
+charts show feature importance, backtest results and the equity curve from
+`reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
+overview panel displays the most recent close for each symbol. Toast
+notifications appear whenever new alerts are logged. Scheduler controls remain
+available and recent results from `reports/scoreboard.csv` are displayed in a
+table.
 
 ### Strategy Workflow
 
