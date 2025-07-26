@@ -13,3 +13,4 @@ flask
 flask-socketio
 APScheduler
 optuna
+celery

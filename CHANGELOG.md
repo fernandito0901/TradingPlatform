@@ -338,3 +338,4 @@
 - Metrics and equity sections use skeleton loaders instead of placeholders
 - Flask and Celery loggers mask secrets
 - CI tests on Python 3.10 and 3.11 with Docker smoke neutral
+- Architecture diagram auto-generated; equity metrics endpoint and Smart Flow card

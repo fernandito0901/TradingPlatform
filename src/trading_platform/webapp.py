@@ -122,12 +122,7 @@ DASH_TEMPLATE = """
         <div id="metrics-upd" class="small text-muted"></div>
       </div>
       <div class="card p-3 shadow-sm mb-3" id="performance-card"></div>
-      <div class="card p-3 shadow-sm" id="equity-card">
-        <h5 class="card-title"><i class="fa fa-chart-area me-2"></i>Equity Curve</h5>
-        <div id="equity-skel" class="placeholder-wave" style="height:200px"></div>
-        <div id="equity"></div>
-        <div id="equity-upd" class="small text-muted"></div>
-      </div>
+      <div class="card p-3 shadow-sm" id="equity-card"></div>
     </div>
     <div class="col-lg-4">
       <div class="card p-3 shadow-sm mb-3" id="overview-card">
@@ -137,6 +132,7 @@ DASH_TEMPLATE = """
         <div id="overview-empty" class="text-muted">Loading…</div>
         <div id="overview-upd" class="small text-muted"></div>
       </div>
+      <div class="card p-3 shadow-sm mb-3" id="flow-card"></div>
       <div class="card p-3 shadow-sm" id="alerts-card">
         <div class="d-flex justify-content-between mb-2">
           <h5 class="card-title mb-0"><i class="fa fa-bell me-2"></i>Notifications</h5>
@@ -202,6 +198,7 @@ function load(){
   fetch('/api/positions').then(r=>r.json()).then(showPositions);
   fetch('/api/watchlist').then(r=>r.json()).then(showWatchlist);
   fetch('/api/overview').then(r=>r.json()).then(showOverview);
+  fetch('/api/flow').then(r=>r.json()).then(showFlow);
 }
 function refreshNews(){fetch('/api/news').then(r=>r.json()).then(showNews);}
 function refreshAlerts(){fetch('/api/alerts').then(r=>r.json()).then(showAlerts);}
@@ -343,6 +340,13 @@ function updateOverview(q){
   }
   document.getElementById('overview-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
+function showFlow(data){
+  const card=document.getElementById('flow-card');
+  if(!data.length){card.style.display='none';return;}
+  const item=data[0];
+  card.style.display='block';
+  card.innerHTML=`<h5 class="card-title"><i class="fa fa-bolt me-2"></i>Smart Flow</h5><div>Call/Put ${item.call_ratio}/${item.put_ratio}</div>`;
+}
 function showAlerts(msgs){
   const container=document.getElementById('alerts');
   msgs.forEach(m=>{
@@ -356,27 +360,35 @@ function showAlerts(msgs){
     new bootstrap.Toast(toast,{delay:5000}).show();
   });
 }
-function showEquity(data){
-  const skel=document.getElementById('equity-skel');
+function renderEquity(data){
+  const container=document.getElementById('equity-card');
   if(!data.length){
-    skel.style.display='block';
+    ReactDOM.render(React.createElement('div',{className:'placeholder-wave',style:{height:'200px'}}),container);
     return;
   }
-  skel.style.display='none';
+  const plot=React.createElement('div',{id:'eq-chart'});
+  const card=React.createElement(
+    'div',
+    null,
+    React.createElement('h5',{className:'card-title'},React.createElement('i',{className:'fa fa-chart-area me-2'}),'Equity Curve'),
+    plot,
+    React.createElement('div',{id:'equity-upd',className:'small text-muted'},'Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}))
+  );
+  ReactDOM.render(card,container);
   const trace={x:data.map(r=>r.date),y:data.map(r=>r.total),type:'scatter'};
-  Plotly.newPlot('equity',[trace]);
-  document.getElementById('equity-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  Plotly.newPlot('eq-chart',[trace]);
 }
 let plotlyLoaded=false;
 function refreshEquity(){
-  document.getElementById('equity-skel').style.display='block';
+  const container=document.getElementById('equity-card');
+  ReactDOM.render(React.createElement('div',{className:'placeholder-wave',style:{height:'200px'}}),container);
   if(!plotlyLoaded){
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.24.1';
-    s.onload=()=>{plotlyLoaded=true; fetch('/api/pnl').then(r=>r.json()).then(showEquity);};
+    s.onload=()=>{plotlyLoaded=true;fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);};
     document.head.appendChild(s);
   }else{
-    fetch('/api/pnl').then(r=>r.json()).then(showEquity);
+    fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);
   }
 }
 function clearAlerts(){document.getElementById('alerts').innerHTML='';seenAlerts.clear();}
@@ -666,6 +678,14 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         conn.close()
         return jsonify(df.to_dict(orient="records"))
 
+    @app.route("/api/flow")
+    def api_flow():
+        from . import flow
+
+        syms = os.getenv("SYMBOLS", "AAPL").split(",")[0]
+        df = flow.fetch_flow(syms)
+        return jsonify(df.to_dict(orient="records"))
+
     @app.route("/api/metrics")
     def api_metrics():
         csv = Path(app.static_folder) / "scoreboard.csv"
@@ -759,6 +779,27 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         from . import portfolio
 
         df = portfolio.load_pnl()
+        return jsonify(df.to_dict(orient="records"))
+
+    @app.route("/api/metrics/equity")
+    def api_equity_curve():
+        from . import portfolio
+
+        days = request.args.get("last")
+        df = portfolio.load_pnl()
+        if df.empty:
+            return jsonify([])
+        if days and days.endswith("d"):
+            try:
+                n = int(days[:-1])
+            except ValueError:
+                n = None
+            if n:
+                df["date"] = pd.to_datetime(df["date"])
+                cutoff = pd.Timestamp.utcnow().normalize() - pd.Timedelta(days=n)
+                cutoff = cutoff.tz_localize(None)
+                df = df[df["date"] >= cutoff]
+                df["date"] = df["date"].dt.date.astype(str)
         return jsonify(df.to_dict(orient="records"))
 
     @app.route("/api/alerts")

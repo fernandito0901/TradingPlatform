@@ -20,11 +20,13 @@ pip install -e .
 python3 -m pip install -r requirements.txt
 ```
 
+Additional platform-specific tips are available in [docs/SETUP.md](docs/SETUP.md).
+
 ## Project Layout
 
 ## Architecture
 
-![Architecture](docs/arch.puml)
+![Architecture](docs/arch.svg)
 
 Core collector code lives under `src/trading_platform`. Feature engineering and
 model training packages are located at the repository root under `features/` and
@@ -34,16 +36,10 @@ compatibility.
 
 ## Configuration
 
-The collector relies on a couple of environment variables and optional
-command‑line flags. These are merged into a single ``Config`` dataclass
-loaded via ``trading_platform.load_config``:
-
-- **`POLYGON_API_KEY`**: API key required for all REST and WebSocket requests.
-- **`CACHE_TTL`**: Time‑to‑live in seconds for HTTP response caching. Set to
-  `0` to disable caching.
-- **`SLACK_WEBHOOK_URL`**: Incoming webhook for pipeline notifications.
-- **`MAX_RISK`**: Comma-separated per-strategy limits like ``call=100,condor=50``.
-- `.env` files are loaded automatically if present so secrets can be stored locally.
+The collector relies on a few environment variables and optional command‑line
+flags. Example values can be found in [.env.example](.env.example). These are
+merged into a single ``Config`` dataclass loaded via
+``trading_platform.load_config``.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
