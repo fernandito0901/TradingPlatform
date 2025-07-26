@@ -10,4 +10,5 @@ pytest-asyncio
 websockets
 plotly
 flask
+flask-socketio
 APScheduler
