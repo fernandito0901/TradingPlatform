@@ -417,9 +417,9 @@ A few CSV files are shipped under `trading_platform/reports/demo/`:
 `news.csv`, `pnl.csv`, `trades.csv`, and `scoreboard.csv`.
 The web app copies these into `reports/` on first launch so the dashboard has
 sample content. Real data will replace them after the scheduler completes a
-pipeline run.
-Run `python tasks/seed_news.py` to insert the sample headlines if the news table
-is empty.
+pipeline run. A helper CSV at `data/demo_news.csv` seeds the news table when it
+is created. Run `python tasks/seed_news.py` manually to reinsert the sample
+headlines if needed.
 
 
 ### Scheduler Service

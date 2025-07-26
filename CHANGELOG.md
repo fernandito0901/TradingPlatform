@@ -372,6 +372,12 @@
 - Smoke test checks `/api/news`
 
 ## 2025-07-26
+- Live metrics API with Sharpe/Sortino and equity curve
+- News table seeded from `data/demo_news.csv`
+- Scheduler Socket.IO guard and smoke test
+- Features module restored with Polygon v2 helper
+
+## 2025-07-26
 - Switched Polygon open/close endpoint to v2 and handle 404 with `NoData`
 - Added news table migration and seeder
 - Scheduler defers SocketIO import until runtime

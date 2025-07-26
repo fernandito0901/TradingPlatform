@@ -751,62 +751,19 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/metrics")
     def api_metrics():
-        pnl_csv = Path(app.static_folder) / "pnl.csv"
-        if not pnl_csv.exists():
-            return jsonify({"total_return": 0.0, "pnl": 0.0})
-        df = pd.read_csv(pnl_csv)
-        if df.empty:
-            return jsonify({"total_return": 0.0, "pnl": 0.0})
-        pnl = float(df["total"].iloc[-1])
-        total_return = float(df["total"].iloc[-1] - df["total"].iloc[0])
-        return jsonify({"total_return": total_return, "pnl": pnl})
+        from .collector import pnl as pnl_mod
 
-    @app.route("/api/metrics/strategy")
-    def api_strategy_metrics():
-        pnl_csv = Path(app.static_folder) / "pnl.csv"
-        if not pnl_csv.exists():
-            demo = DEMO_DIR / "pnl.csv"
-            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
-                pnl_csv.write_text(demo.read_text())
-            else:
-                return jsonify({"status": "empty"})
-        df = pd.read_csv(pnl_csv)
-        if df.empty:
+        try:
+            df = pnl_mod.update_pnl(path=Path(app.static_folder) / "pnl.csv")
+        except pnl_mod.NoData:
             return jsonify({"status": "empty"})
-        returns = df["total"].astype(float).diff().dropna()
-        if returns.empty or returns.isna().all():
-            return jsonify({"status": "empty"})
-        from . import metrics as m
-
-        out = {
-            "sharpe": round(m.sharpe_ratio(returns), 2),
-            "sortino": round(m.sortino_ratio(returns), 2),
-            "win_rate": round(m.win_rate(returns), 2),
-        }
-        return jsonify(out)
-
-    @app.route("/api/metrics/performance")
-    def api_performance_metrics():
-        pnl_csv = Path(app.static_folder) / "pnl.csv"
-        if not pnl_csv.exists():
-            demo = DEMO_DIR / "pnl.csv"
-            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
-                pnl_csv.write_text(demo.read_text())
-            else:
-                return jsonify({"status": "empty"})
-        df = pd.read_csv(pnl_csv)
-        if df.empty:
-            return jsonify({"status": "empty"})
-        returns = df["total"].astype(float).diff().dropna()
-        if returns.empty or returns.isna().all():
-            return jsonify({"status": "empty"})
-        from . import metrics as m
-
-        out = {
-            "sharpe": round(m.sharpe_ratio(returns), 2),
-            "sortino": round(m.sortino_ratio(returns), 2),
-        }
-        return jsonify(out)
+        return jsonify(
+            {
+                "status": "ok",
+                "sharpe": round(float(df["sharpe"].iloc[-1]), 2),
+                "sortino": round(float(df["sortino"].iloc[-1]), 2),
+            }
+        )
 
     @app.route("/api/features/latest")
     def api_features_latest():
@@ -846,24 +803,14 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/metrics/equity")
     def api_equity_curve():
-        from . import portfolio
+        from .collector import pnl as pnl_mod
 
-        days = request.args.get("last")
-        df = portfolio.load_pnl()
-        if df.empty:
+        days = request.args.get("last", "90d")
+        try:
+            df = pnl_mod.update_pnl(days)
+        except pnl_mod.NoData:
             return jsonify([])
-        if days and days.endswith("d"):
-            try:
-                n = int(days[:-1])
-            except ValueError:
-                n = None
-            if n:
-                df["date"] = pd.to_datetime(df["date"])
-                cutoff = pd.Timestamp.utcnow().normalize() - pd.Timedelta(days=n)
-                cutoff = cutoff.tz_localize(None)
-                df = df[df["date"] >= cutoff]
-                df["date"] = df["date"].dt.date.astype(str)
-        return jsonify(df.to_dict(orient="records"))
+        return jsonify(df[["date", "equity"]].to_dict(orient="records"))
 
     @app.route("/api/alerts")
     def api_alerts():

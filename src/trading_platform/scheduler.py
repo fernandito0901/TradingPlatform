@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import time
+import os
 from threading import Thread
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify
+from flask_socketio import SocketIO
 from dotenv import load_dotenv
 
-socketio = None
+socketio: SocketIO | None = None
 
 from .config import load_config, Config
 from .run_daily import run as run_daily
@@ -44,15 +46,18 @@ def start(
 
     sched = BackgroundScheduler()
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
-    if getattr(sio, "server", None) is not None:
-        sched.add_job(lambda: sio.emit("scheduler-alive"), "interval", seconds=60)
     sched.start()
-    if getattr(sio, "server", None) is not None:
-        sio.emit("scheduler-alive")
+
+    global socketio
+    socketio = SocketIO(message_queue=os.getenv("REDIS_URL"))
+
+    if socketio.server:
+        sched.add_job(lambda: socketio.emit("scheduler-alive"), "interval", seconds=60)
+        socketio.emit("scheduler-alive")
     else:
         import logging
 
-        logging.getLogger(__name__).warning("SocketIO not initialized")
+        logging.getLogger(__name__).warning("Socket.IO not available, skipping emit")
     return sched
 
 
