@@ -261,3 +261,4 @@
 - Sections collapse when empty and news/alert toasts are deduplicated.
 - Equity curve chart loads lazily and refreshes every 10 minutes.
 - Added `docs/ui_overview.md` and updated README with dashboard overview link.
+
