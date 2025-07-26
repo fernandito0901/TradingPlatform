@@ -333,7 +333,6 @@
 - Strategy metrics API provides Sharpe, Sortino and win-rate
 - Dashboard polls scheduler health and exposes restart button
 
-
 ## 2025-10-02
 - Performance card shows Sharpe and Sortino ratios via React
 - Metrics and equity sections use skeleton loaders instead of placeholders

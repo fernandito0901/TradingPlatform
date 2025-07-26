@@ -13,6 +13,11 @@ try:  # optional Socket.IO integration
 except Exception:  # pragma: no cover - webapp not running
     socketio = None
 
+try:  # optional Socket.IO integration
+    from .webapp import socketio
+except Exception:  # pragma: no cover - webapp not running
+    socketio = None
+
 from .config import load_config, Config
 from .run_daily import run as run_daily
 
