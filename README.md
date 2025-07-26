@@ -34,6 +34,7 @@ model training packages are located at the repository root under `features/` and
 `models/`. Wrapper modules under `src/trading_platform/features` and
 `src/trading_platform/models` re-export these packages for backward
 compatibility.
+Models—drop your real training code into `trading_platform/models/train.py`. CI only ships a stub.
 Report generators live in `src/trading_platform/reports`.
 
 ### Features
