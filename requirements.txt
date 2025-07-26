@@ -12,3 +12,4 @@ plotly
 flask
 flask-socketio
 APScheduler
+optuna

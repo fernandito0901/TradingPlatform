@@ -138,4 +138,6 @@ def run_pipeline(conn, symbol: str, out_dir: str = "features") -> str:
     os.makedirs(path, exist_ok=True)
     csv_path = os.path.join(path, "features.csv")
     df.to_csv(csv_path, index=False)
+    parquet_path = os.path.join(path, "features.parquet")
+    df.to_parquet(parquet_path, index=False)
     return csv_path

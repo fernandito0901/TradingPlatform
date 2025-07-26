@@ -172,9 +172,33 @@ Run a simple buy‑and‑hold backtest and record profits to the scoreboard:
 simulate data/features.csv --strategy buy_hold --capital 10000
 ```
 
+You can also backtest the latest features and model with:
+
+```bash
+backtest features/2025-01-01/features.csv models/model_20250101_1200.txt
+```
+
 The CSV at `reports/scoreboard.csv` tracks daily AUC and optional PnL values.
 Simulated trades are also logged in `reports/portfolio.csv` and realized
 profits appended to `reports/pnl.csv`.
+
+### Makefile Shortcuts
+
+Common tasks are wrapped with Make targets:
+
+```bash
+make train ARGS="features.csv"
+make tune ARGS="features.csv --symbol AAPL"
+make backtest
+make daily ARGS="--symbols AAPL"
+```
+
+`make backtest` runs `scripts/run_backtest.py`, which loads the latest features
+and model to update `reports/pnl.csv`.
+
+The web dashboard periodically fetches `/api/scoreboard` and `/api/pnl` so
+`reports/scoreboard.csv` and `reports/pnl.csv` stay up to date without manual
+uploads.
 
 ### Broker API Stub
 
@@ -221,11 +245,10 @@ On first launch, the page prompts for API keys and saves them to `.env`.
 After setup you can run the daily pipeline or connectivity checks with
 buttons on the homepage. The dashboard automatically loads the latest playbook,
 news headlines and portfolio data. A real-time trade feed updates via WebSocket
-(the pipeline broadcasts each recommended trade to connected clients) while
-charts show feature importance, backtest results and the equity curve from
-`reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
-overview panel displays the most recent close for each symbol. Toast notifications now deduplicate messages and include *Clear All* / *Mark All as Read* buttons. A dark mode toggle changes the page theme. Trade recommendations refresh live with progress bars for POP and metrics cards show the model version. Scheduler controls remain available and recent results from `reports/scoreboard.csv` are displayed in a table.
-
+ (the pipeline broadcasts each recommended trade to connected clients) while
+ charts show feature importance, backtest results and the equity curve from
+ `reports/pnl.csv`. The sidebar lists your watchlist symbols and a market
+ overview panel displays the most recent close for each symbol. Toast notifications now deduplicate messages and include *Clear All* / *Mark All as Read* buttons. A dark mode toggle changes the page theme. Trade recommendations refresh live with progress bars for POP and metrics cards show the model version. Scheduler controls remain available and recent results from `reports/scoreboard.csv` are displayed in a table. See `docs/ui_overview.md` for a visual guide to the layout.
 ### Strategy Workflow
 
 Use the strategy helpers and dashboard generator to evaluate trades:

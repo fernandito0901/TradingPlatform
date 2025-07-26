@@ -2,6 +2,7 @@
 
 import importlib
 import json
+from pathlib import Path
 import pytest
 
 load_env_module = importlib.import_module("trading_platform.load_env")
@@ -33,7 +34,7 @@ def test_run_daily_notify_failure(monkeypatch, tmp_path):
 
     monkeypatch.setattr(run_daily, "run_pipeline", lambda *a, **k: "features.csv")
 
-    def fail_train(csv, model_path="models/model.txt"):
+    def fail_train(csv, model_dir="models", symbol="AAPL"):
         raise RuntimeError("boom")
 
     monkeypatch.setattr(run_daily, "train_model", fail_train)
@@ -79,8 +80,22 @@ def test_run_daily_success(monkeypatch, tmp_path, capsys):
 
     monkeypatch.setattr(run_daily, "run_pipeline", fake_run_pipeline)
 
-    def fake_train(csv, model_path="models/model.txt"):
-        return 0.5, 0.5
+    def fake_train(csv, model_dir="models", symbol="AAPL"):
+        from trading_platform.models import TrainResult
+
+        res = TrainResult(
+            train_auc=0.5,
+            test_auc=0.5,
+            cv_auc=0.5,
+            holdout_auc=0.5,
+            model_path=str(tmp_path / "m.txt"),
+            metadata_path=str(tmp_path / "m_meta.json"),
+            params={},
+            window_days=60,
+        )
+        Path(res.model_path).write_text("model")
+        Path(res.metadata_path).write_text("{}")
+        return res
 
     monkeypatch.setattr(run_daily, "train_model", fake_train)
 

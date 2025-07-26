@@ -165,3 +165,13 @@
 ### 2025-09-18 – @Coder
 - Added news deduplication and buttons to clear or mark headlines.
 - Created placeholder report files to avoid 404s.
+### 2025-09-19 – @Planner
+- Added P016 for delayed Polygon feed and created tasks T101-T105.
+### 2025-09-20 – @Coder
+- Added backtest module and CLI script to generate equity curves.
+
+### 2025-09-21 – @Coder
+- Reworked dashboard layout using Bootstrap grid and Font Awesome icons.
+- Added lazy loading for equity curve and sortable trades table.
+### 2025-09-21 – @Synthesizer
+- Documented dashboard layout in `docs/ui_overview.md`.

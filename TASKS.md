@@ -1,17 +1,22 @@
 # Open Tasks
 # (All tasks should have unique IDs in ascending order)
 
-- [T99] Document dashboard usage · Acceptance: README screenshots and description.
 - [T100] Review UI redesign · Acceptance: Reviewer approves new interface documentation.
+- [T101] Describe delayed Polygon feed architecture · Acceptance: planning document P016 outlines configuration and process.
+- [T102] Implement delayed_stream.py · Acceptance: quotes saved to market_data.db in real time.
+- [T103] Connect delayed stream to pipeline · Acceptance: webapp shows live trade ideas while training.
+- [T104] Tests for delayed feed and auto start · Acceptance: pytest covers stream integration and pipeline kickoff.
+- [T105] Review delayed feed implementation · Acceptance: README updated and PR approved by Reviewer.
 
+# Completed Tasks
 - [T85] Document risk workflow · Acceptance: README explains risk_report usage and risk limits. · Completed by Reviewer on 2025-09-05
+- [T99] Document dashboard usage · Acceptance: README screenshots and description. · Completed by Synthesizer on 2025-09-21
 - [T88] Position evaluator engine · Acceptance: open positions monitored and exit signals computed. · Completed by Coder on 2025-09-05
 - [T90] Exit simulation algorithm · Acceptance: simulator records hypothetical exits and updates PnL. · Completed by Modeler on 2025-09-05
 - [T92] Document real-time monitoring · Acceptance: README explains live evaluation and alert workflow. · Completed by Reviewer on 2025-09-05
 - [T93] Evaluator CLI · Acceptance: `evaluator.py` runs continuous evaluation loop and records exit signals. · Completed by Coder on 2025-09-05
 - [T94] Evaluator tests · Acceptance: pytest verifies signals trigger and PnL updates. · Completed by Tester on 2025-09-05
 - [T95] Document evaluator usage · Acceptance: README includes section on running the evaluator and interpreting output. · Completed by Reviewer on 2025-09-05
-# Completed Tasks
 - [T86] Risk report tests · Acceptance: pytest covers risk calculations and dashboard output. · Completed by Tester on 2025-09-05
 - [T87] Real-time streaming for portfolio symbols · Acceptance: quotes for held symbols update every minute and log to database. · Completed by DataCollector on 2025-09-04
 - [T91] Real-time alert notifications · Acceptance: user notified via Slack when entry or exit triggers occur. · Completed by DataCollector on 2025-09-04
@@ -38,62 +43,3 @@
 - [T10] Add WebSocket tests for stream_quotes · Acceptance: mocked server verifies reconnect logic; `pytest -q` passes · Completed by Tester on 2025-07-29
 - [T16] Extend feature pipeline with IV/HV and GARCH σ · Acceptance: `compute_features` outputs `iv30`, `hv30`, `garch_sigma`; tests updated · Completed by Modeler on 2025-08-01
 - [T17] Cross-validate LightGBM model · Acceptance: `models.train` returns train/test AUC; tests cover new logic · Completed by Modeler on 2025-08-01
-- [T18] Add news sentiment feature · Acceptance: `features.csv` includes `news_sent` column computed from collected headlines; tests updated · Completed by Modeler on 2025-08-01
-- [T24] Performance metrics dashboard · Acceptance: `reports/dashboard.html` plots model AUC and trade stats; README links to sample · Completed by Modeler on 2025-08-01
-- [T19] Update playbook scoring rule · Acceptance: `generate_playbook` uses news_sent, IV_edge, UOA and garch_spike; tests validate weighting · Completed by Synthesizer on 2025-08-05
-- [T20] Daily orchestration script · Acceptance: `run_daily.py` executes collection, features, training and playbook; README updated; tests cover CLI · Completed by Coder on 2025-08-06
-- [T21] Continuous integration workflow · Acceptance: GitHub Actions runs `black --check` and `pytest -q` on pull requests · Completed by Coder on 2025-08-11
-- [T22] Slack notification alerts · Acceptance: pipeline sends Slack message after playbook generation and on errors; config documented · Completed by Coder on 2025-08-12
-- [T27] Connectivity test command · Acceptance: `collector.verify` fetches OHLCV and option data for up to 5 symbols using API keys provided via CLI and prints a summary; README documents usage · Completed by DataCollector on 2025-08-06
-- [T28] Tests for connectivity command · Acceptance: pytest covers success and failure paths for `collector.verify` with mocked API responses · Completed by Tester on 2025-08-06
-- [T31] README update for verify command · Acceptance: README section demonstrates `python -m collector.verify` with API keys via CLI · Completed by Reviewer on 2025-08-06
-- [T33] Preflight connectivity check · Acceptance: `run_daily.py` invokes `collector.verify` and aborts on failure; tests cover both paths · Completed by Coder on 2025-08-06
-- [T34] Update test imports for new package layout · Acceptance: tests run without manual `sys.path` modifications by installing `trading_platform` via `pip install -e .` · Completed by Tester on 2025-08-08
-- [T35] Refresh documentation for restructure · Acceptance: README and design docs describe top-level `features` and `models` packages; examples updated · Completed by Reviewer on 2025-08-08
-- [T36] Create planning document index · Acceptance: `design/PLAN_INDEX.md` lists all plan files chronologically; README links to it · Completed by Planner on 2025-08-08
-- [T37] Normalize headers in early plans · Acceptance: `plan-2025-07-22.md` uses `Planning Notes - YYYY-MM-DD` heading to match others · Completed by Planner on 2025-08-08
-- [T38] Update architecture overview · Acceptance: `design/architecture-2025-07-22.md` reflects current module layout with root packages and wrappers · Completed by Planner on 2025-08-09
-- [T39] Organize plan documents by month · Acceptance: move plans into `design/2025-*` subfolders and update PLAN_INDEX · Completed by Planner on 2025-08-09
-- [T40] Clean up TASKS.md sections · Acceptance: remove duplicated "Planned Tasks" and ensure all open tasks are listed once · Completed by Planner on 2025-08-09
-- [T29] UOA indicator · Acceptance: `features.pipeline` outputs `uoa` column computed from option volume vs. 30‑day average; tests validate calculation · Completed by Modeler on 2025-08-11
-- [T30] IV edge & garch spike features · Acceptance: `features.pipeline` includes `iv_edge` and `garch_spike` columns; tests confirm formulas · Completed by Modeler on 2025-08-11
-- [T23] Historical data backfill script · Acceptance: `collector.backfill` downloads missing bars for a date range; unit test validates row count · Completed by DataCollector on 2025-08-13
-- [T32] Data quality report script · Acceptance: `collector.quality` outputs per-symbol missing day count and null stats; unit test verifies output · Completed by DataCollector on 2025-08-13
-- [T25] Docker packaging · Acceptance: `Dockerfile` and `run_pipeline.sh` enable one-command execution; instructions in README · Completed by Coder on 2025-08-13
-- [T26] Review modeling updates · Acceptance: confirm docs and tests for new features, run `pytest -q` and squash-merge · Completed by Reviewer on 2025-08-13
-- [T42] Validate plan headers · Acceptance: CI fails if a plan's heading doesn't match its filename; script checks all docs · Completed by Tester on 2025-07-24
-- [T47] Async collector API · Acceptance: `collector/api_async.py` uses aiohttp to fetch data concurrently; unit tests cover success and failure paths · Completed by Coder on 2025-08-15
-- [T48] Cross-validation training · Acceptance: `models.train` supports 5-fold CV and dashboard reports CV AUC · Completed by Modeler on 2025-08-17
-- [T49] Interactive feature dashboard · Acceptance: Plotly report `reports/feature_dashboard.html` shows feature distributions with README instructions · Completed by Synthesizer on 2025-08-17
-- [T50] Environment file loader · Acceptance: helper loads `.env` into environment; all entry points call it before other imports · Completed by Coder on 2025-08-15
-- [T51] Async streaming module · Acceptance: `collector/stream_async.py` streams trades concurrently via websockets; integrate with async API · Completed by Coder on 2025-08-16
-- [T52] Trade scoreboard · Acceptance: `reports/scoreboard.csv` appends daily playbook results; tests cover update logic · Completed by Modeler on 2025-08-17
-- [T53] Unified config dataclass · Completed by Synthesizer on 2025-08-18
-- [T54] Design Config dataclass structure and loader · Completed by Planner on 2025-08-18
-- [T55] Refactor entry points to use Config dataclass · Completed by Coder on 2025-08-18
-- [T56] Document configuration system in README · Completed by Reviewer on 2025-08-18
-- [T62] Paper trading simulator · Acceptance: `simulate.py` executes strategies on historical data and logs PnL to scoreboard · Completed by Coder on 2025-08-18
-- [T57] Options strategy primitives · Acceptance: `strategies.py` implements iron condor and call debit spread payoff calculations · Completed by Coder on 2025-08-19
-- [T61] Probability-of-profit estimator · Acceptance: `strategies.pop` returns values between 0 and 1 for sample legs · Completed by Coder on 2025-08-19
-- [T58] Strategy dashboard · Acceptance: `reports/strategies.html` lists available strategies with buy/sell actions and probability of profit · Completed by Synthesizer on 2025-08-19
-- [T63] Risk limits configuration · Acceptance: Config dataclass includes per-strategy max risk with docs and tests · Completed by Synthesizer on 2025-08-19
-- [T59] Real-time trade & news alerts · Completed by DataCollector on 2025-08-20
-- [T60] Document strategy workflow · Completed by Reviewer on 2025-08-20
-- [T64] Alert aggregator service · Completed by DataCollector on 2025-08-20
-- [T65] Broker API stub · Acceptance: CLI action places simulated trades through a stubbed broker module · Completed by Coder on 2025-08-20
-- [T69] Implement expanded webapp · Acceptance: website can run pipeline, backfill, simulate, and generate dashboards; config stored in .env · Completed by Coder on 2025-08-22
-- [T68] Web dashboard design · Acceptance: plan P009 outlines setup workflow and buttons for all commands · Completed by Planner on 2025-08-24
-- [T66] Portfolio tracker design · Acceptance: planning doc outlines schema for open positions and PnL history · Completed by Planner on 2025-08-24
-- [T74] Portfolio module implementation · Acceptance: `portfolio.py` with load/save helpers and CLI · Completed by Coder on 2025-08-25
-- [T70] Integrate reports in web UI · Acceptance: scoreboard and strategy/feature dashboards viewable from webapp · Completed by Synthesizer on 2025-08-26
-- [T75] Integrate tracker with simulator · Acceptance: simulations record trades and update portfolio files · Completed by Synthesizer on 2025-08-26
-- [T71] Document web usage · Acceptance: README includes web interface section with examples · Completed by Reviewer on 2025-08-26
-- [T78] Scheduler service implementation · Acceptance: `scheduler.py` runs `run_daily` via APScheduler · Completed by Coder on 2025-08-27
-- [T79] Webapp scheduler controls · Acceptance: users can toggle schedule via the web UI · Completed by Coder on 2025-09-02
-- [T80] Deployment docs · Acceptance: README explains docker-compose and scheduler · Completed by Coder on 2025-09-02
-- [T81] Scheduler tests · Acceptance: pytest verifies scheduled runs execute `run_daily` · Completed by Coder on 2025-09-02
-- [T83] Risk report CLI · Acceptance: `risk_report.py` outputs Sharpe and max drawdown per day from scoreboard · Completed by Coder on 2025-09-03
-- [T82] Risk metrics design · Acceptance: plan P012 defines Sharpe and drawdown formulas and scoreboard schema changes · Completed by Planner on 2025-09-03
-- [T84] Risk dashboard integration · Acceptance: dashboard and web UI display Sharpe and drawdown columns. · Completed by Synthesizer on 2025-09-03
-- [T89] Automatic trade saving · Acceptance: executed trades persist to portfolio.csv without manual calls. · Completed by Synthesizer on 2025-09-03
-- [T90] Exit simulation algorithm · Acceptance: simulator records hypothetical exits and updates PnL. · Completed by Modeler on 2025-09-05

@@ -1,5 +1,6 @@
 """Tests for Flask web interface."""
 
+from pathlib import Path
 from trading_platform.webapp import create_app
 
 
@@ -78,3 +79,21 @@ def test_api_watchlist_and_alerts(tmp_path, monkeypatch):
 
     resp = client.get("/api/alerts")
     assert resp.json[-1] == "Alert two"
+
+
+def test_api_scoreboard_and_pnl(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=abc\n")
+    app = create_app(env_path=env)
+    csv = Path(app.static_folder) / "scoreboard.csv"
+    pnl = Path("reports/pnl.csv")
+    pnl.parent.mkdir(parents=True, exist_ok=True)
+    csv.write_text("date,playbook,auc\n2025-01-01,p1,0.7\n")
+    pnl.write_text("date,symbol,unrealized,realized,total\n2025-01-01,A,0,0,0\n")
+    client = app.test_client()
+
+    resp = client.get("/api/scoreboard")
+    assert resp.json[0]["auc"] == 0.7
+
+    resp = client.get("/api/pnl")
+    assert resp.json[0]["symbol"] == "A"

@@ -23,3 +23,4 @@ New planning notes should follow the file name pattern `P###.md` and must be lin
 ## Architecture
 - [architecture/architecture-2025-07-22.md](architecture/architecture-2025-07-22.md)
 - [plans/P015.md](plans/P015.md)
+- [plans/P016.md](plans/P016.md)

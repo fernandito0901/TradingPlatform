@@ -248,3 +248,17 @@
 ## 2025-09-18
 - News feed deduplicates headlines per session with Clear/Mark controls.
 - Placeholder report files prevent 404 errors for dashboards.
+
+## 2025-09-19
+- Added planning doc P016 for delayed Polygon feed and opened tasks T101-T105.
+
+## 2025-09-20
+- Added `backtest` CLI and updated `scripts/run_backtest.py` to use the latest
+  model and features.
+
+## 2025-09-21
+- Polished dashboard layout with Bootstrap grid and Font Awesome icons.
+- Sections collapse when empty and news/alert toasts are deduplicated.
+- Equity curve chart loads lazily and refreshes every 10 minutes.
+- Added `docs/ui_overview.md` and updated README with dashboard overview link.
+

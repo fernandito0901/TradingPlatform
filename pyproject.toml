@@ -24,6 +24,7 @@ dependencies = [
     "flask",
     "flask-socketio",
     "APScheduler",
+    "optuna",
 ]
 
 [project.scripts]
@@ -36,6 +37,7 @@ scheduler = "trading_platform.scheduler:main"
 risk-report = "trading_platform.risk_report:main"
 portfolio-stream = "trading_platform.collector.portfolio_stream:main"
 evaluator = "trading_platform.evaluator:main"
+backtest = "trading_platform.backtest:main"
 
 [tool.setuptools.packages.find]
 where = ["src", ""]

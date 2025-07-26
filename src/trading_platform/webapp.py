@@ -51,106 +51,177 @@ DASH_TEMPLATE = """
   <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
   <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap\" rel=\"stylesheet\">
   <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\">
-  <script src=\"https://cdn.jsdelivr.net/npm/plotly.js-dist@2.24.1\"></script>
-  <script src=\"https://cdn.socket.io/4.5.4/socket.io.min.js\"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Plotly loaded on demand -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
 </head>
-<body class=\"p-3\">
-<div class=\"container-fluid\">
-  <h1 class=\"mb-4\">Trading Dashboard</h1>
-  <div class=\"mb-3\">
-    <button class=\"btn btn-primary me-2\" onclick=\"fetch('/run',{method:'POST'})\">Run Daily Pipeline</button>
-    <button class=\"btn btn-secondary me-2\" onclick=\"fetch('/verify',{method:'POST'})\">Verify Connectivity</button>
-    <button class=\"btn btn-outline-dark\" onclick=\"toggleDark()\">Dark Mode</button>
+<body class="p-3">
+<nav class="navbar navbar-expand-lg bg-light mb-3 rounded shadow-sm px-3">
+  <a class="navbar-brand" href="#">Trading AI</a>
+  <div class="ms-auto">
+    <button class="btn btn-outline-secondary me-2" onclick="toggleDark()"><i class="fa fa-moon"></i></button>
+    <div class="dropdown d-inline">
+      <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Settings</button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#" onclick="startRun()">Run Daily Pipeline</a></li>
+        <li><a class="dropdown-item" href="#" onclick="verifyConn()">Verify Connectivity</a></li>
+      </ul>
+    </div>
   </div>
-  <div class=\"row\">
-    <div class=\"col-md-4\">
-      <h2>Recommended Trades</h2>
-      <table class=\"table\" id=\"trades\"></table>
-      <h2>News</h2>
-      <div class=\"d-flex justify-content-end mb-2\">
-        <button class=\"btn btn-sm btn-outline-secondary me-2\" onclick=\"clearNews()\">Clear All</button>
-        <button class=\"btn btn-sm btn-outline-secondary\" onclick=\"markNewsRead()\">Mark All as Read</button>
+</nav>
+<div class="container-fluid">
+  <div class="row g-3">
+    <div class="col-lg-3">
+      <div class="card p-3 shadow-sm mb-3" id="trades-card">
+        <h5 class="card-title"><i class="fa fa-lightbulb me-2"></i>Recommended Trades</h5>
+        <table class="table table-striped small" id="trades">
+          <thead class="table-light">
+            <tr>
+              <th role="button" onclick="sortTrades('t')">Ticker</th>
+              <th role="button" onclick="sortTrades('strategy')">Strategy</th>
+              <th role="button" onclick="sortTrades('pop')">POP</th>
+              <th role="button" onclick="sortTrades('score')">Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <ul id=\"news\"></ul>
-      <h2>Watchlist</h2>
-      <ul id=\"watchlist\"></ul>
+      <div class="card p-3 shadow-sm mb-3" id="news-card">
+        <div class="d-flex justify-content-between mb-2">
+          <h5 class="card-title mb-0"><i class="fa fa-newspaper me-2"></i>News</h5>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary me-1" onclick="clearNews()">Clear All</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="markNewsRead()">Mark All as Read</button>
+          </div>
+        </div>
+        <ul id="news" class="list-unstyled mb-0"></ul>
+        <div id="news-empty" class="text-muted">No data yet</div>
+      </div>
+      <div class="card p-3 shadow-sm" id="watch-card">
+        <h5 class="card-title"><i class="fa fa-eye me-2"></i>Watchlist</h5>
+        <ul id="watchlist" class="list-unstyled"></ul>
+      </div>
     </div>
-    <div class=\"col-md-4\">
-      <h2>Metrics</h2>
-      <div id=\"metrics\"></div>
-      <h2>Open Positions</h2>
-      <table class=\"table\" id=\"positions\"></table>
+    <div class="col-lg-5">
+      <div class="card p-3 shadow-sm mb-3" id="metrics-card">
+        <h5 class="card-title"><i class="fa fa-chart-line me-2"></i>Metrics</h5>
+        <div id="metrics"></div>
+        <div id="metrics-empty" class="text-muted">No data yet</div>
+      </div>
+      <div class="card p-3 shadow-sm" id="equity-card">
+        <h5 class="card-title"><i class="fa fa-chart-area me-2"></i>Equity Curve</h5>
+        <div id="equity"></div>
+      </div>
     </div>
-    <div class=\"col-md-4\">
-      <h2>Market Overview</h2>
-      <table class=\"table\" id=\"overview\"></table>
+    <div class="col-lg-4">
+      <div class="card p-3 shadow-sm mb-3" id="overview-card">
+        <h5 class="card-title"><i class="fa fa-chart-pie me-2"></i>Market Overview</h5>
+        <table class="table table-sm" id="overview"></table>
+        <div id="overview-empty" class="text-muted">No data yet</div>
+      </div>
+      <div class="card p-3 shadow-sm" id="alerts-card">
+        <div class="d-flex justify-content-between mb-2">
+          <h5 class="card-title mb-0"><i class="fa fa-bell me-2"></i>Notifications</h5>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary me-1" onclick="clearAlerts()">Clear All</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="markAlertsRead()">Mark Read</button>
+          </div>
+        </div>
+        <div id="alerts" class="toast-container position-static"></div>
+      </div>
     </div>
   </div>
-  <h2 class=\"mt-4\">Equity Curve</h2>
-  <div id=\"equity\"></div>
-  <h2 class=\"mt-4\">Scheduler</h2>
-  {% if scheduler %}
-  <form action="{{ url_for('stop_scheduler_route') }}" method=post>
-    <input type=submit value="Stop Scheduler" class="btn btn-warning">
-  </form>
-  {% else %}
-  <form action="{{ url_for('start_scheduler_route') }}" method=post>
-    <input type=submit value="Start Scheduler" class="btn btn-success">
-  </form>
-  {% endif %}
-  <h2 class=\"mt-4\">Scoreboard</h2>
-  {{ scoreboard|safe }}
-  <div class="d-flex justify-content-end mb-2">
-    <button class="btn btn-sm btn-outline-secondary me-2" onclick="clearAlerts()">Clear All</button>
-    <button class="btn btn-sm btn-outline-secondary" onclick="markAlertsRead()">Mark All as Read</button>
+  <div class="mt-4" id="scheduler-section">
+    <h5><i class="fa fa-calendar me-2"></i>Scheduler</h5>
+    {% if scheduler %}
+    <form action="{{ url_for('stop_scheduler_route') }}" method=post>
+      <input type=submit value="Stop Scheduler" class="btn btn-warning">
+    </form>
+    {% else %}
+    <form action="{{ url_for('start_scheduler_route') }}" method=post>
+      <input type=submit value="Start Scheduler" class="btn btn-success">
+    </form>
+    {% endif %}
   </div>
-  <div id=\"alerts\" class=\"toast-container position-fixed top-0 end-0 p-3\"></div>
+  <div class="mt-4">
+    <h5>Scoreboard</h5>
+    {{ scoreboard|safe }}
+  </div>
 </div>
 <script>
 const socket=io();
 socket.on('trade',t=>addTradeRow(t));
 let seenAlerts=new Set();
 let seenNews=new Set();
+let trades=[];
+let sortKey='score';
+let sortAsc=false;
 function toggleDark(){
   document.body.classList.toggle('bg-dark');
   document.body.classList.toggle('text-white');
 }
+function startRun(){fetch('/run',{method:'POST'})}
+function verifyConn(){fetch('/verify',{method:'POST'})}
 function load(){
   fetch('/api/trades').then(r=>r.json()).then(showTrades);
   fetch('/api/metrics').then(r=>r.json()).then(showMetrics);
   fetch('/api/positions').then(r=>r.json()).then(showPositions);
-  fetch('/api/pnl').then(r=>r.json()).then(showEquity);
   fetch('/api/watchlist').then(r=>r.json()).then(showWatchlist);
   fetch('/api/overview').then(r=>r.json()).then(showOverview);
 }
 function refreshNews(){fetch('/api/news').then(r=>r.json()).then(showNews);}
 function refreshAlerts(){fetch('/api/alerts').then(r=>r.json()).then(showAlerts);}
+function renderTrades(){
+  const tbl=document.getElementById('trades').querySelector('tbody');
+  if(!tbl)return;
+  const rows=[...trades];
+  rows.sort((a,b)=>{
+    let av=a[sortKey]??'';let bv=b[sortKey]??'';
+    if(typeof av==='string') return av.localeCompare(bv)*(sortAsc?1:-1);
+    return (av-bv)*(sortAsc?1:-1);
+  });
+  tbl.innerHTML=rows.map(d=>`<tr><td>${d.t}</td><td>${d.strategy||'Spread'}</td><td><div class="progress"><div class="progress-bar" style="width:${(d.prob_up*100).toFixed(0)}%">${(d.prob_up*100).toFixed(0)}%</div></div></td><td>${d.score.toFixed(2)}</td></tr>`).join('');
+}
+function sortTrades(key){
+  if(sortKey===key){sortAsc=!sortAsc;}else{sortKey=key;sortAsc=false;}
+  renderTrades();
+}
 function showTrades(data){
-  const tbl=document.getElementById('trades');
-  tbl.innerHTML='<tr><th>Ticker</th><th>Strategy</th><th>POP</th><th>Score</th></tr>'+data.map(d=>`<tr><td>${d.t}</td><td>${d.strategy||'Spread'}</td><td><div class="progress"><div class="progress-bar" style="width:${(d.prob_up*100).toFixed(0)}%"></div></div></td><td>${d.score.toFixed(2)}</td></tr>`).join('');
+  trades=data;renderTrades();
 }
 function addTradeRow(d){
-  const tbl=document.getElementById('trades');
-  const row=document.createElement('tr');
-  row.innerHTML=`<td>${d.t}</td><td>${d.strategy||'Spread'}</td><td><div class="progress"><div class="progress-bar" style="width:${(d.prob_up*100).toFixed(0)}%"></div></div></td><td>${d.score.toFixed(2)}</td>`;
-  tbl.prepend(row);
+  trades.unshift(d);renderTrades();
 }
 function showNews(data){
   const ul=document.getElementById('news');
+  const empty=document.getElementById('news-empty');
   data.forEach(n=>{
-    if(seenNews.has(n.url)) return;
-    seenNews.add(n.url);
+    const id=n.url+(n.published_at||'');
+    if(seenNews.has(id)) return;
+    seenNews.add(id);
     const li=document.createElement('li');
     li.innerHTML=`<a href="${n.url}" target="_blank">${n.title}</a>`;
     ul.prepend(li);
+    while(ul.children.length>5) ul.lastElementChild.remove();
   });
+  empty.style.display=ul.children.length? 'none':'block';
+}
+function badge(v){
+  if(v>0.8) return `<span class="badge bg-success">${v.toFixed(2)}</span>`;
+  if(v>=0.7) return `<span class="badge bg-warning text-dark">${v.toFixed(2)}</span>`;
+  return `<span class="badge bg-danger">${v.toFixed(2)}</span>`;
 }
 function showMetrics(m){
-  document.getElementById('metrics').innerHTML=`<strong>Model ${m.date||''}</strong><br>Train AUC: ${m.train_auc??''} Test AUC: ${m.test_auc??''} CV AUC: ${m.cv_auc??''}`;
+  const div=document.getElementById('metrics');
+  const empty=document.getElementById('metrics-empty');
+  if(!m.train_auc){div.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  div.innerHTML=`Last trained ${m.date||''}<br>Train ${badge(m.train_auc)} Test ${badge(m.test_auc)} CV ${badge(m.cv_auc)}`;
 }
 function showPositions(data){
   const tbl=document.getElementById('positions');
+  if(!data.length){tbl.innerHTML='';return;}
   tbl.innerHTML='<tr><th>Symbol</th><th>Qty</th><th>Avg Price</th></tr>'+data.map(p=>`<tr><td>${p.symbol}</td><td>${p.qty}</td><td>${p.avg_price}</td></tr>`).join('');
 }
 function showWatchlist(list){
@@ -159,17 +230,21 @@ function showWatchlist(list){
 }
 function showOverview(data){
   const tbl=document.getElementById('overview');
+  const empty=document.getElementById('overview-empty');
+  if(!data.length){tbl.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
   tbl.innerHTML='<tr><th>Symbol</th><th>Close</th></tr>'+data.map(d=>`<tr><td>${d.symbol}</td><td>${d.close}</td></tr>`).join('');
 }
 function showAlerts(msgs){
+  const container=document.getElementById('alerts');
   msgs.forEach(m=>{
     if(seenAlerts.has(m)) return;
     seenAlerts.add(m);
-    const container=document.getElementById('alerts');
     const toast=document.createElement('div');
     toast.className='toast align-items-center text-bg-info border-0';
     toast.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    container.appendChild(toast);
+    container.prepend(toast);
+    if(container.children.length>5) container.lastElementChild.remove();
     new bootstrap.Toast(toast,{delay:5000}).show();
   });
 }
@@ -178,18 +253,32 @@ function showEquity(data){
   const trace={x:data.map(r=>r.date),y:data.map(r=>r.total),type:'scatter'};
   Plotly.newPlot('equity',[trace]);
 }
-function clearAlerts(){document.getElementById('alerts').innerHTML='';}
-function markAlertsRead(){seenAlerts.clear();clearAlerts();}
-function clearNews(){document.getElementById('news').innerHTML='';seenNews.clear();}
+let plotlyLoaded=false;
+function refreshEquity(){
+  if(!plotlyLoaded){
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.24.1';
+    s.onload=()=>{plotlyLoaded=true; fetch('/api/pnl').then(r=>r.json()).then(showEquity);};
+    document.head.appendChild(s);
+  }else{
+    fetch('/api/pnl').then(r=>r.json()).then(showEquity);
+  }
+}
+function clearAlerts(){document.getElementById('alerts').innerHTML='';seenAlerts.clear();}
+function markAlertsRead(){clearAlerts();}
+function clearNews(){document.getElementById('news').innerHTML='';seenNews.clear();document.getElementById('news-empty').style.display='block';}
 function markNewsRead(){
   document.querySelectorAll('#news a').forEach(a=>seenNews.add(a.href));
 }
 load();
 refreshNews();
 refreshAlerts();
+const obs=new IntersectionObserver(e=>{if(e[0].isIntersecting){refreshEquity();obs.disconnect();}},{});
+obs.observe(document.getElementById('equity'));
 setInterval(load,10000);
 setInterval(refreshNews,300000);
 setInterval(refreshAlerts,300000);
+setInterval(refreshEquity,600000);
 </script>
 </body></html>
 """
@@ -428,6 +517,14 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             "cv_auc": float(last.get("cv_auc", 0)),
         }
         return jsonify(res)
+
+    @app.route("/api/scoreboard")
+    def api_scoreboard():
+        csv = Path(app.static_folder) / "scoreboard.csv"
+        if not csv.exists():
+            return jsonify([])
+        df = pd.read_csv(csv)
+        return jsonify(df.to_dict(orient="records"))
 
     @app.route("/api/positions")
     def api_positions():
