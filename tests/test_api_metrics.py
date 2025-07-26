@@ -41,9 +41,8 @@ def test_api_performance_metrics(tmp_path):
     env.write_text("POLYGON_API_KEY=x\n")
     app = create_app(env_path=env)
     app.static_folder = str(tmp_path)
-    reports = Path("reports")
-    reports.mkdir(exist_ok=True)
-    csv = reports / "pnl.csv"
+    csv = Path(app.static_folder) / "pnl.csv"
+    csv.parent.mkdir(parents=True, exist_ok=True)
     csv.write_text("total\n100\n110\n120\n")
     client = app.test_client()
     resp = client.get("/api/metrics/performance")

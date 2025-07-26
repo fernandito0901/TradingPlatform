@@ -43,3 +43,5 @@ backtest = "trading_platform.backtest:main"
 
 [tool.setuptools.packages.find]
 where = ["src", ""]
+[tool.setuptools]
+include-package-data = true

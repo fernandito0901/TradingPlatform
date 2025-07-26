@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import argparse
+from . import REPORTS_DIR
 
 import pandas as pd
 import lightgbm as lgb
@@ -11,7 +12,7 @@ def backtest(
     features_csv: str,
     model_path: str,
     days: int = 30,
-    out_file: str = "reports/pnl.csv",
+    out_file: str = str(REPORTS_DIR / "pnl.csv"),
 ) -> str:
     """Run a simple prediction-based backtest and append to an equity curve."""
     df = pd.read_csv(features_csv)
@@ -52,7 +53,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("features_csv")
     parser.add_argument("model_path")
     parser.add_argument("--days", type=int, default=30)
-    parser.add_argument("--out-file", default="reports/pnl.csv")
+    parser.add_argument("--out-file", default=str(REPORTS_DIR / "pnl.csv"))
     args = parser.parse_args(argv)
     backtest(args.features_csv, args.model_path, days=args.days, out_file=args.out_file)
 
