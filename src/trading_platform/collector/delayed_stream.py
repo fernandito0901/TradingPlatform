@@ -7,8 +7,8 @@ import logging
 
 import websocket
 
-from .api import API_KEY, WS_URL
 from ..webapp import socketio
+from .api import API_KEY, WS_URL
 
 
 def stream_overview(symbols: str = "AAPL") -> None:

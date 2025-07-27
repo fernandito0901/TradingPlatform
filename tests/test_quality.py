@@ -3,7 +3,7 @@
 import importlib
 from datetime import datetime
 
-from trading_platform.collector import quality, db
+from trading_platform.collector import db, quality
 
 
 def test_quality_report(monkeypatch):
