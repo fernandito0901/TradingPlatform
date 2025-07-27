@@ -1,5 +1,4 @@
 """Minimal feature pipeline using Polygon data."""
-
 from __future__ import annotations
 
 from pathlib import Path
