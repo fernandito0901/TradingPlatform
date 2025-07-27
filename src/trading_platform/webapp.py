@@ -786,7 +786,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         try:
             df = pnl_mod.update_pnl(path=Path(app.static_folder) / "pnl.csv")
         except pnl_mod.NoData:
-            return jsonify({"status": "empty"})
+            return jsonify({"total_return": 0.0, "pnl": 0.0})
 
         equity = df[["date", "equity", "daily_r"]].rename(columns={"daily_r": "pnl"})
 
