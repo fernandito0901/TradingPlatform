@@ -3,10 +3,10 @@
 from pathlib import Path
 import os
 
-# Default to a writable reports directory outside the package source. When no
-# ``REPORTS_DIR`` environment variable is provided we resolve the repository
-# root (three parents up from this file) and place a ``reports`` folder there.
-_DEFAULT_DIR = Path(__file__).resolve().parents[3] / "reports"
+# Default to a writable reports directory. When ``REPORTS_DIR`` is not provided,
+# fallback to ``./reports`` relative to the current working directory so docker
+# containers can always write there regardless of install location.
+_DEFAULT_DIR = Path.cwd() / "reports"
 REPORTS_DIR = Path(os.getenv("REPORTS_DIR", _DEFAULT_DIR))
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 

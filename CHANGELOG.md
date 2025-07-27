@@ -6,6 +6,7 @@
 - `/api/metrics` returns Sharpe, Sortino and equity curve
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news
+- Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`
 
 ## 2025-10-03
 - Docs linting job added to CI
