@@ -552,6 +552,20 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         else:
             style.write_text("")
 
+    for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
+        demo = DEMO_DIR / name
+        dest = Path(app.static_folder) / name
+        if not dest.exists() and demo.exists():
+            dest.write_text(demo.read_text())
+
+    style = Path(app.static_folder) / "style.css"
+    if not style.exists():
+        src = Path(__file__).resolve().parent / "reports" / "style.css"
+        if src.exists():
+            style.write_text(src.read_text())
+        else:
+            style.write_text("")
+
     for name in ["dashboard.html", "feature_dashboard.html", "strategies.html"]:
         path = Path(app.static_folder) / name
         if not path.exists():
