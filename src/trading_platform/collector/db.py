@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+
 from trading_platform.reports import REPORTS_DIR
 
 

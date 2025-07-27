@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from trading_platform.reports.strategy_dashboard import generate_strategy_dashboard
 from trading_platform import strategies
+from trading_platform.reports.strategy_dashboard import generate_strategy_dashboard
 
 
 def test_generate_strategy_dashboard(tmp_path):
