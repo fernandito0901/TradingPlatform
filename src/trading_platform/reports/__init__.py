@@ -3,10 +3,11 @@
 from pathlib import Path
 import os
 
-# Default to a writable reports directory under the current working directory.
-# This allows Docker containers to mount the folder or override via
-# ``REPORTS_DIR`` environment variable.
-REPORTS_DIR = Path(os.getenv("REPORTS_DIR", Path.cwd() / "reports"))
+# Default to a writable reports directory outside the package source. When no
+# ``REPORTS_DIR`` environment variable is provided we resolve the repository
+# root (three parents up from this file) and place a ``reports`` folder there.
+_DEFAULT_DIR = Path(__file__).resolve().parents[3] / "reports"
+REPORTS_DIR = Path(os.getenv("REPORTS_DIR", _DEFAULT_DIR))
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 from .scoreboard import update_scoreboard
