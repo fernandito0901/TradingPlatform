@@ -562,7 +562,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         Path(env_path).write_text("\n".join(lines) + "\n")
 
     def scoreboard_html() -> str:
-        csv = Path(app.static_folder) / "scoreboard.csv"
+        csv = REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
             return "<p>No results yet</p>"
 
