@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import pytest
 
-from trading_platform.collector import portfolio_stream, stream_async, db
+from trading_platform.collector import db, portfolio_stream, stream_async
 
 
 class FakeWS:
