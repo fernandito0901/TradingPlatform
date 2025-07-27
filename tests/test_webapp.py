@@ -1,7 +1,8 @@
 """Tests for Flask web interface."""
 
-from pathlib import Path
 import os
+from pathlib import Path
+
 from trading_platform.webapp import create_app
 
 
@@ -91,8 +92,9 @@ def test_api_scoreboard_and_pnl(tmp_path):
     pnl.parent.mkdir(parents=True, exist_ok=True)
     csv.write_text("date,playbook,auc\n2025-01-01,p1,0.7\n")
     pnl.write_text("date,symbol,unrealized,realized,total\n2025-01-01,A,0,0,0\n")
-    import trading_platform.portfolio as pf
     import pandas as pd
+
+    import trading_platform.portfolio as pf
 
     pf.load_pnl = lambda path=pf.PNL_FILE: pd.read_csv(pnl)
     client = app.test_client()
@@ -115,6 +117,7 @@ def test_metrics_empty_no_rows(tmp_path):
     resp = client.get("/api/metrics")
     assert resp.status_code == 200
     assert resp.json.get("status") in {"empty", "ok"}
+
 
 def test_api_latest_features_and_options(tmp_path):
     env = tmp_path / ".env"

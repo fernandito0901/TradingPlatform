@@ -1,6 +1,7 @@
-from trading_platform.scheduler import start
-from trading_platform.config import Config
 import time
+
+from trading_platform.config import Config
+from trading_platform.scheduler import start
 
 
 def test_scheduler_runs(monkeypatch):

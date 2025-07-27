@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import csv
 import sqlite3
 from pathlib import Path
-import csv
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "demo_news.csv"
 
