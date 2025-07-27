@@ -1,9 +1,50 @@
+"""Model interfaces & dataclasses.
 
-"""Model interfaces & dataclasses."""
+Exports
+-------
+TrainResult  : light dataclass holding metrics & artefact paths
+train_model  : wrapper around user train function if available
+"""
 
 from dataclasses import dataclass
+from importlib import import_module
 from pathlib import Path
+from typing import Any
 import pandas as pd
+
+
+def _import_train_module():
+    try:
+        return import_module("models.train")
+    except Exception:
+        return None
+
+
+def _import_exit_module():
+    try:
+        return import_module("models.exit")
+    except Exception:
+        return None
+
+
+_train_mod = _import_train_module()
+_exit_mod = _import_exit_module()
+
+if _train_mod and hasattr(_train_mod, "TrainResult"):
+    TrainResult = _train_mod.TrainResult  # type: ignore
+else:
+
+    @dataclass
+    class TrainResult:
+        train_auc: float
+        test_auc: float
+        cv_auc: float
+        holdout_auc: float
+        model_path: str
+        metadata_path: str
+        params: dict[str, Any]
+        window_days: int
+
 
 def train_model(*args: Any, **kwargs: Any) -> TrainResult:  # pragma: no cover
     mod = None
@@ -29,15 +70,14 @@ def train_model(*args: Any, **kwargs: Any) -> TrainResult:  # pragma: no cover
     )
 
 
-@dataclass
-class TrainResult:
-    """Simple training result container."""
+train = train_model
 
 
-    model_path: Path
-    metrics: dict[str, float]
+def update_unrealized_pnl(*args: Any, **kwargs: Any):  # pragma: no cover
+    mod = _import_exit_module()
+    if mod and hasattr(mod, "update_unrealized_pnl"):
+        return mod.update_unrealized_pnl(*args, **kwargs)
+    raise RuntimeError("exit.update_unrealized_pnl not available")
 
 
-def train_model(df: pd.DataFrame) -> TrainResult:  # pragma: no cover
-    """Placeholder training routine (returns dummy result)."""
-    return TrainResult(Path("/tmp/dummy.pkl"), {"loss": 0.0})
+__all__ = ["TrainResult", "train_model", "train", "update_unrealized_pnl"]

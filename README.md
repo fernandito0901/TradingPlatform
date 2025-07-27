@@ -50,7 +50,7 @@ flags. Example values can be found in [.env.example](.env.example). These are
 merged into a single ``Config`` dataclass loaded via
 ``trading_platform.load_config``.
 The ``REPORTS_DIR`` variable controls where generated reports are written. It
-defaults to the package's ``reports/`` folder.
+defaults to ``/app/data/reports`` inside the container.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
@@ -390,7 +390,8 @@ docker compose up -d
 
 After running `make quick-start`, use the command above to launch the stack.
 
-Both services load variables from `.env` and share the `data/` and `reports/` directories.
+Both services load variables from `.env`. Writable files such as
+`scoreboard.csv` live under `/app/data/reports/` (mapped to `./reports` on the host).
 ## Docker Quick-start
 
 For Google Cloud users, build the image directly with Cloud Build:
