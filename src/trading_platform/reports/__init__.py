@@ -2,13 +2,18 @@
 
 from pathlib import Path
 import os
+import tempfile
 
 # Default to a writable reports directory. When ``REPORTS_DIR`` is not provided,
 # fallback to ``/app/data/reports`` so docker containers can always write there
 # regardless of the working directory or install location.
 _DEFAULT_DIR = Path("/app/data/reports")
 REPORTS_DIR = Path(os.getenv("REPORTS_DIR", str(_DEFAULT_DIR)))
-REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+except PermissionError:  # pragma: no cover - read-only FS
+    tmp = Path(tempfile.mkdtemp(prefix="reports_"))
+    REPORTS_DIR = tmp  # noqa: PLW0603
 
 from .scoreboard import update_scoreboard
 from .strategy_dashboard import generate_strategy_dashboard
