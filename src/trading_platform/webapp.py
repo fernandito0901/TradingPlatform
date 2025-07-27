@@ -525,27 +525,22 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     except Exception:
         pass
 
-    # ensure scoreboard CSV and placeholder reports exist to avoid broken links
-    sb_csv = reports.REPORTS_DIR / "scoreboard.csv"
-    if not sb_csv.exists():
-        reports.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-        sb_csv.write_text("date,playbook,auc\n")
-    dest_csv = Path(app.static_folder) / "scoreboard.csv"
-    if dest_csv != sb_csv:
-        dest_csv.parent.mkdir(parents=True, exist_ok=True)
-        if not dest_csv.exists():
-            dest_csv.write_text(sb_csv.read_text())
-
-    for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
-        demo = DEMO_DIR / name
-        dest = reports.REPORTS_DIR / name
+    # seed demo CSVs into the reports directory
+    src = DEMO_DIR
+    seed = {
+        "scoreboard.csv": "scoreboard.csv",
+        "pnl.csv": "pnl.csv",
+        "news.csv": "news.csv",
+    }
+    for s, d in seed.items():
+        dest = reports.REPORTS_DIR / d
+        demo = src / s
         if not dest.exists() and demo.exists():
-            dest.write_text(demo.read_text())
-        if Path(app.static_folder) != reports.REPORTS_DIR:
-            alt = Path(app.static_folder) / name
-            if not alt.exists() and dest.exists():
-                alt.parent.mkdir(parents=True, exist_ok=True)
-                alt.write_text(dest.read_text())
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(demo.read_text())
+            except PermissionError:
+                app.logger.warning("seed-copy failed for %s", dest)
 
     style = Path(app.static_folder) / "style.css"
     if not style.exists():
@@ -580,7 +575,9 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def scoreboard_summary() -> str:
         csv = Path(app.static_folder) / "scoreboard.csv"
         if not csv.exists():
-            return "No playbook yet"
+            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            if not csv.exists():
+                return "No playbook yet"
         df = pd.read_csv(csv)
         if df.empty:
             return "No playbook yet"
