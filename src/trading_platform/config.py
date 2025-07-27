@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Unified configuration dataclass and loader."""
 
-from dataclasses import dataclass
 import argparse
 import os
+from dataclasses import dataclass
 
 from .load_env import load_env
 

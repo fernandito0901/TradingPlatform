@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "market-data-collector"
+name = "trading_platform"
 version = "0.1.0"
 description = "Polygon market data collector"
 authors = [{name="ACME"}]
@@ -48,8 +48,10 @@ include = [
     "features*",
     "models*",
     "scripts*",
-    "trading_platform.features*",
-    "trading_platform.models*",
 ]
 [tool.setuptools]
 include-package-data = true
+
+[tool.ruff.lint]
+extend-ignore = ["E402"]
+extend-select = ["I001"]

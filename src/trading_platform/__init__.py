@@ -2,8 +2,8 @@
 
 import importlib
 
-from .load_env import load_env
 from .config import Config, load_config
+from .load_env import load_env
 
 
 def __getattr__(name: str):

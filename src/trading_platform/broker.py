@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from pathlib import Path
-import os
-from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
 import requests
+
+from trading_platform.reports import REPORTS_DIR
 
 from . import portfolio
 

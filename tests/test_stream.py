@@ -1,7 +1,7 @@
 """Tests for streaming utilities."""
 
-import json
 import importlib
+import json
 import os
 
 os.environ.setdefault("POLYGON_API_KEY", "test")
