@@ -22,8 +22,8 @@ COPY requirements.txt ./
 COPY pyproject.toml ./
 COPY scripts ./scripts
 COPY run_pipeline.sh ./run_pipeline.sh
-RUN mkdir -p /app/data/reports && \
-    chown -R $APP_USER:$APP_USER /app/data
-ENV REPORTS_DIR=/app/data/reports
+RUN mkdir -p /app/reports && \
+    chown -R ${APP_USER}:${APP_USER} /app/reports
+ENV REPORTS_DIR=/app/reports
 USER $APP_USER
 CMD ["./run_pipeline.sh"]
