@@ -5,18 +5,18 @@ import json
 import logging
 from pathlib import Path
 
-from .config import Config, load_config
-
-from .collector import api, api_async, db, verify
-from .collector.alerts import AlertAggregator
 from features import run_pipeline
-from models import train as train_model
-from .playbook.generate import generate_playbook
-from . import notifier
+from trading_platform.models import train as train_model
+from trading_platform.reports import REPORTS_DIR
 from trading_platform.reports.dashboard import generate_dashboard
 from trading_platform.reports.feature_dashboard import generate_feature_dashboard
 from trading_platform.reports.scoreboard import update_scoreboard
-from trading_platform.reports import REPORTS_DIR
+
+from . import notifier
+from .collector import api, api_async, db, verify
+from .collector.alerts import AlertAggregator
+from .config import Config, load_config
+from .playbook.generate import generate_playbook
 
 try:  # optional during CLI usage
     from .webapp import socketio

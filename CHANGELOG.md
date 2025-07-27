@@ -11,6 +11,8 @@
   ``/app/data/reports`` and falling back to a temp folder when unwritable
 - fix: scoreboard.csv now seeded into ``${REPORTS_DIR}`` instead of the package
   directory
+- fix: scheduler imports from `trading_platform.models` and Docker image ships
+  the `models` package; CI enforces absolute imports with ruff
 
 ## 2025-10-03
 - Docs linting job added to CI

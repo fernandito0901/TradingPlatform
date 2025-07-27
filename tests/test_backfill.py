@@ -3,7 +3,7 @@
 import importlib
 from datetime import datetime
 
-from trading_platform.collector import backfill, db, api
+from trading_platform.collector import api, backfill, db
 
 
 def test_fetch_range_inserts(monkeypatch):

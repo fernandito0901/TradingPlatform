@@ -2,19 +2,20 @@
 
 from __future__ import annotations
 
-import time
+import logging
 import os
+import time
 from threading import Thread
+
 from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_socketio import SocketIO
-import logging
-from dotenv import load_dotenv
 
 socketio: SocketIO | None = None
 _log = logging.getLogger(__name__)
 
-from .config import load_config, Config
+from .config import Config, load_config
 
 health_app = Flask(__name__)
 
@@ -55,6 +56,7 @@ def _log_heartbeat() -> None:
 
 
 def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundScheduler:
+def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundScheduler:
     """Start a background scheduler for ``run_daily``.
 
     Parameters
@@ -71,6 +73,11 @@ def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundSch
     BackgroundScheduler
         The started scheduler instance.
     """
+
+    if run_func is None:
+        from .run_daily import run as run_daily
+
+        run_func = run_daily
 
     if run_func is None:
         from .run_daily import run as run_daily

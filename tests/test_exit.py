@@ -1,7 +1,7 @@
 import pandas as pd
 
-from trading_platform.collector import db
 from models import update_unrealized_pnl
+from trading_platform.collector import db
 
 
 def test_update_unrealized_pnl(tmp_path):

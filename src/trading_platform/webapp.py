@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-import os
-import logging
-from pathlib import Path
-from threading import Thread
 import json
+import logging
+import os
 import sqlite3
 import subprocess
+from pathlib import Path
+from threading import Thread
+
+from trading_platform import reports
 
 from . import risk_report
-from .secret_filter import SecretFilter
-from trading_platform import reports
 from .db import bootstrap as bootstrap_db
+from .secret_filter import SecretFilter
 
 DEMO_DIR = Path(__file__).resolve().parent / "reports" / "demo"
 
@@ -30,18 +31,19 @@ def get_connection(db_path: Path):
 import pandas as pd
 from flask import (
     Flask,
+    jsonify,
     redirect,
     render_template_string,
     request,
     url_for,
-    jsonify,
 )
 from flask_socketio import SocketIO
 
 socketio = SocketIO()
 
-from .config import load_config
 from dotenv import load_dotenv
+
+from .config import load_config
 
 SETUP_TEMPLATE = """
 <!doctype html>
@@ -502,6 +504,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     app = Flask(
         __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
     )
+    reports.REPORTS_DIR = Path(os.getenv("REPORTS_DIR", str(reports.REPORTS_DIR)))
+    app = Flask(
+        __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
+    )
     socketio.init_app(app)
     flt = SecretFilter()
     app.logger.addFilter(flt)
@@ -516,6 +522,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     load_dotenv(env_path)
     app.config["SCHED"] = None
 
+    reports.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    db_path = Path(os.getenv("TP_DB", reports.REPORTS_DIR / "scoreboard.db"))
     reports.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     db_path = Path(os.getenv("TP_DB", reports.REPORTS_DIR / "scoreboard.db"))
     app.config["DB_URI"] = f"sqlite:///{db_path}"
@@ -535,7 +543,22 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     for s, d in seed.items():
         dest = reports.REPORTS_DIR / d
         demo = src / s
+    # seed demo CSVs into the reports directory
+    src = DEMO_DIR
+    seed = {
+        "scoreboard.csv": "scoreboard.csv",
+        "pnl.csv": "pnl.csv",
+        "news.csv": "news.csv",
+    }
+    for s, d in seed.items():
+        dest = reports.REPORTS_DIR / d
+        demo = src / s
         if not dest.exists() and demo.exists():
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(demo.read_text())
+            except PermissionError:
+                app.logger.warning("seed-copy failed for %s", dest)
             try:
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 dest.write_text(demo.read_text())
@@ -565,6 +588,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             csv = reports.REPORTS_DIR / "scoreboard.csv"
             if not csv.exists():
                 return "<p>No results yet</p>"
+        csv = Path(app.static_folder) / "scoreboard.csv"
+        if not csv.exists():
+            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            if not csv.exists():
+                return "<p>No results yet</p>"
 
         df = pd.read_csv(csv)
         if "pnl" in df.columns:
@@ -574,6 +602,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     def scoreboard_summary() -> str:
         csv = Path(app.static_folder) / "scoreboard.csv"
+        if not csv.exists():
+            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            if not csv.exists():
+                return "No playbook yet"
         if not csv.exists():
             csv = reports.REPORTS_DIR / "scoreboard.csv"
             if not csv.exists():
@@ -670,7 +702,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         end = request.form.get("end")
         if not start or not end:
             return redirect(url_for("index"))
-        from .collector import backfill as backfill_mod, db
+        from .collector import backfill as backfill_mod
+        from .collector import db
 
         def task() -> None:
             conn = db.init_db(cfg.db_file)
@@ -808,6 +841,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/scoreboard")
     def api_scoreboard():
+        csv = reports.REPORTS_DIR / "scoreboard.csv"
         csv = reports.REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
             demo = DEMO_DIR / "scoreboard.csv"

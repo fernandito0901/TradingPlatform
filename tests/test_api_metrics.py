@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from trading_platform.webapp import create_app
 
 

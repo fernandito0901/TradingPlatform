@@ -1,9 +1,10 @@
 """Risk metrics reporting utilities."""
 
 from pathlib import Path
-from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
+
+from trading_platform.reports import REPORTS_DIR
 
 
 def risk_metrics(scoreboard_csv: str) -> pd.DataFrame:
