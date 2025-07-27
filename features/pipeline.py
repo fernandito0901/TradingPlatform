@@ -1,4 +1,5 @@
 """Minimal feature pipeline using Polygon data."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,7 +8,6 @@ import pandas as pd
 
 from trading_platform.collector import api
 from trading_platform.reports import REPORTS_DIR
-
 
 class NoData(Exception):
     pass
