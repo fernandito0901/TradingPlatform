@@ -18,7 +18,7 @@ export DOCKER_BUILDKIT=1
 SCOPE=${GITHUB_SHA:-local}
 CACHE_ARGS="--cache-from=type=gha,scope=$SCOPE --cache-to=type=gha,mode=max,scope=$SCOPE"
 
-docker build --target runtime $CACHE_ARGS -t trading-platform . --progress=plain
+docker build --target runtime $CACHE_ARGS -t trading-platform . --progress=plain --build-arg POLYGON_API_KEY=${POLYGON_API_KEY:-dummy}
 
 CONTAINER=trading-test
 docker run -d --rm --name $CONTAINER -p 5000:5000 -e POLYGON_API_KEY=dummy trading-platform
@@ -39,7 +39,8 @@ trap cleanup EXIT
 
 ready=0
 for i in {1..30}; do
-  if curl -fs http://localhost:5000/api/metrics | grep -q '"status":"ready"'; then
+  status=$(curl -fs http://localhost:5000/api/metrics | jq -r '.status') || true
+  if [ "$status" = "ok" ] || [ "$status" = "empty" ]; then
     ready=1
     break
   fi
@@ -52,3 +53,4 @@ if [ $ready -ne 1 ]; then
 fi
 
 docker exec $CONTAINER python -m trading_platform.run_daily --verify-only
+curl -fs http://localhost:5000/api/news >/dev/null
