@@ -1,5 +1,6 @@
-from trading_platform.webapp import create_app
 import tempfile
+
+from trading_platform.webapp import create_app
 
 
 def test_overview_empty_db(monkeypatch):

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from trading_platform.reports import REPORTS_DIR
 
 import pandas as pd
+
+from trading_platform.reports import REPORTS_DIR
 
 PORTFOLIO_FILE = str(REPORTS_DIR / "portfolio.csv")
 PNL_FILE = str(REPORTS_DIR / "pnl.csv")

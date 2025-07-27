@@ -1,9 +1,11 @@
 """Tests for model training utilities."""
 
-import pandas as pd
 from pathlib import Path
 
-from trading_platform.models import train as train_model, TrainResult
+import pandas as pd
+
+from models import TrainResult
+from models import train as train_model
 
 
 def test_train_model(tmp_path):

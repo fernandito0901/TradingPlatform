@@ -1,6 +1,8 @@
 from pathlib import Path
-from trading_platform.webapp import create_app
+
 import pandas as pd
+
+from trading_platform.webapp import create_app
 
 
 def test_api_equity_last(tmp_path):

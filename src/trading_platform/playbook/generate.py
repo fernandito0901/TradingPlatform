@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
-import pandas as pd
+
 import lightgbm as lgb
+import pandas as pd
 
 
 def generate_playbook(

@@ -1,10 +1,9 @@
 """Tests for environment loader."""
 
-from importlib import reload
-import os
-
-import sys
 import importlib
+import os
+import sys
+from importlib import reload
 
 load_env_module = importlib.import_module("trading_platform.load_env")
 
