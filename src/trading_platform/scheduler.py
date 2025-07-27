@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 import time
+import os
 from threading import Thread
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify
+from flask_socketio import SocketIO
+import logging
 from dotenv import load_dotenv
 
-try:  # optional Socket.IO integration
-    from .webapp import socketio
-except Exception:  # pragma: no cover - webapp not running
-    socketio = None
+socketio: SocketIO | None = None
+_log = logging.getLogger(__name__)
 
 from .config import load_config, Config
 from .run_daily import run as run_daily
@@ -22,6 +23,36 @@ health_app = Flask(__name__)
 @health_app.route("/healthz")
 def healthz():
     return jsonify(status="ok")
+
+
+def _connect_socketio() -> None:
+    """Initialise Socket.IO with retries."""
+    global socketio
+    delay = 1
+    while True:
+        try:
+            socketio = SocketIO(message_queue=os.getenv("REDIS_URL"))
+            if socketio.server:
+                _log.info("Socket.IO connected")
+                break
+        except Exception as exc:  # pragma: no cover - network errors
+            _log.warning("Socket.IO connection failed: %s", exc)
+        time.sleep(delay)
+        delay = min(delay * 2, 60)
+
+
+def _emit_alive() -> None:
+    if socketio and socketio.server:
+        try:
+            socketio.emit("scheduler-alive")
+        except Exception as exc:  # pragma: no cover
+            _log.warning("Emit failed: %s", exc)
+    else:
+        _log.warning("Socket.IO not available, skipping emit")
+
+
+def _log_heartbeat() -> None:
+    _log.info("scheduler_heartbeat - alive")
 
 
 def start(
@@ -45,11 +76,11 @@ def start(
     """
     sched = BackgroundScheduler()
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
-    if socketio is not None:
-        sched.add_job(lambda: socketio.emit("scheduler-alive"), "interval", seconds=60)
+    sched.add_job(_log_heartbeat, "interval", seconds=30)
     sched.start()
-    if socketio is not None:
-        socketio.emit("scheduler-alive")
+
+    Thread(target=_connect_socketio, daemon=True).start()
+    sched.add_job(_emit_alive, "interval", seconds=60)
     return sched
 
 

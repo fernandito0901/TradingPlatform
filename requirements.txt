@@ -16,3 +16,4 @@ optuna
 celery
 python-dotenv
 pytest-cov
+gunicorn

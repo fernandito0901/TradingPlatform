@@ -3,7 +3,12 @@
 from pathlib import Path
 import os
 
-REPORTS_DIR = Path(os.getenv("REPORTS_DIR", Path(__file__).parent))
+# Default to a writable reports directory. When ``REPORTS_DIR`` is not provided,
+# fallback to ``./reports`` relative to the current working directory so docker
+# containers can always write there regardless of install location.
+_DEFAULT_DIR = Path.cwd() / "reports"
+REPORTS_DIR = Path(os.getenv("REPORTS_DIR", _DEFAULT_DIR))
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 from .scoreboard import update_scoreboard
 from .strategy_dashboard import generate_strategy_dashboard

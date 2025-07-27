@@ -4,6 +4,7 @@ import os
 import time
 from typing import Optional
 import logging
+from requests import HTTPError
 
 import requests
 
@@ -23,6 +24,10 @@ CACHE_QUOTE_MS = 5 * 1000
 CACHE_TTL = int(os.getenv("CACHE_TTL", "0"))
 
 _HTTP_CACHE: dict[str, tuple[float, dict]] = {}
+
+
+class NoData(Exception):
+    """Raised when an API endpoint returns no results."""
 
 
 def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
@@ -56,11 +61,26 @@ def fetch_prev_close(symbol: str) -> dict:
 
 
 def fetch_open_close(symbol: str, date: str) -> dict:
-    """Return OHLC data for ``date``."""
+    """Return OHLC data for ``date`` using the aggregates endpoint.
 
-    url = f"https://api.polygon.io/v1/open-close/{symbol}/{date}"
+    Raises
+    ------
+    NoData
+        If the API returns no results for the given symbol and date.
+    """
+
+    url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{date}/{date}"
     params = {"adjusted": "true", "apiKey": API_KEY}
-    return rate_limited_get(url, params)
+    try:
+        data = rate_limited_get(url, params)
+    except HTTPError as exc:
+        if exc.response is not None and exc.response.status_code == 404:
+            raise NoData(symbol) from exc
+        raise
+    results = data.get("results", [])
+    if not results:
+        raise NoData(symbol)
+    return results[0]
 
 
 def fetch_trades(symbol: str, limit: int = 50) -> dict:
@@ -308,13 +328,12 @@ def fetch_news(
     c = conn.cursor()
     for art in articles:
         c.execute(
-            "INSERT OR REPLACE INTO news VALUES (?,?,?,?,?)",
+            "INSERT INTO news(symbol, title, url, published_at) VALUES (?,?,?,?)",
             (
                 symbol,
-                art.get("publishedAt"),
                 art.get("title"),
                 art.get("url"),
-                art.get("source", {}).get("name"),
+                art.get("publishedAt"),
             ),
         )
         if aggregator:

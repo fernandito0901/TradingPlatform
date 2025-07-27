@@ -1,5 +1,3 @@
-"""Model interfaces & dataclasses."""
-
 from dataclasses import dataclass
 from pathlib import Path
 import pandas as pd
@@ -7,12 +5,10 @@ import pandas as pd
 
 @dataclass
 class TrainResult:
-    """Simple training result container."""
-
     model_path: Path
     metrics: dict[str, float]
 
 
-def train_model(df: pd.DataFrame) -> TrainResult:  # pragma: no cover
-    """Placeholder training routine (returns dummy result)."""
+def train(df: pd.DataFrame) -> TrainResult:  # pragma: no cover
+    """Placeholder training routine."""
     return TrainResult(Path("/tmp/dummy.pkl"), {"loss": 0.0})

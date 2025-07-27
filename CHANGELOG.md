@@ -1,4 +1,13 @@
 # Changelog
+## Unreleased
+- Scheduler retries Socket.IO connection with backoff and logs `scheduler_heartbeat`
+- Added `/api/heartbeat` endpoint for health checks
+- `seed_demo.py` now populates demo news and PnL on first run
+- `/api/metrics` returns Sharpe, Sortino and equity curve
+- Scoreboard stored under writable reports directory and label shows latest AUC
+- Dashboard displays Sharpe/Sortino metrics and seeded news
+- Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`
+
 ## 2025-10-03
 - Docs linting job added to CI
 - Architecture diagram embedded in README
@@ -362,3 +371,23 @@
   custom pipelines
 - `trading_platform.features` lazily loads `features_pipeline` or falls back to
   a no-op implementation
+
+## 2025-10-07
+- Added models package, fixed scheduler boot & DB fallback for overview endpoint.
+
+## 2025-10-08
+- Bootstrapped demo CSV data and created helper DB bootstrap
+- Dashboard now shows "No data yet" when empty
+- Smoke test checks `/api/news`
+
+## 2025-07-26
+- Live metrics API with Sharpe/Sortino and equity curve
+- News table seeded from `data/demo_news.csv`
+- Scheduler Socket.IO guard and smoke test
+- Features module restored with Polygon v2 helper
+
+## 2025-07-26
+- Switched Polygon open/close endpoint to v2 and handle 404 with `NoData`
+- Added news table migration and seeder
+- Scheduler defers SocketIO import until runtime
+- Metrics API returns placeholders when PnL missing
