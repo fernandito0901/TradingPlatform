@@ -1,13 +1,13 @@
 """Tests for collector API helpers."""
 
-import os
 import importlib
+import os
 
 # Ensure API keys for module import
 os.environ.setdefault("POLYGON_API_KEY", "test")
 os.environ.setdefault("NEWS_API_KEY", "test")
 
-from trading_platform.collector import db, api
+from trading_platform.collector import api, db
 
 
 def fake_rate_get(url, params=None):

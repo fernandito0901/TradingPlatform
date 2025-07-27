@@ -7,6 +7,7 @@ import csv
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "demo_news.csv"
 
+
 def main() -> None:
     path = REPORTS_DIR / "scoreboard.db"
     conn = db.init_db(str(path))
