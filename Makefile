@@ -1,8 +1,8 @@
 train:
-	python -m trading_platform.models.train $(ARGS)
+	python -m models.train $(ARGS)
 
 tune:
-	python -m trading_platform.models.train --tune $(ARGS)
+	python -m models.train --tune $(ARGS)
 
 backtest:
 	python scripts/run_backtest.py $(ARGS)
