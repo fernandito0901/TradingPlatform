@@ -6,23 +6,15 @@ on:
 
 jobs:
   unit:
-  unit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         service: [web, scheduler]
-        service: [web, scheduler]
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - name: No duplicate docs
-        run: |
-          dupes=$(git ls-files | sort | uniq -d | grep -E 'README|CHANGELOG|NOTES' || true)
-          [ -z "$dupes" ] || { echo "Duplicate top-level docs"; echo "$dupes"; exit 1; }
-      - name: Install
       - name: No duplicate docs
         run: |
           dupes=$(git ls-files | sort | uniq -d | grep -E 'README|CHANGELOG|NOTES' || true)

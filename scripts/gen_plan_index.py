@@ -1,6 +1,7 @@
 from __future__ import annotations
-from pathlib import Path
+
 import argparse
+from pathlib import Path
 
 
 def gather_plan_files(base: Path) -> list[Path]:

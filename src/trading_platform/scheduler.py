@@ -56,7 +56,6 @@ def _log_heartbeat() -> None:
 
 
 def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundScheduler:
-def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundScheduler:
     """Start a background scheduler for ``run_daily``.
 
     Parameters
@@ -73,11 +72,6 @@ def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundSch
     BackgroundScheduler
         The started scheduler instance.
     """
-
-    if run_func is None:
-        from .run_daily import run as run_daily
-
-        run_func = run_daily
 
     if run_func is None:
         from .run_daily import run as run_daily

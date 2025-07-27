@@ -2,9 +2,10 @@
 
 import tempfile
 from pathlib import Path
+
 import pandas as pd
 
-from .train import train, TrainResult
+from .train import TrainResult, train
 
 
 def train_model(data: pd.DataFrame | str, **kwargs) -> TrainResult:

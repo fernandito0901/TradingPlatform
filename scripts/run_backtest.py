@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from trading_platform import backtest, metrics
 import pandas as pd
+
+from trading_platform import backtest, metrics
 
 
 def main() -> None:

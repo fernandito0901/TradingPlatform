@@ -1,7 +1,7 @@
 """Minimal feature pipeline using Polygon data."""
 
 from __future__ import annotations
-
+from pathlib import Path
 from pathlib import Path
 import pandas as pd
 from trading_platform.collector import api
@@ -25,7 +25,6 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     )
     df["t"] = pd.to_datetime(df["t"], unit="ms").dt.date.astype(str)
     return df[["t", "open", "high", "low", "close"]]
-
 
 def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values("t").reset_index(drop=True)
