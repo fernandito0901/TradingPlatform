@@ -41,6 +41,15 @@ jobs:
       - name: Features import
         if: matrix.target == 'tests'
         run: tox -e smoke-features
+      - name: Models import
+        if: matrix.target == 'tests'
+        run: tox -e smoke-models
+      - name: Scheduler import
+        if: matrix.target == 'tests'
+        run: tox -e smoke-scheduler
+      - name: News seed
+        if: matrix.target == 'tests'
+        run: tox -e smoke-news
   docker-smoke:
     runs-on: ubuntu-latest
     steps:

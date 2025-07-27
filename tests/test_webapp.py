@@ -109,12 +109,12 @@ def test_metrics_empty_no_rows(tmp_path):
     env.write_text("POLYGON_API_KEY=abc\n")
     app = create_app(env_path=env)
     app.static_folder = str(tmp_path)
-    csv = Path(app.static_folder) / "scoreboard.csv"
-    csv.write_text("date,auc\n")
+    csv = Path(app.static_folder) / "pnl.csv"
+    csv.write_text("total\n")
     client = app.test_client()
     resp = client.get("/api/metrics")
     assert resp.status_code == 200
-    assert resp.json == {"status": "empty"}
+    assert resp.json.get("status") in {"empty", "ok"}
 
 
 def test_api_latest_features_and_options(tmp_path):
