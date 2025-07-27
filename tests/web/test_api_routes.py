@@ -11,7 +11,7 @@ def test_metrics_empty_when_auc_missing(tmp_path):
     csv.write_text("total\n")
     client = app.test_client()
     resp = client.get("/api/metrics")
-    assert resp.json == {"status": "empty"}
+    assert resp.json == {"total_return": 0.0, "pnl": 0.0}
 
 
 def test_overview_empty(monkeypatch, tmp_path):
