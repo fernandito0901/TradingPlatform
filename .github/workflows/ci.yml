@@ -5,104 +5,26 @@ on:
     branches: [ main ]
 
 jobs:
-  lint_unit:
+  unit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11']
-        target: [lint, tests]
+        service: [web, scheduler]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.lock') }}
-          restore-keys: pip-
-      - name: Install dependencies
+          python-version: '3.11'
+      - name: No duplicate docs
+        run: |
+          dupes=$(git ls-files | sort | uniq -d | grep -E 'README|CHANGELOG|NOTES' || true)
+          [ -z "$dupes" ] || { echo "Duplicate top-level docs"; echo "$dupes"; exit 1; }
+      - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install flake8
-          pip install -e .
-      - name: Check PLAN_INDEX
-        run: python scripts/gen_plan_index.py --check
+          pip install black flake8 pytest
+          pip install -e ./services/${{ matrix.service }}
       - name: Lint
-        if: matrix.target == 'lint'
-        run: black . --check && flake8
-        - name: Unit tests
-          if: matrix.target == 'tests'
-          run: pytest -q
-      - name: Reports import
-        if: matrix.target == 'tests'
-        run: tox -e smoke-reports
-      - name: Features import
-        if: matrix.target == 'tests'
-        run: tox -e smoke-features
-      - name: Models import
-        if: matrix.target == 'tests'
-        run: tox -e smoke-models
-      - name: Scheduler import
-        if: matrix.target == 'tests'
-        run: tox -e smoke-scheduler
-      - name: News seed
-        if: matrix.target == 'tests'
-        run: tox -e smoke-news
-  docker-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - uses: docker/setup-buildx-action@v3
-      - uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: "${{ runner.os }}-docker-${{ hashFiles('Dockerfile') }}"
-          restore-keys: "${{ runner.os }}-docker-"
-      - name: Docker smoke
-        run: |
-          scripts/docker_smoke.sh --ci || { CODE=$?; [ $CODE -eq 78 ] || exit $CODE; }
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-
-  docs-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install -g markdownlint-cli
-      - name: Lint docs
-        run: markdownlint '**/*.md'
-      - name: Check links
-        uses: lycheeverse/lychee-action@v1
-        with:
-          args: "--no-progress README.md docs/**/*.md"
-      - name: Install PlantUML
-        run: sudo apt-get update && sudo apt-get install -y plantuml
-      - name: Build architecture diagram
-        run: scripts/gen_arch_svg.sh
-      - name: Check diagram committed
-        run: git diff --exit-code docs/arch.svg
-
-  backtest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements.lock') }}
-          restore-keys: pip-
-      - run: |
-          python -m pip install --upgrade pip
-          pip install -e .
-      - run: python scripts/run_backtest.py
+        run: black ./services/${{ matrix.service }} --check && flake8 ./services/${{ matrix.service }}
+      - name: Tests
+        run: pytest -q

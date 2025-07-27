@@ -9,8 +9,8 @@ from .config import Config, load_config
 
 from .collector import api, api_async, db, verify
 from .collector.alerts import AlertAggregator
-from .features import run_pipeline
-from .models import train as train_model
+from features import run_pipeline
+from models import train as train_model
 from .playbook.generate import generate_playbook
 from . import notifier
 from trading_platform.reports.dashboard import generate_dashboard

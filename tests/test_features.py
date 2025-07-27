@@ -1,5 +1,5 @@
 import pandas as pd
-from trading_platform.features import load_pipeline
+from features import load_pipeline
 
 
 def test_load_pipeline_callable():
@@ -7,7 +7,7 @@ def test_load_pipeline_callable():
 
 
 def test_run_pipeline(monkeypatch, tmp_path):
-    from trading_platform.features import pipeline
+    from features import pipeline
 
     def fake_get(url, params=None):
         return {
