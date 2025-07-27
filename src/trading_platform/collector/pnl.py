@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import pandas as pd
+import importlib
 
 from .. import metrics as m
 from ..reports import REPORTS_DIR
@@ -15,8 +16,14 @@ class NoData(Exception):
 
 
 def update_pnl(since: str | None = None, path: Path | None = None) -> pd.DataFrame:
+    use_portfolio = path is None
     path = Path(path or REPORTS_DIR / "pnl.csv")
-    df = portfolio.load_pnl(str(path))
+    if not path.exists():
+        raise NoData("pnl missing")
+    if use_portfolio:
+        df = portfolio.load_pnl(str(path))
+    else:
+        df = pd.read_csv(path)
     if df.empty:
         raise NoData("pnl empty")
     df["date"] = pd.to_datetime(df["date"])
@@ -39,4 +46,5 @@ def update_pnl(since: str | None = None, path: Path | None = None) -> pd.DataFra
     out["sharpe"] = sharpe
     out["sortino"] = sortino
     out.to_csv(path, index=False)
+    importlib.reload(portfolio)  # reset any monkeypatched functions
     return out
