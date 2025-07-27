@@ -1,9 +1,12 @@
 """Minimal feature pipeline using Polygon data."""
+"""Minimal feature pipeline using Polygon data."""
 
 from __future__ import annotations
+
 from pathlib import Path
-from pathlib import Path
+
 import pandas as pd
+
 from trading_platform.collector import api
 from trading_platform.reports import REPORTS_DIR
 
@@ -26,8 +29,22 @@ def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     df["t"] = pd.to_datetime(df["t"], unit="ms").dt.date.astype(str)
     return df[["t", "open", "high", "low", "close"]]
 
+
 def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values("t").reset_index(drop=True)
+    prev_close = df["close"].shift(1)
+    tr = pd.concat(
+        [
+            df["high"] - df["low"],
+            (df["high"] - prev_close).abs(),
+            (df["low"] - prev_close).abs(),
+        ],
+        axis=1,
+    ).max(axis=1)
+    df["atr14"] = tr.rolling(14).mean()
+    df["gap_pct"] = df["close"].pct_change()
+    df["momentum"] = df["close"].pct_change(5)
+    df.dropna(inplace=True)
     prev_close = df["close"].shift(1)
     tr = pd.concat(
         [
@@ -44,6 +61,21 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def run_pipeline(cfg, symbols: list[str], since: str = "90d") -> str:
+    start = (pd.Timestamp.utcnow() - pd.Timedelta(since)).date().isoformat()
+    end = pd.Timestamp.utcnow().date().isoformat()
+    out_dir = Path(cfg.reports_dir or REPORTS_DIR)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    all_frames = []
+    for sym in symbols:
+        df = fetch_prices(sym, start, end)
+        feats = compute_features(df)
+        feats["symbol"] = sym
+        all_frames.append(feats)
+    full = pd.concat(all_frames, ignore_index=True)
+    csv_path = out_dir / "features.csv"
+    full.to_csv(csv_path, index=False)
+    return str(csv_path)
 def run_pipeline(cfg, symbols: list[str], since: str = "90d") -> str:
     start = (pd.Timestamp.utcnow() - pd.Timedelta(since)).date().isoformat()
     end = pd.Timestamp.utcnow().date().isoformat()

@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   web:
     build: .
@@ -8,6 +7,8 @@ services:
     volumes:
       - ./data:/app/data
       - ./reports:/app/data/reports
+    environment:
+      - REPORTS_DIR=/app/data/reports
     env_file:
       - .env
   scheduler:
@@ -16,5 +17,9 @@ services:
     volumes:
       - ./data:/app/data
       - ./reports:/app/data/reports
+    environment:
+      - REPORTS_DIR=/app/data/reports
     env_file:
       - .env
+volumes:
+  reports:
