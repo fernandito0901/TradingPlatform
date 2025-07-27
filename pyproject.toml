@@ -48,8 +48,9 @@ include = [
     "features*",
     "models*",
     "scripts*",
-    "trading_platform.features*",
-    "trading_platform.models*",
 ]
 [tool.setuptools]
 include-package-data = true
+
+[tool.ruff.lint]
+extend-ignore = ["E402"]

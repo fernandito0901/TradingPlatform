@@ -81,7 +81,7 @@ def test_run_daily_success(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(run_daily, "run_pipeline", fake_run_pipeline)
 
     def fake_train(csv, model_dir="models", symbol="AAPL"):
-        from trading_platform.models import TrainResult
+        from models import TrainResult
 
         res = TrainResult(
             train_auc=0.5,
