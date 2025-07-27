@@ -52,6 +52,8 @@ merged into a single ``Config`` dataclass loaded via
 The ``REPORTS_DIR`` variable controls where generated reports are written. It
 defaults to ``/app/data/reports`` inside the container and should be writable by
 the app user.
+defaults to ``/app/data/reports`` inside the container and should be writable by
+the app user.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
