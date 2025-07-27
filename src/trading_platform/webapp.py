@@ -12,7 +12,7 @@ import subprocess
 
 from . import risk_report
 from .secret_filter import SecretFilter
-from trading_platform.reports import REPORTS_DIR
+from trading_platform import reports
 from .db import bootstrap as bootstrap_db
 
 DEMO_DIR = Path(__file__).resolve().parent / "reports" / "demo"
@@ -498,7 +498,10 @@ MAIN_TEMPLATE = """
 def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     """Create configured Flask application."""
 
-    app = Flask(__name__, static_folder=str(REPORTS_DIR), static_url_path="/reports")
+    reports.REPORTS_DIR = Path(os.getenv("REPORTS_DIR", str(reports.REPORTS_DIR)))
+    app = Flask(
+        __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
+    )
     socketio.init_app(app)
     flt = SecretFilter()
     app.logger.addFilter(flt)
@@ -513,8 +516,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     load_dotenv(env_path)
     app.config["SCHED"] = None
 
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    db_path = Path(os.getenv("TP_DB", REPORTS_DIR / "scoreboard.db"))
+    reports.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    db_path = Path(os.getenv("TP_DB", reports.REPORTS_DIR / "scoreboard.db"))
     app.config["DB_URI"] = f"sqlite:///{db_path}"
     app.config["DB_FILE"] = db_path
     try:
@@ -523,9 +526,9 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         pass
 
     # ensure scoreboard CSV and placeholder reports exist to avoid broken links
-    sb_csv = REPORTS_DIR / "scoreboard.csv"
+    sb_csv = reports.REPORTS_DIR / "scoreboard.csv"
     if not sb_csv.exists():
-        REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        reports.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         sb_csv.write_text("date,playbook,auc\n")
     dest_csv = Path(app.static_folder) / "scoreboard.csv"
     if dest_csv != sb_csv:
@@ -535,10 +538,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
         demo = DEMO_DIR / name
-        dest = REPORTS_DIR / name
+        dest = reports.REPORTS_DIR / name
         if not dest.exists() and demo.exists():
             dest.write_text(demo.read_text())
-        if Path(app.static_folder) != REPORTS_DIR:
+        if Path(app.static_folder) != reports.REPORTS_DIR:
             alt = Path(app.static_folder) / name
             if not alt.exists() and dest.exists():
                 alt.parent.mkdir(parents=True, exist_ok=True)
@@ -562,9 +565,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         Path(env_path).write_text("\n".join(lines) + "\n")
 
     def scoreboard_html() -> str:
-        csv = REPORTS_DIR / "scoreboard.csv"
+        csv = Path(app.static_folder) / "scoreboard.csv"
         if not csv.exists():
-            return "<p>No results yet</p>"
+            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            if not csv.exists():
+                return "<p>No results yet</p>"
 
         df = pd.read_csv(csv)
         if "pnl" in df.columns:
@@ -781,7 +786,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         try:
             df = pnl_mod.update_pnl(path=Path(app.static_folder) / "pnl.csv")
         except pnl_mod.NoData:
-            return jsonify({"status": "empty"})
+            return jsonify({"total_return": 0.0, "pnl": 0.0})
 
         equity = df[["date", "equity", "daily_r"]].rename(columns={"daily_r": "pnl"})
 
@@ -806,7 +811,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/scoreboard")
     def api_scoreboard():
-        csv = REPORTS_DIR / "scoreboard.csv"
+        csv = reports.REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
             demo = DEMO_DIR / "scoreboard.csv"
             if demo.exists():
