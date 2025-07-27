@@ -13,4 +13,3 @@ Metrics are available via:
 ```
 GET /api/metrics -> {"status": "ok"|"empty", ...}
 ```
-

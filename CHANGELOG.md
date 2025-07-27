@@ -4,6 +4,8 @@
 - Added `/api/heartbeat` endpoint for health checks
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
+- Scoreboard stored under writable reports directory and label shows latest AUC
+- Dashboard displays Sharpe/Sortino metrics and seeded news
 
 ## 2025-10-03
 - Docs linting job added to CI

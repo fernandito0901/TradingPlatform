@@ -175,7 +175,7 @@ DASH_TEMPLATE = """
     </form>
   </div>
   <div class="mt-4">
-    <h5>Scoreboard</h5>
+    <h5 id="scoreboard-label">{{ scoreboard_label }}</h5>
     {{ scoreboard|safe }}
   </div>
 </div>
@@ -283,16 +283,18 @@ function showMetrics(m){
   const div=document.getElementById('metrics');
   const empty=document.getElementById('metrics-empty');
   document.getElementById('metrics-card').style.display='block';
-  if(m.status==='empty'||!m.train_auc){
+  if(m.status==='empty'){
+    skel.style.display='none';
     div.innerHTML='';
-    empty.style.display='none';
-    skel.style.display='block';
+    empty.style.display='block';
     return;
   }
   skel.style.display='none';
   empty.style.display='none';
-  div.innerHTML=`Last trained ${m.date||''}<br>Train ${badge(m.train_auc)} Test ${badge(m.test_auc)} CV ${badge(m.cv_auc)}`;
+  const tag=v=>v>1?`<span class="badge bg-success">${v.toFixed(2)}</span>`:v>=0?`<span class="badge bg-warning text-dark">${v.toFixed(2)}</span>`:`<span class="badge bg-danger">${v.toFixed(2)}</span>`;
+  div.innerHTML=`Sharpe ${tag(m.sharpe)} Sortino ${tag(m.sortino)}`;
   document.getElementById('metrics-upd').textContent='Last updated '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  renderEquity(m.equity||[]);
 }
 function tag(v){
   if(v>1) return `<span class="badge bg-success">${v.toFixed(2)}</span>`;
@@ -399,10 +401,10 @@ function refreshEquity(){
   if(!plotlyLoaded){
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.24.1';
-    s.onload=()=>{plotlyLoaded=true;fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);};
+    s.onload=()=>{plotlyLoaded=true;fetch('/api/metrics').then(r=>r.json()).then(d=>renderEquity(d.equity||[]));};
     document.head.appendChild(s);
   }else{
-    fetch('/api/metrics/equity?last=90d').then(r=>r.json()).then(renderEquity);
+    fetch('/api/metrics').then(r=>r.json()).then(d=>renderEquity(d.equity||[]));
   }
 }
 function clearAlerts(){document.getElementById('alerts').innerHTML='';seenAlerts.clear();}
@@ -521,11 +523,34 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         pass
 
     # ensure scoreboard CSV and placeholder reports exist to avoid broken links
-    sb_csv = Path(app.static_folder) / "scoreboard.csv"
+    sb_csv = REPORTS_DIR / "scoreboard.csv"
     if not sb_csv.exists():
-        sb_csv.parent.mkdir(parents=True, exist_ok=True)
-        if not sb_csv.exists():
-            sb_csv.write_text("date,playbook,auc\n")
+        REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        sb_csv.write_text("date,playbook,auc\n")
+    dest_csv = Path(app.static_folder) / "scoreboard.csv"
+    if dest_csv != sb_csv:
+        dest_csv.parent.mkdir(parents=True, exist_ok=True)
+        if not dest_csv.exists():
+            dest_csv.write_text(sb_csv.read_text())
+
+    for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
+        demo = DEMO_DIR / name
+        dest = REPORTS_DIR / name
+        if not dest.exists() and demo.exists():
+            dest.write_text(demo.read_text())
+        if Path(app.static_folder) != REPORTS_DIR:
+            alt = Path(app.static_folder) / name
+            if not alt.exists() and dest.exists():
+                alt.parent.mkdir(parents=True, exist_ok=True)
+                alt.write_text(dest.read_text())
+
+    style = Path(app.static_folder) / "style.css"
+    if not style.exists():
+        src = Path(__file__).resolve().parent / "reports" / "style.css"
+        if src.exists():
+            style.write_text(src.read_text())
+        else:
+            style.write_text("")
 
     for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
         demo = DEMO_DIR / name
@@ -551,7 +576,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         Path(env_path).write_text("\n".join(lines) + "\n")
 
     def scoreboard_html() -> str:
-        csv = Path(app.static_folder) / "scoreboard.csv"
+        csv = REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
             return "<p>No results yet</p>"
 
@@ -560,6 +585,18 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             metrics = risk_report.risk_metrics(str(csv))
             df = df.merge(metrics, on="date", how="left")
         return df.to_html(index=False)
+
+    def scoreboard_summary() -> str:
+        csv = REPORTS_DIR / "scoreboard.csv"
+        if not csv.exists():
+            return "No playbook yet"
+        df = pd.read_csv(csv)
+        if df.empty:
+            return "No playbook yet"
+        row = df.iloc[-1]
+        date = row.get("date", "")
+        auc = row.get("auc", "")
+        return f"Playbook AUC {auc} on {date}"
 
     def latest_file(folder: str, ext: str) -> str | None:
         path = Path(folder)
@@ -586,6 +623,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         return render_template_string(
             DASH_TEMPLATE,
             scoreboard=scoreboard_html(),
+            scoreboard_label=scoreboard_summary(),
             scheduler=app.config.get("SCHED") is not None,
         )
 
@@ -782,10 +820,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/scoreboard")
     def api_scoreboard():
-        csv = Path(app.static_folder) / "scoreboard.csv"
+        csv = REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
             demo = DEMO_DIR / "scoreboard.csv"
-            if Path(app.static_folder) == REPORTS_DIR and demo.exists():
+            if demo.exists():
                 csv.write_text(demo.read_text())
             else:
                 return jsonify([])

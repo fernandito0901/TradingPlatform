@@ -419,7 +419,8 @@ The web app copies these into `reports/` on first launch so the dashboard has
 sample content. Real data will replace them after the scheduler completes a
 pipeline run. `scripts/seed_demo.py` bootstraps the SQLite database with
 `data/demo_news.csv` and places a `pnl.csv` into the reports folder. Run this
-script again anytime to reset the demo data.
+script again anytime to reset the demo data. The dashboard now renders Sharpe
+and Sortino ratios plus a demo news feed.
 The example PnL file lives at `data/sample_pnl.csv`.
 
 
