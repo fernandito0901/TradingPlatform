@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 - Scheduler retries Socket.IO connection with backoff and logs `scheduler_heartbeat`
+- Suppressed noisy Socket.IO "Invalid session" logs and improved demo PnL seeding
 - Added `/api/heartbeat` endpoint for health checks
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
