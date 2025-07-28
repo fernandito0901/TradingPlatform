@@ -4,6 +4,12 @@
 - Added `/api/heartbeat` endpoint for health checks
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
+- `/api/metrics` tolerant of real-world CSVs and returns raw equity records
+- Missing API keys return HTTP 503 instead of crashing
+- `seed_demo.py` seeds random PnL data when none found
+- docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
+- Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
+- Scheduler CLI logs and exits when API keys are missing
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news
 - Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`
