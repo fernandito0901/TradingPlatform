@@ -1,4 +1,3 @@
-
 def test_train_model_importable(monkeypatch):
     import importlib
 

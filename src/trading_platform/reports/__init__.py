@@ -5,9 +5,9 @@ import tempfile
 from pathlib import Path
 
 # Default to a writable reports directory. When ``REPORTS_DIR`` is not provided,
-# fallback to ``/app/data/reports`` so docker containers can always write there
+# fallback to ``/app/reports`` so docker containers can always write there
 # regardless of the working directory or install location.
-_DEFAULT = Path("/app/data/reports")
+_DEFAULT = Path("/app/reports")
 REPORTS_DIR = Path(os.getenv("REPORTS_DIR", _DEFAULT))
 try:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)

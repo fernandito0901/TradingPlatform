@@ -22,7 +22,7 @@ docker build --target runtime $CACHE_ARGS -t trading-platform . --progress=plain
 
 CONTAINER=trading-test
 docker run -d --rm --name $CONTAINER -p 5000:5000 -e POLYGON_API_KEY=dummy trading-platform
-docker exec $CONTAINER sh -c '[ -w "${REPORTS_DIR:-/app/data/reports}" ]' || exit 78
+docker exec $CONTAINER sh -c '[ -w "${REPORTS_DIR:-/app/reports}" ]' || exit 78
 
 cleanup() {
   status=$?
