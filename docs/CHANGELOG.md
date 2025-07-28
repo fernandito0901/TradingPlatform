@@ -11,6 +11,8 @@
 - Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
 - docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
 - Scheduler CLI logs and exits when API keys are missing
+- Socket.IO uses the Redis message queue to prevent worker crashes
+- Fixed `run_daily` to pass `Config` into `run_pipeline`
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news
 - Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`

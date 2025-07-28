@@ -507,10 +507,12 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
     )
     redis_url = os.getenv("REDIS_URL")
-    if redis_url:
-        socketio.init_app(app, message_queue=redis_url)
-    else:
-        socketio.init_app(app)
+    socketio.init_app(
+        app,
+        message_queue=redis_url,
+        async_mode="eventlet",
+        ping_timeout=20,
+    )
     flt = SecretFilter()
     app.logger.addFilter(flt)
     logging.getLogger("werkzeug").addFilter(flt)

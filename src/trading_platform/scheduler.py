@@ -38,7 +38,11 @@ def _connect_socketio() -> None:
     delay = 1
     while True:
         try:
-            socketio = SocketIO(message_queue=redis_url)
+            socketio = SocketIO(
+                message_queue=redis_url,
+                async_mode="eventlet",
+                ping_timeout=20,
+            )
             if socketio.server:
                 _log.info("Socket.IO connected")
                 break
