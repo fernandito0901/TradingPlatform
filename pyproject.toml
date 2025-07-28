@@ -27,6 +27,17 @@ dependencies = [
     "optuna",
     "python-dotenv",
     "pytest-cov",
+    "redis",
+    "gunicorn",
+    "eventlet",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "ruff",
+    "pytest",
 ]
 
 [project.optional-dependencies]
