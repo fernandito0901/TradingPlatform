@@ -9,6 +9,7 @@
 - `seed_demo.py` seeds random PnL data when none found
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
 - Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
+- docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
 - Scheduler CLI logs and exits when API keys are missing
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news

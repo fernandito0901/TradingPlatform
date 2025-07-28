@@ -9,8 +9,11 @@ services:
       - ./reports:/app/reports
     environment:
       - REPORTS_DIR=/app/reports
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
+    depends_on:
+      - redis
   scheduler:
     build: .
     command: scheduler
@@ -19,7 +22,14 @@ services:
       - ./reports:/app/reports
     environment:
       - REPORTS_DIR=/app/reports
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
+    depends_on:
+      - redis
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
 volumes:
   reports:
