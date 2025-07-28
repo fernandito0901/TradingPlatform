@@ -1,6 +1,7 @@
 """Tests for risk report CLI."""
 
 import pytest
+
 from trading_platform import risk_report
 
 

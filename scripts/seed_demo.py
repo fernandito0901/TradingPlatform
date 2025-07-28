@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """Seed demo data for a fresh deployment."""
 
-from pathlib import Path
-from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, DateTime
-import pandas as pd
 import shutil
+from pathlib import Path
+
+import pandas as pd
+from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, create_engine
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 REPORTS_DIR = Path("./reports")
@@ -22,7 +23,7 @@ def seed_news(engine) -> None:
     )
     meta.create_all(engine)
     conn = engine.connect()
-    from sqlalchemy import select, func
+    from sqlalchemy import func, select
 
     count = conn.execute(select(func.count()).select_from(news)).scalar()
     demo_news = DATA_DIR / "demo_news.csv"

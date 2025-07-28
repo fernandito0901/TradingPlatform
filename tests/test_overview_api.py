@@ -1,4 +1,5 @@
 import sqlite3
+
 from trading_platform.webapp import create_app
 
 

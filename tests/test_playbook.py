@@ -1,9 +1,10 @@
 """Tests for playbook generation."""
 
-from pathlib import Path
 import json
-import pandas as pd
+from pathlib import Path
+
 import lightgbm as lgb
+import pandas as pd
 
 from trading_platform.playbook import generate_playbook
 
