@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from celery import Celery
+
 from .secret_filter import SecretFilter
 
 app = Celery("trading_platform")

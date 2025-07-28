@@ -8,7 +8,7 @@ import pytest
 
 os.environ.setdefault("POLYGON_API_KEY", "test")
 
-from trading_platform.collector import stream_async, alerts
+from trading_platform.collector import alerts, stream_async
 
 
 class FakeWS:

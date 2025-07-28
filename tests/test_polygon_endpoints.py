@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 os.environ.setdefault("POLYGON_API_KEY", "x")
