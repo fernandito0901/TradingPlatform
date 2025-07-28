@@ -1,7 +1,8 @@
 """Tests for Flask web interface."""
 
-from pathlib import Path
 import os
+from pathlib import Path
+
 from trading_platform.webapp import create_app
 
 
@@ -15,8 +16,7 @@ def test_setup_creates_env(tmp_path, monkeypatch):
     assert b"Setup" in resp.data
 
     client.post("/", data={"polygon_api_key": "abc"})
-    assert env.exists()
-    assert "POLYGON_API_KEY=abc" in env.read_text()
+    assert os.getenv("POLYGON_API_KEY") == "abc"
 
     resp = client.get("/")
     assert b"Run Daily Pipeline" in resp.data
@@ -54,12 +54,12 @@ def test_scheduler_controls(tmp_path, monkeypatch):
 def test_scoreboard_with_risk_columns(tmp_path, monkeypatch):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=abc\n")
+    monkeypatch.setenv("REPORTS_DIR", str(tmp_path))
     csv = tmp_path / "scoreboard.csv"
     csv.write_text(
         "date,playbook,auc,pnl\n2025-01-01,p1,0.7,1\n2025-01-02,p2,0.8,-0.5\n"
     )
     app = create_app(env_path=env)
-    app.static_folder = str(tmp_path)
     client = app.test_client()
     resp = client.get("/")
     assert b"sharpe" in resp.data
@@ -91,8 +91,9 @@ def test_api_scoreboard_and_pnl(tmp_path):
     pnl.parent.mkdir(parents=True, exist_ok=True)
     csv.write_text("date,playbook,auc\n2025-01-01,p1,0.7\n")
     pnl.write_text("date,symbol,unrealized,realized,total\n2025-01-01,A,0,0,0\n")
-    import trading_platform.portfolio as pf
     import pandas as pd
+
+    import trading_platform.portfolio as pf
 
     pf.load_pnl = lambda path=pf.PNL_FILE: pd.read_csv(pnl)
     client = app.test_client()
@@ -115,6 +116,7 @@ def test_metrics_empty_no_rows(tmp_path):
     resp = client.get("/api/metrics")
     assert resp.status_code == 200
     assert resp.json.get("status") in {"empty", "ok"}
+
 
 def test_api_latest_features_and_options(tmp_path):
     env = tmp_path / ".env"

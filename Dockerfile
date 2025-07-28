@@ -8,6 +8,7 @@ COPY requirements.txt ./
 COPY pyproject.toml ./
 COPY src ./src
 COPY features ./features
+COPY models ./models
 RUN pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir -e . && \
     python -c "import trading_platform.reports.scoreboard"
@@ -18,12 +19,13 @@ RUN useradd -u 1001 -r -s /bin/false $APP_USER
 COPY --from=builder /usr/local /usr/local
 COPY src ./src
 COPY features ./features
+COPY models ./models
 COPY requirements.txt ./
 COPY pyproject.toml ./
 COPY scripts ./scripts
 COPY run_pipeline.sh ./run_pipeline.sh
-RUN mkdir -p /app/data/reports && \
-    chown -R $APP_USER:$APP_USER /app/data
-ENV REPORTS_DIR=/app/data/reports
+ENV REPORTS_DIR=/app/reports
+RUN mkdir -p ${REPORTS_DIR} && \
+    chown -R ${APP_USER}:${APP_USER} ${REPORTS_DIR}
 USER $APP_USER
 CMD ["./run_pipeline.sh"]
