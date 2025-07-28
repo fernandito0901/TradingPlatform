@@ -815,7 +815,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if not csv.exists():
             demo = DEMO_DIR / "scoreboard.csv"
             if demo.exists():
-                csv.write_text(demo.read_text())
+                try:
+                    csv.parent.mkdir(parents=True, exist_ok=True)
+                    csv.write_text(demo.read_text())
+                except PermissionError:  # pragma: no cover - read-only
+                    app.logger.warning("seed-copy failed for %s", csv)
             else:
                 return jsonify([])
         df = pd.read_csv(csv)
