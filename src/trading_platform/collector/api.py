@@ -12,10 +12,10 @@ from .alerts import AlertAggregator
 
 API_KEY = os.getenv("POLYGON_API_KEY")
 if not API_KEY:
-    raise SystemExit("POLYGON_API_KEY environment variable not set")
+    raise RuntimeError("POLYGON_API_KEY not configured")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 if not NEWS_API_KEY:
-    raise SystemExit("NEWS_API_KEY environment variable not set")
+    raise RuntimeError("NEWS_API_KEY not configured")
 
 WS_URL = "wss://delayed.polygon.io/stocks"
 REALTIME_WS_URL = "wss://socket.polygon.io/stocks"
