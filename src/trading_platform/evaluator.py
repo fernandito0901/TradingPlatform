@@ -6,16 +6,15 @@ import argparse
 import logging
 import time
 
-from .secret_filter import SecretFilter
-
-from .collector import db, api
+from .collector import api, db
 from .collector.alerts import notify_position
 from .portfolio import (
-    load_portfolio,
-    close_position,
-    PORTFOLIO_FILE,
     PNL_FILE,
+    PORTFOLIO_FILE,
+    close_position,
+    load_portfolio,
 )
+from .secret_filter import SecretFilter
 
 try:  # optional when running without webapp
     from .webapp import socketio

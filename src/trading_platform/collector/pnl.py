@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-import pandas as pd
 import importlib
+from pathlib import Path
+
+import pandas as pd
 
 from .. import metrics as m
-from ..reports import REPORTS_DIR
 from .. import portfolio
+from ..reports import REPORTS_DIR
 
 
 class NoData(Exception):

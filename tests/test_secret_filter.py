@@ -1,5 +1,6 @@
 import logging
 import os
+
 from trading_platform.secret_filter import SecretFilter
 
 
