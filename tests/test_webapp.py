@@ -16,8 +16,7 @@ def test_setup_creates_env(tmp_path, monkeypatch):
     assert b"Setup" in resp.data
 
     client.post("/", data={"polygon_api_key": "abc"})
-    assert env.exists()
-    assert "POLYGON_API_KEY=abc" in env.read_text()
+    assert os.getenv("POLYGON_API_KEY") == "abc"
 
     resp = client.get("/")
     assert b"Run Daily Pipeline" in resp.data
@@ -55,12 +54,12 @@ def test_scheduler_controls(tmp_path, monkeypatch):
 def test_scoreboard_with_risk_columns(tmp_path, monkeypatch):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=abc\n")
+    monkeypatch.setenv("REPORTS_DIR", str(tmp_path))
     csv = tmp_path / "scoreboard.csv"
     csv.write_text(
         "date,playbook,auc,pnl\n2025-01-01,p1,0.7,1\n2025-01-02,p2,0.8,-0.5\n"
     )
     app = create_app(env_path=env)
-    app.static_folder = str(tmp_path)
     client = app.test_client()
     resp = client.get("/")
     assert b"sharpe" in resp.data

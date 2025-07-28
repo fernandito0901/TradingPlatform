@@ -319,9 +319,7 @@ webapp
 
 The server binds to `0.0.0.0:5000` by default so it can be reached from outside the container. Customize the address with `WEBAPP_HOST` and `WEBAPP_PORT`. The entrypoint enables Flask's built-in server with ``allow_unsafe_werkzeug=True`` so the dashboard works when launched under Docker.
 
-On first launch, the page prompts for API keys and saves them to `.env`.
-After setup you can run the daily pipeline or connectivity checks with
-buttons on the homepage. The dashboard automatically loads the latest playbook,
+On first launch, the page prompts for API keys. Provide them via the form or set environment variables (see `.env.example`). After setup you can run the daily pipeline or connectivity checks with buttons on the homepage. The dashboard automatically loads the latest playbook,
 news headlines and portfolio data. A real-time trade feed updates via WebSocket
  (the pipeline broadcasts each recommended trade to connected clients) while
  charts show feature importance, backtest results and the equity curve from
@@ -391,11 +389,10 @@ docker compose up -d
 
 After running `make quick-start`, use the command above to launch the stack.
 
-Both services load variables from `.env`. Runtime CSVs are written to
-``${REPORTS_DIR}`` (default ``/app/reports``; mapped to ``./reports`` on
-the host).
-The demo `scoreboard.csv` is copied into this directory on first boot to avoid
-permission errors.
+Pass environment settings via Compose `environment:` or with an `.env` file.
+Runtime CSVs are written to ``${REPORTS_DIR}`` (default ``/app/reports``; mapped
+to ``./reports`` on the host). The demo `scoreboard.csv` is copied into this
+directory on first boot to avoid permission errors.
 ## Docker Quick-start
 
 For Google Cloud users, build the image directly with Cloud Build:

@@ -13,6 +13,7 @@
   directory
 - fix: scheduler imports from `trading_platform.models` and Docker image ships
   the `models` package; CI enforces absolute imports with ruff
+- fix: remove runtime `.env` writes and document using `.env.example`
 
 ## 2025-10-03
 - Docs linting job added to CI

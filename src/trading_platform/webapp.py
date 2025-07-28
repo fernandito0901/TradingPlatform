@@ -557,14 +557,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if not path.exists():
             path.write_text("<p>No report yet</p>")
 
-    def save_env(data: dict[str, str]) -> None:
-        lines = [f"{k}={v}" for k, v in data.items() if v]
-        Path(env_path).write_text("\n".join(lines) + "\n")
-
     def scoreboard_html() -> str:
-        csv = Path(app.static_folder) / "scoreboard.csv"
+        csv = reports.REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
-            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            csv = Path(app.static_folder) / "scoreboard.csv"
             if not csv.exists():
                 return "<p>No results yet</p>"
 
@@ -575,9 +571,9 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         return df.to_html(index=False)
 
     def scoreboard_summary() -> str:
-        csv = Path(app.static_folder) / "scoreboard.csv"
+        csv = reports.REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
-            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            csv = Path(app.static_folder) / "scoreboard.csv"
             if not csv.exists():
                 return "No playbook yet"
         df = pd.read_csv(csv)
@@ -599,14 +595,15 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def index():
         load_dotenv(app.config["ENV_PATH"])
         if request.method == "POST":
-            save_env(
-                {
-                    "POLYGON_API_KEY": request.form.get("polygon_api_key", ""),
-                    "NEWS_API_KEY": request.form.get("news_api_key", ""),
-                    "SLACK_WEBHOOK_URL": request.form.get("slack_webhook_url", ""),
-                    "SYMBOLS": request.form.get("symbols", "AAPL"),
-                }
-            )
+            for var, field in {
+                "POLYGON_API_KEY": "polygon_api_key",
+                "NEWS_API_KEY": "news_api_key",
+                "SLACK_WEBHOOK_URL": "slack_webhook_url",
+                "SYMBOLS": "symbols",
+            }.items():
+                val = request.form.get(field)
+                if val:
+                    os.environ[var] = val
             return redirect(url_for("index"))
         if not os.getenv("POLYGON_API_KEY"):
             return render_template_string(SETUP_TEMPLATE)
