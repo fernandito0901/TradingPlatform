@@ -28,10 +28,17 @@ def healthz():
 def _connect_socketio() -> None:
     """Initialise Socket.IO with retries."""
     global socketio
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:  # pragma: no cover - optional dependency
+            import redis  # noqa:F401
+        except Exception:  # pragma: no cover - optional dependency
+            _log.warning("Redis package not installed; Socket.IO disabled")
+            return
     delay = 1
     while True:
         try:
-            socketio = SocketIO(message_queue=os.getenv("REDIS_URL"))
+            socketio = SocketIO(message_queue=redis_url)
             if socketio.server:
                 _log.info("Socket.IO connected")
                 break
