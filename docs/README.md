@@ -17,7 +17,8 @@ Install dependencies with the same Python interpreter you use to run the
 collector:
 
 ```bash
-pip install -e .
+# editable install with dev extras for local development
+pip install -e .[dev]
 python3 -m pip install -r requirements.txt
 ```
 
@@ -52,6 +53,8 @@ merged into a single ``Config`` dataclass loaded via
 The ``REPORTS_DIR`` variable controls where generated reports are written. It
 defaults to ``/app/reports`` inside the container and should be writable by
 the app user.
+``REDIS_URL`` is optional but recommended for WebSocket messaging; Docker
+Compose sets it to ``redis://redis:6379/0``.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.

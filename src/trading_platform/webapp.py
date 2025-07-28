@@ -37,6 +37,7 @@ from flask import (
     request,
     current_app,
     url_for,
+    Response,
 )
 from flask_socketio import SocketIO
 
@@ -808,7 +809,10 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if df is None:
             return jsonify(status="empty"), 200
 
-        return jsonify(df.to_dict(orient="records"))
+        return Response(
+            df.to_json(orient="records"),
+            mimetype="application/json",
+        )
 
     @app.route("/api/features/latest")
     def api_features_latest():
