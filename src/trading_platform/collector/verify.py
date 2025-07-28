@@ -3,7 +3,6 @@ import logging
 import os
 
 from ..load_env import load_env
-
 from . import api, db
 
 

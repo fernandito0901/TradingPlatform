@@ -5,13 +5,13 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
-from ..secret_filter import SecretFilter
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
 
 from ..portfolio import PORTFOLIO_FILE
+from ..secret_filter import SecretFilter
 from . import db, stream_async
 
 

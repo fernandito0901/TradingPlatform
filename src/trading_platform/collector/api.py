@@ -1,12 +1,12 @@
 import datetime
 import json
+import logging
 import os
 import time
 from typing import Optional
-import logging
-from requests import HTTPError
 
 import requests
+from requests import HTTPError
 
 from .alerts import AlertAggregator
 

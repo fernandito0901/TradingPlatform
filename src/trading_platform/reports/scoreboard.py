@@ -1,7 +1,9 @@
 """Maintain a historical scoreboard of playbook results."""
 
 from pathlib import Path
+
 import pandas as pd
+
 from . import REPORTS_DIR
 
 

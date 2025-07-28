@@ -1,11 +1,13 @@
 """Seed the news table with sample rows if empty."""
 
+import csv
+from pathlib import Path
+
 from trading_platform.collector import db
 from trading_platform.reports import REPORTS_DIR
-from pathlib import Path
-import csv
 
 DATA_FILE = Path(__file__).resolve().parent.parent / "data" / "demo_news.csv"
+
 
 def main() -> None:
     path = REPORTS_DIR / "scoreboard.db"
