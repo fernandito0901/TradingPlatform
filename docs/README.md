@@ -391,8 +391,9 @@ After running `make quick-start`, use the command above to launch the stack.
 
 Pass environment settings via Compose `environment:` or with an `.env` file.
 Runtime CSVs are written to ``${REPORTS_DIR}`` (default ``/app/reports``; mapped
-to ``./reports`` on the host). The demo `scoreboard.csv` is copied into this
-directory on first boot to avoid permission errors.
+to ``./reports`` on the host). A demo ``scoreboard.csv`` is copied into this
+writable folder on first boot to avoid permission errors and let the dashboard
+load sample data immediately.
 ## Docker Quick-start
 
 For Google Cloud users, build the image directly with Cloud Build:
