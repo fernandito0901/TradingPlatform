@@ -1,5 +1,6 @@
-from scripts import seed_demo
 import sqlite3
+
+from scripts import seed_demo
 
 
 def test_seed_demo(tmp_path, monkeypatch):

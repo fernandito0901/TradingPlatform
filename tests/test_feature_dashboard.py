@@ -1,5 +1,6 @@
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 from trading_platform.reports.feature_dashboard import generate_feature_dashboard
 

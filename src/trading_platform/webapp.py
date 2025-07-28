@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-import os
-import logging
-from pathlib import Path
-from threading import Thread
 import json
+import logging
+import os
 import sqlite3
 import subprocess
+from pathlib import Path
+from threading import Thread
+
+from trading_platform import reports
 
 from . import risk_report
-from .secret_filter import SecretFilter
-from trading_platform.reports import REPORTS_DIR
 from .db import bootstrap as bootstrap_db
+from .secret_filter import SecretFilter
 
 DEMO_DIR = Path(__file__).resolve().parent / "reports" / "demo"
 
@@ -30,18 +31,19 @@ def get_connection(db_path: Path):
 import pandas as pd
 from flask import (
     Flask,
+    jsonify,
     redirect,
     render_template_string,
     request,
     url_for,
-    jsonify,
 )
 from flask_socketio import SocketIO
 
 socketio = SocketIO()
 
-from .config import load_config
 from dotenv import load_dotenv
+
+from .config import load_config
 
 SETUP_TEMPLATE = """
 <!doctype html>
@@ -498,7 +500,10 @@ MAIN_TEMPLATE = """
 def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     """Create configured Flask application."""
 
-    app = Flask(__name__, static_folder=str(REPORTS_DIR), static_url_path="/reports")
+    reports.REPORTS_DIR = Path(os.getenv("REPORTS_DIR", str(reports.REPORTS_DIR)))
+    app = Flask(
+        __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
+    )
     socketio.init_app(app)
     flt = SecretFilter()
     app.logger.addFilter(flt)
@@ -513,8 +518,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     load_dotenv(env_path)
     app.config["SCHED"] = None
 
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    db_path = Path(os.getenv("TP_DB", REPORTS_DIR / "scoreboard.db"))
+    reports.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    db_path = Path(os.getenv("TP_DB", reports.REPORTS_DIR / "scoreboard.db"))
     app.config["DB_URI"] = f"sqlite:///{db_path}"
     app.config["DB_FILE"] = db_path
     try:
@@ -522,27 +527,22 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     except Exception:
         pass
 
-    # ensure scoreboard CSV and placeholder reports exist to avoid broken links
-    sb_csv = REPORTS_DIR / "scoreboard.csv"
-    if not sb_csv.exists():
-        REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-        sb_csv.write_text("date,playbook,auc\n")
-    dest_csv = Path(app.static_folder) / "scoreboard.csv"
-    if dest_csv != sb_csv:
-        dest_csv.parent.mkdir(parents=True, exist_ok=True)
-        if not dest_csv.exists():
-            dest_csv.write_text(sb_csv.read_text())
-
-    for name in ["news.csv", "pnl.csv", "trades.csv", "scoreboard.csv"]:
-        demo = DEMO_DIR / name
-        dest = REPORTS_DIR / name
+    # seed demo CSVs into the reports directory
+    src = DEMO_DIR
+    seed = {
+        "scoreboard.csv": "scoreboard.csv",
+        "pnl.csv": "pnl.csv",
+        "news.csv": "news.csv",
+    }
+    for s, d in seed.items():
+        dest = reports.REPORTS_DIR / d
+        demo = src / s
         if not dest.exists() and demo.exists():
-            dest.write_text(demo.read_text())
-        if Path(app.static_folder) != REPORTS_DIR:
-            alt = Path(app.static_folder) / name
-            if not alt.exists() and dest.exists():
-                alt.parent.mkdir(parents=True, exist_ok=True)
-                alt.write_text(dest.read_text())
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(demo.read_text())
+            except PermissionError:
+                app.logger.warning("seed-copy failed for %s", dest)
 
     style = Path(app.static_folder) / "style.css"
     if not style.exists():
@@ -562,9 +562,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         Path(env_path).write_text("\n".join(lines) + "\n")
 
     def scoreboard_html() -> str:
-        csv = REPORTS_DIR / "scoreboard.csv"
+        csv = Path(app.static_folder) / "scoreboard.csv"
         if not csv.exists():
-            return "<p>No results yet</p>"
+            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            if not csv.exists():
+                return "<p>No results yet</p>"
 
         df = pd.read_csv(csv)
         if "pnl" in df.columns:
@@ -575,7 +577,9 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def scoreboard_summary() -> str:
         csv = Path(app.static_folder) / "scoreboard.csv"
         if not csv.exists():
-            return "No playbook yet"
+            csv = reports.REPORTS_DIR / "scoreboard.csv"
+            if not csv.exists():
+                return "No playbook yet"
         df = pd.read_csv(csv)
         if df.empty:
             return "No playbook yet"
@@ -668,7 +672,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         end = request.form.get("end")
         if not start or not end:
             return redirect(url_for("index"))
-        from .collector import backfill as backfill_mod, db
+        from .collector import backfill as backfill_mod
+        from .collector import db
 
         def task() -> None:
             conn = db.init_db(cfg.db_file)
@@ -806,11 +811,15 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/scoreboard")
     def api_scoreboard():
-        csv = REPORTS_DIR / "scoreboard.csv"
+        csv = reports.REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():
             demo = DEMO_DIR / "scoreboard.csv"
             if demo.exists():
-                csv.write_text(demo.read_text())
+                try:
+                    csv.parent.mkdir(parents=True, exist_ok=True)
+                    csv.write_text(demo.read_text())
+                except PermissionError:  # pragma: no cover - read-only
+                    app.logger.warning("seed-copy failed for %s", csv)
             else:
                 return jsonify([])
         df = pd.read_csv(csv)

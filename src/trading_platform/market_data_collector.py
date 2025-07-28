@@ -4,7 +4,6 @@ from .collector.cli import parse_args
 from .collector.main import main
 from .config import load_config
 
-
 if __name__ == "__main__":
     args = parse_args()
     config = load_config(
