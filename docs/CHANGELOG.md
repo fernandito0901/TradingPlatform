@@ -13,6 +13,8 @@
 - docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
 - Scheduler CLI logs and exits when API keys are missing
 - Socket.IO uses the Redis message queue to prevent worker crashes
+- Redis persists to a local volume with appendonly mode enabled
+- CI workflow builds and pushes Docker images after tests pass
 - Fixed `run_daily` to pass `Config` into `run_pipeline`
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news

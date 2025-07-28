@@ -29,7 +29,11 @@ services:
       - redis
   redis:
     image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
 volumes:
   reports:
+  redis-data:
