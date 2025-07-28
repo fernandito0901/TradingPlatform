@@ -33,7 +33,12 @@ def test_run_daily_notify_failure(monkeypatch, tmp_path):
     monkeypatch.setattr(run_daily.api, "fetch_option_chain", lambda *a, **k: None)
     monkeypatch.setattr(run_daily.api, "fetch_news", lambda *a, **k: None)
 
-    monkeypatch.setattr(run_daily, "run_pipeline", lambda *a, **k: "features.csv")
+    def fake_run_pipeline(cfg, symbols):
+        assert isinstance(cfg, Config)
+        assert symbols == ["AAPL"]
+        return "features.csv"
+
+    monkeypatch.setattr(run_daily, "run_pipeline", fake_run_pipeline)
 
     def fail_train(csv, model_dir="models", symbol="AAPL"):
         raise RuntimeError("boom")
@@ -74,7 +79,9 @@ def test_run_daily_success(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(run_daily.api, "fetch_option_chain", fake_fetch_option_chain)
     monkeypatch.setattr(run_daily.api, "fetch_news", fake_fetch_news)
 
-    def fake_run_pipeline(conn, sym, out_dir="features"):
+    def fake_run_pipeline(cfg, symbols, since="90d"):
+        assert isinstance(cfg, Config)
+        assert symbols == ["AAPL"]
         path = tmp_path / "feat.csv"
         path.write_text("t,close\n1,1")
         return str(path)
