@@ -6,7 +6,9 @@
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
 - `/api/metrics` tolerant of real-world CSVs and returns raw equity records
+- Metrics loader avoids `KeyError` when expected PnL columns are absent
 - Missing API keys return HTTP 503 instead of crashing
+- `/api/metrics` now streams JSON via a Flask ``Response``
 - `seed_demo.py` seeds random PnL data when none found
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
 - Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable

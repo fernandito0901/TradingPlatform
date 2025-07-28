@@ -136,7 +136,7 @@ Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
 Use ``generate_strategy_dashboard`` to write `reports/strategies.html` summarizing POP for available trades.
-The `/api/metrics` endpoint emits an equity curve JSON derived from `reports/pnl.csv`. Columns named `pnl`, `profit`, or `total` are recognised automatically.
+The `/api/metrics` endpoint emits an equity curve JSON derived from `reports/pnl.csv`. Columns named `pnl`, `profit`, or `total` are recognised automatically. When no file exists the route responds with `{"status": "empty"}`.
 Risk metrics can be computed from `reports/scoreboard.csv` using the risk report CLI:
 
 ```bash

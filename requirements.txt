@@ -10,7 +10,7 @@ pytest-asyncio
 websockets
 plotly>=5.22
 flask
-flask-socketio
+flask-socketio>=5.3
 APScheduler
 optuna
 celery
