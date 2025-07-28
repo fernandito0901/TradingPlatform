@@ -40,14 +40,6 @@ dev = [
     "pytest",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "black",
-    "flake8",
-    "ruff",
-    "pytest",
-]
-
 [project.scripts]
 collect-data = "trading_platform.collector.main:main"
 simulate = "trading_platform.simulate:main"
