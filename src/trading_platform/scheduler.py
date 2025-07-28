@@ -74,7 +74,10 @@ def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundSch
     """
 
     if run_func is None:
-        from .run_daily import run as run_daily
+        try:
+            from .run_daily import run as run_daily
+        except RuntimeError as exc:
+            raise RuntimeError(f"Cannot start scheduler: {exc}") from exc
 
         run_func = run_daily
 
@@ -92,7 +95,11 @@ def main(argv: list[str] | None = None) -> None:
     """CLI entry point for the scheduler."""
     load_dotenv()
     cfg = load_config(argv)
-    start(cfg)
+    try:
+        start(cfg)
+    except RuntimeError as exc:
+        _log.error(exc)
+        return
     Thread(target=health_app.run, kwargs={"host": "0.0.0.0", "port": 8001}).start()
     try:
         while True:

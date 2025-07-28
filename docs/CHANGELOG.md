@@ -8,6 +8,7 @@
 - Missing API keys return HTTP 503 instead of crashing
 - `seed_demo.py` seeds random PnL data when none found
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
+- Scheduler CLI logs and exits when API keys are missing
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news
 - Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`
