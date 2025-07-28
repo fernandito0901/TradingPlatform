@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import logging
-import inspect
 
 import websockets
 
-from .api_async import API_KEY, WS_URL, REALTIME_WS_URL
 from .alerts import AlertAggregator
+from .api_async import API_KEY, REALTIME_WS_URL, WS_URL
 
 
 async def stream_quotes(

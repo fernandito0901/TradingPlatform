@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
 import argparse
-from trading_platform.reports import REPORTS_DIR
+from pathlib import Path
 
-import pandas as pd
 import lightgbm as lgb
+import pandas as pd
+
+from trading_platform.reports import REPORTS_DIR
 
 
 def backtest(

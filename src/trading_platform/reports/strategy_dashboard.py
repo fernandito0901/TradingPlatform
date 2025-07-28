@@ -2,9 +2,10 @@
 
 from pathlib import Path
 from typing import Iterable
-from . import REPORTS_DIR
 
 from trading_platform import strategies as strat
+
+from . import REPORTS_DIR
 
 
 def generate_strategy_dashboard(

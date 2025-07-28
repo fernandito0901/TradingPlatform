@@ -1,5 +1,6 @@
 import json
 import logging
+
 import websocket
 
 from .api import API_KEY, REALTIME_WS_URL, WS_URL
