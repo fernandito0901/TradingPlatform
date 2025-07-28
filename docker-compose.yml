@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    command: gunicorn -w 4 -b 0.0.0.0:5000 'trading_platform.webapp:create_app()'
+    command: gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5000 'trading_platform.webapp:create_app()'
     ports:
       - "5000:5000"
     volumes:
@@ -9,8 +9,11 @@ services:
       - ./reports:/app/reports
     environment:
       - REPORTS_DIR=/app/reports
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
+    depends_on:
+      - redis
   scheduler:
     build: .
     command: scheduler
@@ -19,7 +22,18 @@ services:
       - ./reports:/app/reports
     environment:
       - REPORTS_DIR=/app/reports
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
+    depends_on:
+      - redis
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 volumes:
   reports:
+  redis-data:

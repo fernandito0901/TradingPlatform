@@ -4,6 +4,7 @@
 import shutil
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, create_engine
 
@@ -38,8 +39,14 @@ def seed_pnl() -> None:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     dest = REPORTS_DIR / "pnl.csv"
     demo_pnl = DATA_DIR / "sample_pnl.csv"
-    if not dest.exists() and demo_pnl.exists():
+    if dest.exists():
+        return
+    if demo_pnl.exists():
         shutil.copy(demo_pnl, dest)
+    else:
+        n = 30
+        df = pd.DataFrame({"pnl": np.random.normal(10, 50, n).round(2)})
+        df.to_csv(dest, index=False)
 
 
 def main() -> None:

@@ -1,9 +1,23 @@
 # Changelog
 ## Unreleased
 - Scheduler retries Socket.IO connection with backoff and logs `scheduler_heartbeat`
+- Suppressed noisy Socket.IO "Invalid session" logs and improved demo PnL seeding
 - Added `/api/heartbeat` endpoint for health checks
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
+- `/api/metrics` tolerant of real-world CSVs and returns raw equity records
+- Metrics loader avoids `KeyError` when expected PnL columns are absent
+- Missing API keys return HTTP 503 instead of crashing
+- `/api/metrics` now streams JSON via a Flask ``Response``
+- `seed_demo.py` seeds random PnL data when none found
+- docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
+- Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
+- docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
+- Scheduler CLI logs and exits when API keys are missing
+- Socket.IO uses the Redis message queue to prevent worker crashes
+- Redis persists to a local volume with appendonly mode enabled
+- CI workflow builds and pushes Docker images after tests pass
+- Fixed `run_daily` to pass `Config` into `run_pipeline`
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news
 - Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`
