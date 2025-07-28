@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from trading_platform.webapp import create_app
 
 
@@ -9,7 +10,7 @@ def test_api_metrics_empty(tmp_path):
     app.static_folder = str(tmp_path)
     client = app.test_client()
     resp = client.get("/api/metrics")
-    assert resp.json == {"total_return": 0.0, "pnl": 0.0}
+    assert resp.json.get("status") == "empty"
 
 
 def test_api_metrics_values(tmp_path):

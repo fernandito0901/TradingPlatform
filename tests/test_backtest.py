@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
-from trading_platform.models import train
+
+from models import train
 from trading_platform import backtest
 
 
