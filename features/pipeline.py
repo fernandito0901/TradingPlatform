@@ -50,7 +50,7 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
 def run_pipeline(cfg, symbols: list[str], since: str = "90d") -> str:
     start = (pd.Timestamp.utcnow() - pd.Timedelta(since)).date().isoformat()
     end = pd.Timestamp.utcnow().date().isoformat()
-    out_dir = Path(cfg.reports_dir or REPORTS_DIR)
+    out_dir = Path(getattr(cfg, "reports_dir", REPORTS_DIR) or REPORTS_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
     all_frames = []
     for sym in symbols:
