@@ -11,7 +11,7 @@ def test_scheduler_runs(monkeypatch):
         calls.append(cfg.symbols)
 
     cfg = Config(symbols="AAPL")
-    sched = start(cfg, interval=0.1, run_func=fake_run)
+    sched = start(cfg, interval=0.1, run_func=fake_run, testing=True)
     time.sleep(0.25)
     sched.shutdown()
     assert calls
@@ -26,7 +26,7 @@ def test_scheduler_socketio_retry(monkeypatch):
 
     monkeypatch.setattr(sched_mod, "SocketIO", BadSocket)
     cfg = Config(symbols="AAPL")
-    sched = sched_mod.start(cfg, interval=1, run_func=lambda c: None)
+    sched = sched_mod.start(cfg, interval=1, run_func=lambda c: None, testing=True)
     time.sleep(5)
     assert sched.running
     sched.shutdown()

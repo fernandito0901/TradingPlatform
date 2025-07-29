@@ -1,9 +1,11 @@
-import datetime
 import json
 import logging
 import os
 import time
+import datetime as dt
+from datetime import datetime, time as dtime
 from typing import Optional
+import zoneinfo
 
 import requests
 from requests import HTTPError
@@ -26,6 +28,40 @@ CACHE_QUOTE_MS = 5 * 1000
 CACHE_TTL = int(os.getenv("CACHE_TTL", "0"))
 
 _HTTP_CACHE: dict[str, tuple[float, dict]] = {}
+
+# US/Eastern timezone for session checks
+EASTERN = zoneinfo.ZoneInfo("America/New_York")
+
+
+def is_equity_session(now: datetime | None = None) -> bool:
+    """Return ``True`` if equities are trading now."""
+
+    if os.getenv("TESTING"):
+        return True
+    now = now or datetime.now(EASTERN)
+    return dtime(4, 0) <= now.time() < dtime(20, 0)
+
+
+def is_options_session(now: datetime | None = None) -> bool:
+    """Return ``True`` if options are trading now."""
+
+    if os.getenv("TESTING"):
+        return True
+    now = now or datetime.now(EASTERN)
+    return dtime(9, 30) <= now.time() < dtime(16, 0)
+
+
+def market_open(asset: str = "stocks") -> bool:
+    """Return ``True`` if the market for ``asset`` is open."""
+
+    try:
+        resp = requests.get(MARKET_STATUS_URL, params={"apiKey": API_KEY}, timeout=5)
+        resp.raise_for_status()
+        status = resp.json().get(asset, {})
+        return status.get("market") == "open"
+    except Exception as exc:  # network or parse error
+        logging.warning("market status check failed: %s", exc)
+        return True
 
 
 def market_open(asset: str = "stocks") -> bool:
@@ -60,8 +96,8 @@ def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
         logging.debug("GET %s params=%s", url, params)
         resp = requests.get(url, params=params)
         if resp.status_code == 403:
-            if not market_open():
-                logging.warning("Market closed—skipping request %s", url)
+            if b"market is closed" in resp.content.lower() or not market_open():
+                logging.info("Market closed—skipping request %s", url)
                 return {}
             raise RuntimeError(
                 "Polygon API key rejected – check POLYGON_API_KEY & plan."
@@ -83,6 +119,10 @@ def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
 def fetch_prev_close(symbol: str) -> dict:
     """Return the previous day's close data."""
 
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_prev_close for %s", symbol)
+        return {}
+
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/prev"
     params = {"apiKey": API_KEY}
     return rate_limited_get(url, params)
@@ -96,6 +136,10 @@ def fetch_open_close(symbol: str, date: str) -> dict:
     NoData
         If the API returns no results for the given symbol and date.
     """
+
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_open_close for %s", symbol)
+        return {}
 
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{date}/{date}"
     params = {"adjusted": "true", "apiKey": API_KEY}
@@ -114,6 +158,10 @@ def fetch_open_close(symbol: str, date: str) -> dict:
 def fetch_trades(symbol: str, limit: int = 50) -> dict:
     """Return the latest ``limit`` trades."""
 
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_trades for %s", symbol)
+        return {}
+
     url = f"https://api.polygon.io/v3/trades/{symbol}"
     params = {"limit": limit, "apiKey": API_KEY}
     return rate_limited_get(url, params)
@@ -121,6 +169,10 @@ def fetch_trades(symbol: str, limit: int = 50) -> dict:
 
 def fetch_quotes(symbol: str, limit: int = 50) -> dict:
     """Return the latest ``limit`` quotes."""
+
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_quotes for %s", symbol)
+        return {}
 
     url = f"https://api.polygon.io/v3/quotes/{symbol}"
     params = {"limit": limit, "apiKey": API_KEY}
@@ -130,6 +182,10 @@ def fetch_quotes(symbol: str, limit: int = 50) -> dict:
 def fetch_snapshot_tickers() -> dict:
     """Return snapshot data for US stock tickers."""
 
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_snapshot_tickers")
+        return {}
+
     url = "https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers"
     params = {"apiKey": API_KEY}
     return rate_limited_get(url, params)
@@ -138,15 +194,18 @@ def fetch_snapshot_tickers() -> dict:
 def fetch_ohlcv(conn, symbol: str):
     """Fetch daily OHLCV data incrementally for the last 60 days."""
     logging.info("Fetching OHLCV for %s", symbol)
-    end = datetime.date.today()
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_ohlcv for %s", symbol)
+        return
+    end = dt.date.today()
     c = conn.cursor()
     c.execute("SELECT MAX(t) FROM ohlcv WHERE symbol=?", (symbol,))
     row = c.fetchone()
     if row[0]:
         last_ts = row[0] // 1000
-        start = datetime.date.fromtimestamp(last_ts) + datetime.timedelta(days=1)
+        start = dt.date.fromtimestamp(last_ts) + dt.timedelta(days=1)
     else:
-        start = end - datetime.timedelta(days=60)
+        start = end - dt.timedelta(days=60)
     if start > end:
         return
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
@@ -171,8 +230,11 @@ def fetch_ohlcv(conn, symbol: str):
 def fetch_minute_bars(conn, symbol: str):
     """Fetch the last trading day's minute aggregates."""
     logging.info("Fetching minute bars for %s", symbol)
-    end = datetime.date.today()
-    start = end - datetime.timedelta(days=1)
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_minute_bars for %s", symbol)
+        return
+    end = dt.date.today()
+    start = end - dt.timedelta(days=1)
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/minute/{start}/{end}"
     params = {"adjusted": "true", "apiKey": API_KEY, "limit": 50000}
     data = rate_limited_get(url, params)
@@ -196,6 +258,9 @@ def fetch_minute_bars(conn, symbol: str):
 def fetch_realtime_quote(conn, symbol: str):
     """Fetch a recent trade price via the snapshot endpoint and cache it."""
     logging.info("Fetching snapshot quote for %s", symbol)
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_realtime_quote for %s", symbol)
+        return
     c = conn.cursor()
     c.execute(
         "SELECT t FROM realtime_quotes WHERE symbol=? ORDER BY t DESC LIMIT 1",
@@ -225,8 +290,13 @@ def fetch_realtime_quote(conn, symbol: str):
 def fetch_option_chain(conn, symbol: str):
     """Fetch option snapshot data and store it in the database."""
     logging.info("Fetching option chain for %s", symbol)
+    if not is_options_session():
+        logging.info(
+            "Options market closed – skipping fetch_option_chain for %s", symbol
+        )
+        return
     c = conn.cursor()
-    today = datetime.date.today().isoformat()
+    today = dt.date.today().isoformat()
     c.execute(
         "SELECT COUNT(*) FROM option_chain WHERE symbol=? AND expiration>=?",
         (symbol, today),
@@ -272,6 +342,9 @@ def fetch_option_chain(conn, symbol: str):
 def fetch_fundamentals(conn, symbol: str):
     """Fetch fundamental data and store raw JSON."""
     logging.info("Fetching fundamentals for %s", symbol)
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_fundamentals for %s", symbol)
+        return
     url = "https://api.polygon.io/vX/reference/financials"
     params = {"ticker": symbol, "limit": 1, "apiKey": API_KEY}
     data = rate_limited_get(url, params)
@@ -288,6 +361,9 @@ def fetch_fundamentals(conn, symbol: str):
 def fetch_corporate_actions(conn, symbol: str):
     """Fetch recent split events for the symbol."""
     logging.info("Fetching corporate actions for %s", symbol)
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_corporate_actions for %s", symbol)
+        return
     url = "https://api.polygon.io/v3/reference/splits"
     params = {"ticker": symbol, "apiKey": API_KEY, "limit": 10}
     data = rate_limited_get(url, params)
@@ -307,6 +383,9 @@ def fetch_corporate_actions(conn, symbol: str):
 def fetch_indicator_sma(conn, symbol: str):
     """Fetch a 50 day simple moving average."""
     logging.info("Fetching SMA indicator for %s", symbol)
+    if not is_equity_session():
+        logging.info("Market closed – skipping fetch_indicator_sma for %s", symbol)
+        return
     url = f"https://api.polygon.io/v1/indicators/sma/{symbol}"
     params = {
         "timespan": "day",

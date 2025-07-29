@@ -66,7 +66,12 @@ def _log_heartbeat() -> None:
     _log.info("scheduler_heartbeat - alive")
 
 
-def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundScheduler:
+def start(
+    config: Config,
+    interval: int = 86400,
+    run_func=None,
+    testing: bool | None = None,
+) -> BackgroundScheduler:
     """Start a background scheduler for ``run_daily``.
 
     Parameters
@@ -92,16 +97,38 @@ def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundSch
 
         run_func = run_daily
 
-    sched = BackgroundScheduler()
-    sched.add_job(run_func, "interval", seconds=interval, args=(config,))
-    try:
-        from .run_daily import run_intraday
+    sched = BackgroundScheduler(timezone="US/Eastern")
+    if testing:
+        sched.add_job(run_func, "interval", seconds=interval, args=(config,))
+        try:
+            from .run_daily import run_intraday
 
+            sched.add_job(run_intraday, "interval", seconds=interval, args=(config,))
+        except Exception:  # pragma: no cover
+            pass
+    else:
         sched.add_job(
-            run_intraday, "interval", minutes=2, max_instances=1, args=(config,)
+            run_func,
+            "cron",
+            hour=4,
+            minute=0,
+            day_of_week="mon-fri",
+            args=(config,),
         )
-    except Exception:  # pragma: no cover - optional
-        _log.warning("run_intraday not available")
+        try:
+            from .run_daily import run_intraday
+
+            sched.add_job(
+                run_intraday,
+                "cron",
+                minute="*/15",
+                hour="4-20",
+                day_of_week="mon-fri",
+                max_instances=1,
+                args=(config,),
+            )
+        except Exception:  # pragma: no cover - optional
+            _log.warning("run_intraday not available")
     sched.add_job(_log_heartbeat, "interval", seconds=30)
     sched.start()
 
