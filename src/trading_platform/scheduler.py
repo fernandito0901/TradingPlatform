@@ -28,10 +28,21 @@ def healthz():
 def _connect_socketio() -> None:
     """Initialise Socket.IO with retries."""
     global socketio
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:  # pragma: no cover - optional dependency
+            import redis  # noqa:F401
+        except Exception:  # pragma: no cover - optional dependency
+            _log.warning("Redis package not installed; Socket.IO disabled")
+            return
     delay = 1
     while True:
         try:
-            socketio = SocketIO(message_queue=os.getenv("REDIS_URL"))
+            socketio = SocketIO(
+                message_queue=redis_url,
+                async_mode="eventlet",
+                ping_timeout=20,
+            )
             if socketio.server:
                 _log.info("Socket.IO connected")
                 break
@@ -55,7 +66,12 @@ def _log_heartbeat() -> None:
     _log.info("scheduler_heartbeat - alive")
 
 
-def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundScheduler:
+def start(
+    config: Config,
+    interval: int = 86400,
+    run_func=None,
+    testing: bool | None = None,
+) -> BackgroundScheduler:
     """Start a background scheduler for ``run_daily``.
 
     Parameters
@@ -74,12 +90,45 @@ def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundSch
     """
 
     if run_func is None:
-        from .run_daily import run as run_daily
+        try:
+            from .run_daily import run as run_daily
+        except RuntimeError as exc:
+            raise RuntimeError(f"Cannot start scheduler: {exc}") from exc
 
         run_func = run_daily
 
-    sched = BackgroundScheduler()
-    sched.add_job(run_func, "interval", seconds=interval, args=(config,))
+    sched = BackgroundScheduler(timezone="US/Eastern")
+    if testing:
+        sched.add_job(run_func, "interval", seconds=interval, args=(config,))
+        try:
+            from .run_daily import run_intraday
+
+            sched.add_job(run_intraday, "interval", seconds=interval, args=(config,))
+        except Exception:  # pragma: no cover
+            pass
+    else:
+        sched.add_job(
+            run_func,
+            "cron",
+            hour=4,
+            minute=0,
+            day_of_week="mon-fri",
+            args=(config,),
+        )
+        try:
+            from .run_daily import run_intraday
+
+            sched.add_job(
+                run_intraday,
+                "cron",
+                minute="*/15",
+                hour="4-20",
+                day_of_week="mon-fri",
+                max_instances=1,
+                args=(config,),
+            )
+        except Exception:  # pragma: no cover - optional
+            _log.warning("run_intraday not available")
     sched.add_job(_log_heartbeat, "interval", seconds=30)
     sched.start()
 
@@ -92,7 +141,11 @@ def main(argv: list[str] | None = None) -> None:
     """CLI entry point for the scheduler."""
     load_dotenv()
     cfg = load_config(argv)
-    start(cfg)
+    try:
+        start(cfg)
+    except RuntimeError as exc:
+        _log.error(exc)
+        return
     Thread(target=health_app.run, kwargs={"host": "0.0.0.0", "port": 8001}).start()
     try:
         while True:

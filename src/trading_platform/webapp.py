@@ -35,11 +35,14 @@ from flask import (
     redirect,
     render_template_string,
     request,
+    current_app,
     url_for,
+    Response,
 )
 from flask_socketio import SocketIO
 
-socketio = SocketIO()
+# Reduce noisy "Invalid session" warnings
+socketio = SocketIO(logger=False, engineio_logger=False)
 
 from dotenv import load_dotenv
 
@@ -504,7 +507,13 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     app = Flask(
         __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
     )
-    socketio.init_app(app)
+    redis_url = os.getenv("REDIS_URL")
+    socketio.init_app(
+        app,
+        message_queue=redis_url,
+        async_mode="eventlet",
+        ping_timeout=20,
+    )
     flt = SecretFilter()
     app.logger.addFilter(flt)
     logging.getLogger("werkzeug").addFilter(flt)
@@ -556,6 +565,19 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         path = Path(app.static_folder) / name
         if not path.exists():
             path.write_text("<p>No report yet</p>")
+
+    @app.errorhandler(Exception)
+    def json_error(exc):
+        """Return uncaught exceptions as JSON."""
+        from werkzeug.exceptions import HTTPException
+
+        code = 500
+        if isinstance(exc, HTTPException):
+            code = exc.code
+        elif isinstance(exc, RuntimeError):
+            code = 503
+        app.logger.exception("unhandled error", exc_info=exc)
+        return jsonify(error=str(exc)), code
 
     def scoreboard_html() -> str:
         csv = reports.REPORTS_DIR / "scoreboard.csv"
@@ -616,7 +638,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/run", methods=["POST"])
     def run():
-        from .run_daily import run as run_daily
+        try:
+            from .run_daily import run as run_daily
+        except RuntimeError as exc:
+            current_app.logger.warning(exc)
+            return jsonify(error=str(exc)), 503
 
         cfg = load_config([], env_path=app.config["ENV_PATH"])
         Thread(target=run_daily, args=(cfg,)).start()
@@ -624,7 +650,11 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/verify", methods=["POST"])
     def verify_conn():
-        from .collector import verify as verify_mod
+        try:
+            from .collector import verify as verify_mod
+        except RuntimeError as exc:
+            current_app.logger.warning(exc)
+            return jsonify(error=str(exc)), 503
 
         cfg = load_config([], env_path=app.config["ENV_PATH"])
         Thread(target=verify_mod.verify, args=(cfg.symbols,)).start()
@@ -633,10 +663,18 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     @app.route("/start_scheduler", methods=["POST"])
     def start_scheduler_route():
         if app.config.get("SCHED") is None:
-            from . import scheduler as scheduler_mod
+            try:
+                from . import scheduler as scheduler_mod
+            except RuntimeError as exc:
+                current_app.logger.warning(exc)
+                return jsonify(error=str(exc)), 503
 
             cfg = load_config([], env_path=app.config["ENV_PATH"])
-            app.config["SCHED"] = scheduler_mod.start(cfg)
+            try:
+                app.config["SCHED"] = scheduler_mod.start(cfg)
+            except RuntimeError as exc:
+                current_app.logger.warning(exc)
+                return jsonify(error=str(exc)), 503
         return redirect(url_for("index"))
 
     @app.route("/stop_scheduler", methods=["POST"])
@@ -777,23 +815,16 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.route("/api/metrics")
     def api_metrics():
-        """Return Sharpe, Sortino and equity curve."""
+        """Return raw equity curve from ``pnl.csv``."""
         from .collector import pnl as pnl_mod
 
-        try:
-            df = pnl_mod.update_pnl(path=Path(app.static_folder) / "pnl.csv")
-        except pnl_mod.NoData:
-            return jsonify({"total_return": 0.0, "pnl": 0.0})
+        df = pnl_mod.update_pnl(reports.REPORTS_DIR / "pnl.csv")
+        if df is None:
+            return jsonify(status="empty"), 200
 
-        equity = df[["date", "equity", "daily_r"]].rename(columns={"daily_r": "pnl"})
-
-        return jsonify(
-            {
-                "status": "ok",
-                "sharpe": round(float(df["sharpe"].iloc[-1]), 2),
-                "sortino": round(float(df["sortino"].iloc[-1]), 2),
-                "equity": equity.to_dict(orient="records"),
-            }
+        return Response(
+            df.to_json(orient="records"),
+            mimetype="application/json",
         )
 
     @app.route("/api/features/latest")
@@ -840,11 +871,23 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def api_equity_curve():
         from .collector import pnl as pnl_mod
 
-        days = request.args.get("last", "90d")
-        try:
-            df = pnl_mod.update_pnl(days)
-        except pnl_mod.NoData:
+        df = pnl_mod.update_pnl(reports.REPORTS_DIR / "pnl.csv")
+        if df is None or "date" not in df.columns:
             return jsonify([])
+
+        last = request.args.get("last", "90d")
+        if last.endswith("d"):
+            try:
+                n = int(last[:-1])
+                cutoff = (
+                    pd.Timestamp.utcnow().normalize() - pd.Timedelta(days=n)
+                ).tz_localize(None)
+                df["date"] = pd.to_datetime(df["date"], errors="coerce")
+                df = df[df["date"] >= cutoff]
+            except ValueError:
+                pass
+
+        df["date"] = df["date"].dt.date.astype(str)
         return jsonify(df[["date", "equity"]].to_dict(orient="records"))
 
     @app.route("/api/alerts")

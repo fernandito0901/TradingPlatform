@@ -9,7 +9,8 @@ COPY pyproject.toml ./
 COPY src ./src
 COPY features ./features
 COPY models ./models
-RUN pip install --no-cache-dir -r requirements.txt && \
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir -e . && \
     python -c "import trading_platform.reports.scoreboard"
 
