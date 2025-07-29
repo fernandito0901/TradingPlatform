@@ -39,9 +39,7 @@ def update_pnl(path: Path) -> pd.DataFrame | None:
         return None
 
     df["equity"] = df[col].cumsum()
-
-    cols = []
+    cols = ["equity", col]
     if "date" in df.columns:
-        cols.append("date")
-    cols.extend(["equity", col])
+        cols.insert(0, "date")
     return df[cols]

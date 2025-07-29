@@ -8,6 +8,8 @@ from typing import Optional
 import requests
 from requests import HTTPError
 
+MARKET_STATUS_URL = "https://api.polygon.io/v1/marketstatus/now"
+
 from .alerts import AlertAggregator
 
 API_KEY = os.getenv("POLYGON_API_KEY")
@@ -24,6 +26,19 @@ CACHE_QUOTE_MS = 5 * 1000
 CACHE_TTL = int(os.getenv("CACHE_TTL", "0"))
 
 _HTTP_CACHE: dict[str, tuple[float, dict]] = {}
+
+
+def market_open(asset: str = "stocks") -> bool:
+    """Return ``True`` if the market for ``asset`` is open."""
+
+    try:
+        resp = requests.get(MARKET_STATUS_URL, params={"apiKey": API_KEY}, timeout=5)
+        resp.raise_for_status()
+        status = resp.json().get(asset, {})
+        return status.get("market") == "open"
+    except Exception as exc:  # network or parse error
+        logging.warning("market status check failed: %s", exc)
+        return True
 
 
 class NoData(Exception):
@@ -45,6 +60,9 @@ def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
         logging.debug("GET %s params=%s", url, params)
         resp = requests.get(url, params=params)
         if resp.status_code == 403:
+            if not market_open():
+                logging.warning("Market closed—skipping request %s", url)
+                return {}
             raise RuntimeError(
                 "Polygon API key rejected – check POLYGON_API_KEY & plan."
             )
