@@ -64,19 +64,6 @@ def market_open(asset: str = "stocks") -> bool:
         return True
 
 
-def market_open(asset: str = "stocks") -> bool:
-    """Return ``True`` if the market for ``asset`` is open."""
-
-    try:
-        resp = requests.get(MARKET_STATUS_URL, params={"apiKey": API_KEY}, timeout=5)
-        resp.raise_for_status()
-        status = resp.json().get(asset, {})
-        return status.get("market") == "open"
-    except Exception as exc:  # network or parse error
-        logging.warning("market status check failed: %s", exc)
-        return True
-
-
 class NoData(Exception):
     """Raised when an API endpoint returns no results."""
 

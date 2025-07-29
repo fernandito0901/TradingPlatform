@@ -12,7 +12,7 @@
 - `/api/metrics` tolerant of real-world CSVs and returns raw equity records
 - Metrics loader avoids `KeyError` when expected PnL columns are absent
 - Added regression tests covering `profit` column handling in `/api/metrics`
-- Missing API keys return HTTP 503 instead of crashing
+- Missing API keys now raise `RuntimeError`, allowing routes to return HTTP 503
 - `/api/metrics` now streams JSON via a Flask ``Response``
 - `seed_demo.py` seeds random PnL data when none found
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
