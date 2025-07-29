@@ -422,4 +422,6 @@
 - Missing API keys raise RuntimeError so routes return HTTP 503
 - Redis service added for Socket.IO messaging
 - Added CI workflow to lint, test, and build image
+- Market calendar check prevents API calls outside NYSE hours
+
 

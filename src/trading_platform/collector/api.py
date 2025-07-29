@@ -3,7 +3,8 @@ import logging
 import os
 import time
 import datetime as dt
-from datetime import datetime, time as dtime
+from datetime import datetime
+import pandas_market_calendars as mcal
 from typing import Optional
 import zoneinfo
 
@@ -33,22 +34,39 @@ _HTTP_CACHE: dict[str, tuple[float, dict]] = {}
 EASTERN = zoneinfo.ZoneInfo("America/New_York")
 
 
+nyse = mcal.get_calendar("NYSE")
+
+
 def is_equity_session(now: datetime | None = None) -> bool:
-    """Return ``True`` if equities are trading now."""
+    """Return ``True`` if equities are trading now based on NYSE calendar."""
 
     if os.getenv("TESTING"):
         return True
     now = now or datetime.now(EASTERN)
-    return dtime(4, 0) <= now.time() < dtime(20, 0)
+    schedule = nyse.schedule(start_date=now.date(), end_date=now.date())
+    if schedule.empty:
+        return False
+    open_t = schedule.iloc[0]["market_open"].tz_convert(EASTERN)
+    close_t = schedule.iloc[0]["market_close"].tz_convert(EASTERN)
+    return open_t <= now <= close_t
 
 
 def is_options_session(now: datetime | None = None) -> bool:
-    """Return ``True`` if options are trading now."""
+    """Return ``True`` if options are trading now using NYSE calendar."""
 
     if os.getenv("TESTING"):
         return True
     now = now or datetime.now(EASTERN)
-    return dtime(9, 30) <= now.time() < dtime(16, 0)
+    schedule = nyse.schedule(start_date=now.date(), end_date=now.date())
+    if schedule.empty:
+        return False
+    open_t = (
+        schedule.iloc[0]["market_open"].tz_convert(EASTERN).replace(hour=9, minute=30)
+    )
+    close_t = (
+        schedule.iloc[0]["market_close"].tz_convert(EASTERN).replace(hour=16, minute=0)
+    )
+    return open_t <= now <= close_t
 
 
 def market_open(asset: str = "stocks") -> bool:

@@ -22,6 +22,8 @@ pip install -e .[dev]
 python3 -m pip install -r requirements.txt
 ```
 
+The loader now checks NYSE trading hours using `pandas-market-calendars`.
+
 Additional platform-specific tips are available in [docs/SETUP.md](docs/SETUP.md).
 
 ## Project Layout
