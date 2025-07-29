@@ -52,3 +52,13 @@ def test_api_metrics_missing_file(tmp_path):
     client = app.test_client()
     resp = client.get("/api/metrics")
     assert resp.json == {"status": "empty"}
+
+
+def test_prom_metrics_endpoint(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=x\n")
+    app = create_app(env_path=env)
+    client = app.test_client()
+    resp = client.get("/metrics")
+    assert resp.status_code == 200
+    assert b"python_info" in resp.data

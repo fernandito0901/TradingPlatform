@@ -38,8 +38,11 @@ from flask import (
     current_app,
     url_for,
     Response,
+    Blueprint,
+    send_from_directory,
 )
 from flask_socketio import SocketIO
+from prometheus_client import generate_latest
 
 # Reduce noisy "Invalid session" warnings
 socketio = SocketIO(logger=False, engineio_logger=False)
@@ -578,6 +581,15 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             code = 503
         app.logger.exception("unhandled error", exc_info=exc)
         return jsonify(error=str(exc)), code
+
+    metrics_bp = Blueprint("metrics", __name__)
+
+    @metrics_bp.route("/metrics")
+    def metrics_route():
+        return Response(generate_latest(), mimetype="text/plain")
+
+    app.register_blueprint(metrics_bp)
+
 
     def scoreboard_html() -> str:
         csv = reports.REPORTS_DIR / "scoreboard.csv"

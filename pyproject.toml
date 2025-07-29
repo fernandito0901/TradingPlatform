@@ -30,6 +30,7 @@ dependencies = [
     "redis",
     "gunicorn",
     "eventlet",
+    "prometheus-client",
 ]
 
 [project.optional-dependencies]

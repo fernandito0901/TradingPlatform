@@ -8,6 +8,21 @@ def test_is_equity_session_false(monkeypatch):
     assert not api.is_equity_session(fake_now)
 
 
+def test_is_market_open(monkeypatch):
+    def fake_get(url, params=None, timeout=5):
+        class R:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"stocks": {"market": "open"}}
+
+        return R()
+
+    monkeypatch.setattr(api.requests, "get", fake_get)
+    assert api.is_market_open("stocks")
+
+
 def test_skip_fetch_if_closed(monkeypatch):
     called = False
 

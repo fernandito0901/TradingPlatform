@@ -18,5 +18,6 @@ python-dotenv
 pytest-cov
 gunicorn
 redis
+prometheus-client
 eventlet
 pandas-market-calendars

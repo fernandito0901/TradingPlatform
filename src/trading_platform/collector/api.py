@@ -69,8 +69,8 @@ def is_options_session(now: datetime | None = None) -> bool:
     return open_t <= now <= close_t
 
 
-def market_open(asset: str = "stocks") -> bool:
-    """Return ``True`` if the market for ``asset`` is open."""
+def is_market_open(asset: str = "stocks") -> bool:
+    """Return ``True`` if the Polygon market for ``asset`` is open."""
 
     try:
         resp = requests.get(MARKET_STATUS_URL, params={"apiKey": API_KEY}, timeout=5)
@@ -86,7 +86,9 @@ class NoData(Exception):
     """Raised when an API endpoint returns no results."""
 
 
-def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
+def rate_limited_get(
+    url: str, params: Optional[dict] = None, max_retries: int = 3
+) -> dict:
     """Perform a GET request with caching and rate limiting."""
     key = url + json.dumps(params or {}, sort_keys=True)
     now = time.time()
@@ -96,19 +98,22 @@ def rate_limited_get(url: str, params: Optional[dict] = None) -> dict:
             logging.debug("Cache hit for %s", key)
             return cached[1]
 
-    for attempt in range(3):
+    for attempt in range(max_retries):
         time.sleep(RATE_LIMIT_SEC)
         logging.debug("GET %s params=%s", url, params)
-        resp = requests.get(url, params=params)
+        resp = requests.get(url, params=params, timeout=10)
         if resp.status_code == 403:
-            if b"market is closed" in resp.content.lower() or not market_open():
-                logging.info("Market closed—skipping request %s", url)
-                return {}
+            if b"market is closed" in resp.content.lower() or not is_market_open():
+                logging.warning(
+                    "Polygon 403 – probably closed market; retry after 15 min"
+                )
+                time.sleep(900)
+                continue
             raise RuntimeError(
                 "Polygon API key rejected – check POLYGON_API_KEY & plan."
             )
         if resp.status_code == 429:
-            if attempt < 2:
+            if attempt < max_retries - 1:
                 time.sleep(2**attempt)
                 continue
         resp.raise_for_status()
