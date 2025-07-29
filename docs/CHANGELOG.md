@@ -413,4 +413,9 @@
 - Switched Polygon open/close endpoint to v2 and handle 404 with `NoData`
 - Added news table migration and seeder
 - Scheduler defers SocketIO import until runtime
-- Metrics API returns placeholders when PnL missing
+## 2025-07-29
+- Metrics loader handles pnl/profit/total columns and returns equity curve or empty status
+- Missing API keys raise RuntimeError so routes return HTTP 503
+- Redis service added for Socket.IO messaging
+- Added CI workflow to lint, test, and build image
+
