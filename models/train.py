@@ -94,6 +94,8 @@ def train(
     df = _read_features(features_csv)
     if df.empty:
         raise ValueError("no feature rows available")
+    if "target" not in df.columns:
+        raise ValueError("target column missing – check feature pipeline")
 
     cutoff = df["t"].max() - timedelta(days=window_days)
     df = df[df["t"] >= cutoff]
@@ -145,7 +147,7 @@ def train(
     model_dir_path = Path(model_dir)
     model_dir_path.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M")
-    model_path = model_dir_path / f"model_{timestamp}.txt"
+    model_path = model_dir_path / f"{symbol}_{timestamp}.pkl"
     booster.save_model(model_path)
 
     features_hash = hashlib.sha256(Path(features_csv).read_bytes()).hexdigest()

@@ -17,9 +17,12 @@ Install dependencies with the same Python interpreter you use to run the
 collector:
 
 ```bash
-pip install -e .
+# editable install with dev extras for local development
+pip install -e .[dev]
 python3 -m pip install -r requirements.txt
 ```
+
+The loader now checks NYSE trading hours using `pandas-market-calendars`.
 
 Additional platform-specific tips are available in [docs/SETUP.md](docs/SETUP.md).
 
@@ -52,6 +55,9 @@ merged into a single ``Config`` dataclass loaded via
 The ``REPORTS_DIR`` variable controls where generated reports are written. It
 defaults to ``/app/reports`` inside the container and should be writable by
 the app user.
+``REDIS_URL`` is optional but recommended for WebSocket messaging; Docker
+Compose sets it to ``redis://redis:6379/0``.
+Redis persists data under ./redis using appendonly every second.
 
 Logging can be directed to a file and the verbosity adjusted using the
 `--log-file` and `--log-level` arguments, respectively.
@@ -59,8 +65,9 @@ Logging can be directed to a file and the verbosity adjusted using the
 ## Usage
 
 Export your `POLYGON_API_KEY` and set any optional variables described in the
-[Configuration](#configuration) section. Then run the script with optional
-arguments:
+[Configuration](#configuration) section. API routes respond with HTTP `503`
+when required keys are missing, so be sure to provide them in development.
+Then run the script with optional arguments:
 
 ```bash
 python -m trading_platform.market_data_collector \
@@ -117,7 +124,9 @@ The REST API calls include:
 
 The feature pipeline calls these endpoints via helper functions
 `fetch_prev_close`, `fetch_open_close`, `fetch_trades`, `fetch_quotes`, and
-`fetch_snapshot_tickers` to remain compatible with the Starter plan.
+`fetch_snapshot_tickers` to remain compatible with the Starter plan. If your
+account includes unlimited REST, you can schedule the intraday job every
+2 minutes (Polygon asks clients to stay under ~100 requests per second).
 
 ## Reports
 
@@ -132,6 +141,7 @@ Call ``generate_feature_dashboard`` with the features CSV to produce
 `reports/feature_dashboard.html` for interactive exploration of feature
 distributions. Historical results are stored in `reports/scoreboard.csv`.
 Use ``generate_strategy_dashboard`` to write `reports/strategies.html` summarizing POP for available trades.
+The `/api/metrics` endpoint emits an equity curve JSON derived from `reports/pnl.csv`. Columns named `pnl`, `profit`, or `total` are recognised automatically. When no file exists the route responds with `{"status": "empty"}`.
 Risk metrics can be computed from `reports/scoreboard.csv` using the risk report CLI:
 
 ```bash

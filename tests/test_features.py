@@ -8,6 +8,8 @@ def test_load_pipeline_callable():
 
 
 def test_run_pipeline(monkeypatch, tmp_path):
+    monkeypatch.setenv("POLYGON_API_KEY", "x")
+    monkeypatch.setenv("NEWS_API_KEY", "y")
     from features import pipeline
 
     def fake_get(url, params=None):
@@ -22,4 +24,4 @@ def test_run_pipeline(monkeypatch, tmp_path):
     cfg = type("C", (), {"reports_dir": tmp_path})
     out = pipeline.run_pipeline(cfg, ["AAPL"], since="1d")
     df = pd.read_csv(out)
-    assert set(["atr14", "gap_pct", "momentum"]).issubset(df.columns)
+    assert set(["atr14", "gap_pct", "momentum", "target"]).issubset(df.columns)

@@ -1,25 +1,47 @@
 services:
   web:
     build: .
-    command: gunicorn -w 4 -b 0.0.0.0:5000 'trading_platform.webapp:create_app()'
+    command: gunicorn --worker-class eventlet -w 1 -b 0.0.0.0:5000 'trading_platform.webapp:create_app()'
     ports:
       - "5000:5000"
     volumes:
       - ./data:/app/data
       - ./reports:/app/reports
+      - models:/app/models
     environment:
       - REPORTS_DIR=/app/reports
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
   scheduler:
     build: .
     command: scheduler
     volumes:
       - ./data:/app/data
       - ./reports:/app/reports
+      - models:/app/models
     environment:
       - REPORTS_DIR=/app/reports
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - .env
+    depends_on:
+      - redis
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 volumes:
   reports:
+  redis-data:
+  models:

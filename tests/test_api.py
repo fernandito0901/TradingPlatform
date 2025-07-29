@@ -38,7 +38,7 @@ def test_http_cache(monkeypatch):
 
     calls = []
 
-    def fake_get(url, params=None):
+    def fake_get(url, params=None, **kwargs):
         calls.append(1)
 
         class Resp:
