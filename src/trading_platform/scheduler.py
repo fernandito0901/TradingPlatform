@@ -94,6 +94,14 @@ def start(config: Config, interval: int = 86400, run_func=None) -> BackgroundSch
 
     sched = BackgroundScheduler()
     sched.add_job(run_func, "interval", seconds=interval, args=(config,))
+    try:
+        from .run_daily import run_intraday
+
+        sched.add_job(
+            run_intraday, "interval", minutes=2, max_instances=1, args=(config,)
+        )
+    except Exception:  # pragma: no cover - optional
+        _log.warning("run_intraday not available")
     sched.add_job(_log_heartbeat, "interval", seconds=30)
     sched.start()
 

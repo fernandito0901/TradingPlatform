@@ -122,6 +122,14 @@ def run(config: Config) -> str:
     return pb_path
 
 
+def run_intraday(config: Config) -> None:
+    """Lightweight intraday refresh pipeline."""
+    try:
+        run(config)
+    except Exception as exc:  # pragma: no cover - just log
+        logging.error("intraday job failed: %s", exc)
+
+
 def main(argv: list[str] | None = None) -> None:
     """Entry point for the daily pipeline CLI."""
     config = load_config(argv)

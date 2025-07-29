@@ -3,6 +3,10 @@
 - Scheduler retries Socket.IO connection with backoff and logs `scheduler_heartbeat`
 - Suppressed noisy Socket.IO "Invalid session" logs and improved demo PnL seeding
 - Added `/api/heartbeat` endpoint for health checks
+- `rate_limited_get` uses exponential backoff on HTTP 429 and raises a clear
+  error on 403 responses
+- Scheduler adds a 2‑minute `run_intraday` job for faster metrics
+- README notes that unlimited REST access allows ~100 req/sec
 - `seed_demo.py` now populates demo news and PnL on first run
 - `/api/metrics` returns Sharpe, Sortino and equity curve
 - `/api/metrics` tolerant of real-world CSVs and returns raw equity records

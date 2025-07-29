@@ -122,7 +122,9 @@ The REST API calls include:
 
 The feature pipeline calls these endpoints via helper functions
 `fetch_prev_close`, `fetch_open_close`, `fetch_trades`, `fetch_quotes`, and
-`fetch_snapshot_tickers` to remain compatible with the Starter plan.
+`fetch_snapshot_tickers` to remain compatible with the Starter plan. If your
+account includes unlimited REST, you can schedule the intraday job every
+2 minutes (Polygon asks clients to stay under ~100 requests per second).
 
 ## Reports
 
