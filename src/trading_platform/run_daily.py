@@ -52,7 +52,7 @@ def run(config: Config) -> str:
             api.fetch_news(conn, sym, aggregator=agg)
 
     try:
-        feat_csv = run_pipeline(conn, config.symbols.split(",")[0])
+        feat_csv = run_pipeline(config, [config.symbols.split(",")[0]])
         res = train_model(feat_csv, "models", symbol=config.symbols.split(",")[0])
         if not res.model_path:
             raise RuntimeError("drift guard triggered")
@@ -120,6 +120,14 @@ def run(config: Config) -> str:
     if socketio:
         socketio.emit("dashboard-refresh", {})
     return pb_path
+
+
+def run_intraday(config: Config) -> None:
+    """Lightweight intraday refresh pipeline."""
+    try:
+        run(config)
+    except Exception as exc:  # pragma: no cover - just log
+        logging.error("intraday job failed: %s", exc)
 
 
 def main(argv: list[str] | None = None) -> None:
