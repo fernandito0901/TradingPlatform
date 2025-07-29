@@ -566,6 +566,19 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         if not path.exists():
             path.write_text("<p>No report yet</p>")
 
+    @app.errorhandler(Exception)
+    def json_error(exc):
+        """Return uncaught exceptions as JSON."""
+        from werkzeug.exceptions import HTTPException
+
+        code = 500
+        if isinstance(exc, HTTPException):
+            code = exc.code
+        elif isinstance(exc, RuntimeError):
+            code = 503
+        app.logger.exception("unhandled error", exc_info=exc)
+        return jsonify(error=str(exc)), code
+
     def scoreboard_html() -> str:
         csv = reports.REPORTS_DIR / "scoreboard.csv"
         if not csv.exists():

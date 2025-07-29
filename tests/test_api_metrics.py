@@ -28,6 +28,20 @@ def test_api_metrics_values(tmp_path):
     assert len(resp.get_json()) == 3
 
 
+def test_api_metrics_profit_column(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=x\n")
+    app = create_app(env_path=env)
+    csv = Path(os.environ["REPORTS_DIR"]) / "pnl.csv"
+    csv.write_text("profit\n5\n-2\n7\n")
+    client = app.test_client()
+    resp = client.get("/api/metrics")
+    data = resp.get_json()
+    assert resp.status_code == 200
+    assert data[0]["equity"] == 5
+    assert data[-1]["equity"] == 10
+
+
 def test_api_metrics_missing_file(tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=x\n")

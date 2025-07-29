@@ -63,8 +63,9 @@ Logging can be directed to a file and the verbosity adjusted using the
 ## Usage
 
 Export your `POLYGON_API_KEY` and set any optional variables described in the
-[Configuration](#configuration) section. Then run the script with optional
-arguments:
+[Configuration](#configuration) section. API routes respond with HTTP `503`
+when required keys are missing, so be sure to provide them in development.
+Then run the script with optional arguments:
 
 ```bash
 python -m trading_platform.market_data_collector \

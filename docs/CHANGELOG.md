@@ -7,6 +7,7 @@
 - `/api/metrics` returns Sharpe, Sortino and equity curve
 - `/api/metrics` tolerant of real-world CSVs and returns raw equity records
 - Metrics loader avoids `KeyError` when expected PnL columns are absent
+- Added regression tests covering `profit` column handling in `/api/metrics`
 - Missing API keys return HTTP 503 instead of crashing
 - `/api/metrics` now streams JSON via a Flask ``Response``
 - `seed_demo.py` seeds random PnL data when none found
@@ -18,6 +19,7 @@
 - Redis persists to a local volume with appendonly mode enabled
 - CI workflow builds and pushes Docker images after tests pass
 - Fixed `run_daily` to pass `Config` into `run_pipeline`
+- Global error handler returns JSON and logs exceptions
 - Scoreboard stored under writable reports directory and label shows latest AUC
 - Dashboard displays Sharpe/Sortino metrics and seeded news
 - Packaged `trading_platform.models` stub and hardened DB path for `/api/overview`
