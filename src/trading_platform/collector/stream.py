@@ -3,14 +3,14 @@ import logging
 
 import websocket
 
-from .api import API_KEY, REALTIME_WS_URL, WS_URL
+from .api import _get_polygon_key, REALTIME_WS_URL, WS_URL
 
 
 def stream_quotes(symbols="AAPL", realtime=False):
     """Stream trades and quotes via Polygon's WebSocket."""
 
     def on_open(ws):
-        auth = json.dumps({"action": "auth", "params": API_KEY})
+        auth = json.dumps({"action": "auth", "params": _get_polygon_key()})
         ws.send(auth)
 
     def subscribe(ws):

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from trading_platform.webapp import create_app
@@ -7,7 +8,9 @@ def test_api_metrics_empty(tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=x\n")
     app = create_app(env_path=env)
-    app.static_folder = str(tmp_path)
+    csv = Path(os.environ["REPORTS_DIR"]) / "pnl.csv"
+    if csv.exists():
+        csv.unlink()
     client = app.test_client()
     resp = client.get("/api/metrics")
     assert resp.json.get("status") == "empty"
@@ -17,19 +20,45 @@ def test_api_metrics_values(tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=x\n")
     app = create_app(env_path=env)
-    app.static_folder = str(tmp_path)
-    csv = Path(app.static_folder) / "pnl.csv"
-    csv.write_text("date,total\n2025-01-01,1\n2025-01-02,2\n")
+    csv = Path(os.environ["REPORTS_DIR"]) / "pnl.csv"
+    csv.write_text("pnl\n1\n2\n-1\n")
     client = app.test_client()
     resp = client.get("/api/metrics")
-    assert resp.json["status"] == "ok"
+    assert resp.status_code == 200
+    assert len(resp.get_json()) == 3
+
+
+def test_api_metrics_profit_column(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=x\n")
+    app = create_app(env_path=env)
+    csv = Path(os.environ["REPORTS_DIR"]) / "pnl.csv"
+    csv.write_text("profit\n5\n-2\n7\n")
+    client = app.test_client()
+    resp = client.get("/api/metrics")
+    data = resp.get_json()
+    assert resp.status_code == 200
+    assert data[0]["equity"] == 5
+    assert data[-1]["equity"] == 10
 
 
 def test_api_metrics_missing_file(tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=x\n")
     app = create_app(env_path=env)
-    app.static_folder = str(tmp_path)
+    csv = Path(os.environ["REPORTS_DIR"]) / "pnl.csv"
+    if csv.exists():
+        csv.unlink()
     client = app.test_client()
     resp = client.get("/api/metrics")
     assert resp.json == {"status": "empty"}
+
+
+def test_prom_metrics_endpoint(tmp_path):
+    env = tmp_path / ".env"
+    env.write_text("POLYGON_API_KEY=x\n")
+    app = create_app(env_path=env)
+    client = app.test_client()
+    resp = client.get("/metrics")
+    assert resp.status_code == 200
+    assert b"python_info" in resp.data

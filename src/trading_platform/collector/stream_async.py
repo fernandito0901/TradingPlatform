@@ -9,7 +9,8 @@ import logging
 import websockets
 
 from .alerts import AlertAggregator
-from .api_async import API_KEY, REALTIME_WS_URL, WS_URL
+from .api_async import REALTIME_WS_URL, WS_URL
+from .api import _get_polygon_key
 
 
 async def stream_quotes(
@@ -31,7 +32,7 @@ async def stream_quotes(
 
     url = REALTIME_WS_URL if realtime else WS_URL
     async with websockets.connect(url) as ws:
-        auth = json.dumps({"action": "auth", "params": API_KEY})
+        auth = json.dumps({"action": "auth", "params": _get_polygon_key()})
         await ws.send(auth)
         chans = []
         for sym in symbols.split(","):

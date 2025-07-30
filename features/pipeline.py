@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 
 import pandas as pd
 
@@ -16,7 +17,9 @@ class NoData(Exception):
 
 def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-    data = api.rate_limited_get(url, {"adjusted": "true", "apiKey": api.API_KEY})
+    data = api.rate_limited_get(
+        url, {"adjusted": "true", "apiKey": api._get_polygon_key()}
+    )
     results = data.get("results", [])
     if not results:
         raise NoData(symbol)
@@ -44,13 +47,14 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     df["gap_pct"] = df["close"].pct_change()
     df["momentum"] = df["close"].pct_change(5)
     df.dropna(inplace=True)
+    df["target"] = (df["close"].shift(-1) > df["close"]).astype(int)
     return df
 
 
 def run_pipeline(cfg, symbols: list[str], since: str = "90d") -> str:
     start = (pd.Timestamp.utcnow() - pd.Timedelta(since)).date().isoformat()
     end = pd.Timestamp.utcnow().date().isoformat()
-    out_dir = Path(cfg.reports_dir or REPORTS_DIR)
+    out_dir = Path(os.getenv("REPORTS_DIR", getattr(cfg, "reports_dir", REPORTS_DIR)))
     out_dir.mkdir(parents=True, exist_ok=True)
     all_frames = []
     for sym in symbols:

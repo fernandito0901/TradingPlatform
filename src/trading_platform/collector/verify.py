@@ -3,7 +3,7 @@ import logging
 import os
 
 from ..load_env import load_env
-from . import api, db
+from . import db, api
 
 
 def verify(
@@ -29,6 +29,8 @@ def verify(
         os.environ["POLYGON_API_KEY"] = polygon_key
     if news_key:
         os.environ["NEWS_API_KEY"] = news_key
+
+    # API module imported at top-level; keys may be missing but functions handle it
 
     conn = db.init_db(":memory:")
     try:

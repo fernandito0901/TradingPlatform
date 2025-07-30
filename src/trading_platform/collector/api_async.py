@@ -13,8 +13,8 @@ import aiohttp
 
 from . import api
 
-API_KEY = api.API_KEY
-NEWS_API_KEY = api.NEWS_API_KEY
+API_KEY = None  # maintained for backward compatibility
+NEWS_API_KEY = None
 WS_URL = api.WS_URL
 REALTIME_WS_URL = api.REALTIME_WS_URL
 RATE_LIMIT_SEC = api.RATE_LIMIT_SEC
@@ -63,7 +63,7 @@ async def fetch_ohlcv(session: aiohttp.ClientSession, conn, symbol: str) -> None
     if start > end:
         return
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-    params = {"adjusted": "true", "apiKey": API_KEY}
+    params = {"adjusted": "true", "apiKey": api._get_polygon_key()}
     data = await rate_limited_get(session, url, params)
     for bar in data.get("results", []):
         c.execute(
@@ -92,7 +92,7 @@ async def fetch_option_chain(session: aiohttp.ClientSession, conn, symbol: str) 
     if c.fetchone()[0] > 0:
         return
     url = f"https://api.polygon.io/v3/snapshot/options/{symbol}"
-    params = {"apiKey": API_KEY, "greeks": "true"}
+    params = {"apiKey": api._get_polygon_key(), "greeks": "true"}
     data = await rate_limited_get(session, url, params)
     options = data.get("results", [])
     for opt in options:
@@ -144,7 +144,7 @@ async def fetch_news(
         "pageSize": limit,
         "sortBy": "publishedAt",
         "language": "en",
-        "apiKey": NEWS_API_KEY,
+        "apiKey": api._get_news_key(),
     }
     data = await rate_limited_get(session, url, params)
     articles = data.get("articles", [])
