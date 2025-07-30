@@ -550,7 +550,13 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             except PermissionError:
                 app.logger.warning("seed-copy failed for %s", dest)
 
-    Path(app.static_folder).mkdir(parents=True, exist_ok=True)
+    try:
+        Path(app.static_folder).mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        fallback = Path(app.instance_path) / "static"
+        fallback.mkdir(parents=True, exist_ok=True)
+        app.logger.warning("static folder not writable, using %s", fallback)
+        app.static_folder = str(fallback)
     style = Path(app.static_folder) / "style.css"
     if not style.exists():
         src = Path(__file__).resolve().parent / "reports" / "style.css"

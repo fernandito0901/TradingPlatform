@@ -23,6 +23,7 @@
 - Scheduler CLI logs and exits when API keys are missing
 - Socket.IO uses the Redis message queue to prevent worker crashes
 - Redis persists to a local volume with appendonly mode enabled
+- Dockerfile creates non-root `app` user and writable static dir
 - Web containers run `gunicorn -k eventlet -b 0.0.0.0:8000 trading_platform.webapp:app`
 - Root `/` route now returns JSON status and SPA served on other paths
 - SPA served via catch-all route and WebSockets init once

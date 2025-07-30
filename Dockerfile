@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     python -c "import trading_platform.reports.scoreboard"
 
 FROM base AS runtime
-ARG APP_USER=appuser
+ARG APP_USER=app
 RUN useradd -u 1001 -r -s /bin/false $APP_USER
 COPY --from=builder /usr/local /usr/local
 COPY src ./src
@@ -27,6 +27,7 @@ COPY scripts ./scripts
 COPY run_pipeline.sh ./run_pipeline.sh
 ENV REPORTS_DIR=/app/reports
 RUN mkdir -p ${REPORTS_DIR} && \
-    chown -R ${APP_USER}:${APP_USER} ${REPORTS_DIR}
+    mkdir -p /app/src/trading_platform/static && \
+    chown -R ${APP_USER}:${APP_USER} /app/src/trading_platform ${REPORTS_DIR}
 USER $APP_USER
 CMD ["./run_pipeline.sh"]
