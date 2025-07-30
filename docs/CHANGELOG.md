@@ -423,4 +423,3 @@
 - Redis service added for Socket.IO messaging
 - Added CI workflow to lint, test, and build image
 - Market calendar check prevents API calls outside NYSE hours
-
