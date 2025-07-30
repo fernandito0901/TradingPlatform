@@ -15,12 +15,22 @@ MARKET_STATUS_URL = "https://api.polygon.io/v1/marketstatus/now"
 
 from .alerts import AlertAggregator
 
-API_KEY = os.getenv("POLYGON_API_KEY")
-if not API_KEY:
-    raise RuntimeError("POLYGON_API_KEY not configured")
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")
-if not NEWS_API_KEY:
-    raise RuntimeError("NEWS_API_KEY not configured")
+
+def _get_polygon_key() -> str:
+    """Return Polygon API key or raise if missing."""
+    key = os.getenv("POLYGON_API_KEY")
+    if not key:
+        raise RuntimeError("POLYGON_API_KEY not configured")
+    return key
+
+
+def _get_news_key() -> str:
+    """Return News API key or raise if missing."""
+    key = os.getenv("NEWS_API_KEY")
+    if not key:
+        raise RuntimeError("NEWS_API_KEY not configured")
+    return key
+
 
 WS_URL = "wss://delayed.polygon.io/stocks"
 REALTIME_WS_URL = "wss://socket.polygon.io/stocks"
@@ -73,7 +83,9 @@ def is_market_open(asset: str = "stocks") -> bool:
     """Return ``True`` if the Polygon market for ``asset`` is open."""
 
     try:
-        resp = requests.get(MARKET_STATUS_URL, params={"apiKey": API_KEY}, timeout=5)
+        resp = requests.get(
+            MARKET_STATUS_URL, params={"apiKey": _get_polygon_key()}, timeout=5
+        )
         resp.raise_for_status()
         status = resp.json().get(asset, {})
         return status.get("market") == "open"
@@ -134,7 +146,7 @@ def fetch_prev_close(symbol: str) -> dict:
         return {}
 
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/prev"
-    params = {"apiKey": API_KEY}
+    params = {"apiKey": _get_polygon_key()}
     return rate_limited_get(url, params)
 
 
@@ -152,7 +164,7 @@ def fetch_open_close(symbol: str, date: str) -> dict:
         return {}
 
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{date}/{date}"
-    params = {"adjusted": "true", "apiKey": API_KEY}
+    params = {"adjusted": "true", "apiKey": _get_polygon_key()}
     try:
         data = rate_limited_get(url, params)
     except HTTPError as exc:
@@ -173,7 +185,7 @@ def fetch_trades(symbol: str, limit: int = 50) -> dict:
         return {}
 
     url = f"https://api.polygon.io/v3/trades/{symbol}"
-    params = {"limit": limit, "apiKey": API_KEY}
+    params = {"limit": limit, "apiKey": _get_polygon_key()}
     return rate_limited_get(url, params)
 
 
@@ -185,7 +197,7 @@ def fetch_quotes(symbol: str, limit: int = 50) -> dict:
         return {}
 
     url = f"https://api.polygon.io/v3/quotes/{symbol}"
-    params = {"limit": limit, "apiKey": API_KEY}
+    params = {"limit": limit, "apiKey": _get_polygon_key()}
     return rate_limited_get(url, params)
 
 
@@ -197,7 +209,7 @@ def fetch_snapshot_tickers() -> dict:
         return {}
 
     url = "https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers"
-    params = {"apiKey": API_KEY}
+    params = {"apiKey": _get_polygon_key()}
     return rate_limited_get(url, params)
 
 
@@ -219,7 +231,7 @@ def fetch_ohlcv(conn, symbol: str):
     if start > end:
         return
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-    params = {"adjusted": "true", "apiKey": API_KEY}
+    params = {"adjusted": "true", "apiKey": _get_polygon_key()}
     data = rate_limited_get(url, params)
     for bar in data.get("results", []):
         c.execute(
@@ -246,7 +258,7 @@ def fetch_minute_bars(conn, symbol: str):
     end = dt.date.today()
     start = end - dt.timedelta(days=1)
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/minute/{start}/{end}"
-    params = {"adjusted": "true", "apiKey": API_KEY, "limit": 50000}
+    params = {"adjusted": "true", "apiKey": _get_polygon_key(), "limit": 50000}
     data = rate_limited_get(url, params)
     c = conn.cursor()
     for bar in data.get("results", []):
@@ -280,7 +292,7 @@ def fetch_realtime_quote(conn, symbol: str):
     if row and int(time.time() * 1000) - row[0] < CACHE_QUOTE_MS:
         return
     snap_url = "https://api.polygon.io/v3/snapshot"
-    snap_params = {"ticker": symbol, "apiKey": API_KEY}
+    snap_params = {"ticker": symbol, "apiKey": _get_polygon_key()}
     data = rate_limited_get(snap_url, snap_params)
     results = data.get("results", [])
     if not results:
@@ -314,7 +326,7 @@ def fetch_option_chain(conn, symbol: str):
     if c.fetchone()[0] > 0:
         return
     url = f"https://api.polygon.io/v3/snapshot/options/{symbol}"
-    params = {"apiKey": API_KEY, "greeks": "true"}
+    params = {"apiKey": _get_polygon_key(), "greeks": "true"}
     data = rate_limited_get(url, params)
     options = data.get("results", [])
     for opt in options:
@@ -356,7 +368,7 @@ def fetch_fundamentals(conn, symbol: str):
         logging.info("Market closed – skipping fetch_fundamentals for %s", symbol)
         return
     url = "https://api.polygon.io/vX/reference/financials"
-    params = {"ticker": symbol, "limit": 1, "apiKey": API_KEY}
+    params = {"ticker": symbol, "limit": 1, "apiKey": _get_polygon_key()}
     data = rate_limited_get(url, params)
     if not data.get("results"):
         return
@@ -375,7 +387,7 @@ def fetch_corporate_actions(conn, symbol: str):
         logging.info("Market closed – skipping fetch_corporate_actions for %s", symbol)
         return
     url = "https://api.polygon.io/v3/reference/splits"
-    params = {"ticker": symbol, "apiKey": API_KEY, "limit": 10}
+    params = {"ticker": symbol, "apiKey": _get_polygon_key(), "limit": 10}
     data = rate_limited_get(url, params)
     for act in data.get("results", []):
         conn.execute(
@@ -401,7 +413,7 @@ def fetch_indicator_sma(conn, symbol: str):
         "timespan": "day",
         "window": 50,
         "series_type": "close",
-        "apiKey": API_KEY,
+        "apiKey": _get_polygon_key(),
     }
     data = rate_limited_get(url, params)
     for val in data.get("results", {}).get("values", []):
@@ -438,7 +450,7 @@ def fetch_news(
         "pageSize": limit,
         "sortBy": "publishedAt",
         "language": "en",
-        "apiKey": NEWS_API_KEY,
+        "apiKey": _get_news_key(),
     }
     data = rate_limited_get(url, params)
     articles = data.get("articles", [])

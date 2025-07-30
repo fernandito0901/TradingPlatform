@@ -8,14 +8,14 @@ import logging
 import websocket
 
 from ..webapp import socketio
-from .api import API_KEY, WS_URL
+from .api import WS_URL, _get_polygon_key
 
 
 def stream_overview(symbols: str = "AAPL") -> None:
     """Stream delayed quotes for ``symbols`` and emit via Socket.IO."""
 
     def on_open(ws):
-        auth = json.dumps({"action": "auth", "params": API_KEY})
+        auth = json.dumps({"action": "auth", "params": _get_polygon_key()})
         ws.send(auth)
 
     def subscribe(ws):

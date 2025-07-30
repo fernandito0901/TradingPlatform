@@ -39,7 +39,6 @@ from flask import (
     url_for,
     Response,
     Blueprint,
-    send_from_directory,
 )
 from flask_socketio import SocketIO
 from prometheus_client import generate_latest
@@ -589,7 +588,6 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         return Response(generate_latest(), mimetype="text/plain")
 
     app.register_blueprint(metrics_bp)
-
 
     def scoreboard_html() -> str:
         csv = reports.REPORTS_DIR / "scoreboard.csv"

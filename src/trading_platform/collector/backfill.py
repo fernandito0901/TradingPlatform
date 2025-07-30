@@ -30,7 +30,7 @@ def fetch_range(conn, symbol: str, start: str, end: str) -> int:
         raise ValueError("start date after end date")
 
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{s}/{e}"
-    params = {"adjusted": "true", "apiKey": api.API_KEY}
+    params = {"adjusted": "true", "apiKey": api._get_polygon_key()}
     data = api.rate_limited_get(url, params)
     inserted = 0
     c = conn.cursor()

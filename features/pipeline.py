@@ -17,7 +17,9 @@ class NoData(Exception):
 
 def fetch_prices(symbol: str, start: str, end: str) -> pd.DataFrame:
     url = f"https://api.polygon.io/v2/aggs/ticker/{symbol}/range/1/day/{start}/{end}"
-    data = api.rate_limited_get(url, {"adjusted": "true", "apiKey": api.API_KEY})
+    data = api.rate_limited_get(
+        url, {"adjusted": "true", "apiKey": api._get_polygon_key()}
+    )
     results = data.get("results", [])
     if not results:
         raise NoData(symbol)
