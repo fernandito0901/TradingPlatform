@@ -21,3 +21,4 @@ redis
 prometheus-client
 eventlet
 pandas-market-calendars
+tzdata

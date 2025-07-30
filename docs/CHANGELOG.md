@@ -18,6 +18,7 @@
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
 - Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
 - docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
+- Added `tzdata` dependency to fix scheduler timezone errors in Docker
 - Scheduler CLI logs and exits when API keys are missing
 - Socket.IO uses the Redis message queue to prevent worker crashes
 - Redis persists to a local volume with appendonly mode enabled
