@@ -95,7 +95,8 @@ def train(
     if df.empty:
         raise ValueError("no feature rows available")
     if "target" not in df.columns:
-        raise ValueError("target column missing – check feature pipeline")
+        df["target"] = (df["close"].shift(-1) > df["close"]).astype(int)
+        df.dropna(subset=["target"], inplace=True)
 
     cutoff = df["t"].max() - timedelta(days=window_days)
     df = df[df["t"] >= cutoff]

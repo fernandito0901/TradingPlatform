@@ -43,8 +43,10 @@ from flask import (
 from flask_socketio import SocketIO
 from prometheus_client import generate_latest
 
-# Reduce noisy "Invalid session" warnings
-socketio = SocketIO(logger=False, engineio_logger=False)
+# Reduce noisy "Invalid session" warnings and allow cross-origin clients
+socketio = SocketIO(
+    logger=False, engineio_logger=False, async_mode="eventlet", cors_allowed_origins="*"
+)
 
 from dotenv import load_dotenv
 
@@ -506,16 +508,9 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     """Create configured Flask application."""
 
     reports.REPORTS_DIR = Path(os.getenv("REPORTS_DIR", str(reports.REPORTS_DIR)))
-    app = Flask(
-        __name__, static_folder=str(reports.REPORTS_DIR), static_url_path="/reports"
-    )
+    app = Flask(__name__, static_folder="static", static_url_path="")
     redis_url = os.getenv("REDIS_URL")
-    socketio.init_app(
-        app,
-        message_queue=redis_url,
-        async_mode="eventlet",
-        ping_timeout=20,
-    )
+    socketio.init_app(app, message_queue=redis_url, ping_timeout=20)
     flt = SecretFilter()
     app.logger.addFilter(flt)
     logging.getLogger("werkzeug").addFilter(flt)
@@ -555,6 +550,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
             except PermissionError:
                 app.logger.warning("seed-copy failed for %s", dest)
 
+    Path(app.static_folder).mkdir(parents=True, exist_ok=True)
     style = Path(app.static_folder) / "style.css"
     if not style.exists():
         src = Path(__file__).resolve().parent / "reports" / "style.css"
@@ -570,12 +566,16 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
 
     @app.errorhandler(Exception)
     def json_error(exc):
-        """Return uncaught exceptions as JSON."""
+        """Return uncaught exceptions as JSON without logging 404s."""
         from werkzeug.exceptions import HTTPException
 
         code = 500
         if isinstance(exc, HTTPException):
             code = exc.code
+            if code == 404 and not request.path.startswith("/api/"):
+                return app.send_static_file("index.html")
+            if code == 404:
+                return jsonify(error=str(exc)), code
         elif isinstance(exc, RuntimeError):
             code = 503
         app.logger.exception("unhandled error", exc_info=exc)
@@ -623,7 +623,7 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         files = sorted(path.glob(f"*{ext}"), reverse=True)
         return str(files[0]) if files else None
 
-    @app.route("/", methods=["GET", "POST"])
+    @app.route("/dashboard", methods=["GET", "POST"])
     def index():
         load_dotenv(app.config["ENV_PATH"])
         if request.method == "POST":
@@ -972,11 +972,27 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def healthz():
         return jsonify({"status": "ok"})
 
+    @app.route("/")
+    def root() -> Response:
+        return jsonify(status="ok")
+
+    @app.route("/<path:path>")
+    def catch_all(path: str) -> Response:
+        """Serve the SPA entry point for any non-API path."""
+        return app.send_static_file("index.html")
+
     @socketio.on("connect")
     def on_connect():
         pass
 
+    @socketio.on("disconnect")
+    def on_disconnect():
+        current_app.logger.info("Client disconnected")
+
     return app
+
+
+app = create_app()
 
 
 def main() -> None:
