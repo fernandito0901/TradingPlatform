@@ -13,14 +13,26 @@
 - Metrics loader avoids `KeyError` when expected PnL columns are absent
 - Added regression tests covering `profit` column handling in `/api/metrics`
 - Missing API keys now raise `RuntimeError`, allowing routes to return HTTP 503
+- Dockerfile no longer references the optional `frontend/build` directory to
+  avoid build errors, compose still shows an optional Nginx service
+- Compose exposes `FLASK_ENV` and shows commented hot-reload volume mappings
 - `/api/metrics` now streams JSON via a Flask ``Response``
 - `seed_demo.py` seeds random PnL data when none found
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
 - Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
 - docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
+- Added `tzdata` dependency to fix scheduler timezone errors in Docker
+- 404 responses no longer log full stack traces as "unhandled error"
 - Scheduler CLI logs and exits when API keys are missing
 - Socket.IO uses the Redis message queue to prevent worker crashes
 - Redis persists to a local volume with appendonly mode enabled
+- Dockerfile creates non-root `app` user and writable static dir
+- Web containers run `gunicorn -k eventlet -b 0.0.0.0:8000 trading_platform.webapp:app`
+- Root `/` route now returns JSON status and SPA served on other paths
+- SPA served via catch-all route and WebSockets init once
+- Containers have health checks and restart policy
+- Training pipeline auto-creates missing target column
+- Polygon 403 "market closed" handled gracefully
 - CI workflow builds and pushes Docker images after tests pass
 - Fixed `run_daily` to pass `Config` into `run_pipeline`
 - Global error handler returns JSON and logs exceptions

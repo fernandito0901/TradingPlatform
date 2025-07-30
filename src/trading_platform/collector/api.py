@@ -115,6 +115,10 @@ def rate_limited_get(
         logging.debug("GET %s params=%s", url, params)
         resp = requests.get(url, params=params, timeout=10)
         if resp.status_code == 403:
+            text = resp.text.lower()
+            if "market" in text:
+                logging.info("Polygon: market closed – skipping")
+                return None
             if b"market is closed" in resp.content.lower() or not is_market_open():
                 logging.warning(
                     "Polygon 403 – probably closed market; retry after 15 min"
