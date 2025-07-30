@@ -13,6 +13,9 @@
 - Metrics loader avoids `KeyError` when expected PnL columns are absent
 - Added regression tests covering `profit` column handling in `/api/metrics`
 - Missing API keys now raise `RuntimeError`, allowing routes to return HTTP 503
+- Dockerfile optionally copies `frontend/build` and docker-compose includes an
+  Nginx service for React
+- Compose exposes `FLASK_ENV` and shows commented hot-reload volume mappings
 - `/api/metrics` now streams JSON via a Flask ``Response``
 - `seed_demo.py` seeds random PnL data when none found
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors

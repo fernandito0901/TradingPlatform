@@ -4,12 +4,14 @@ services:
     command: >
       gunicorn -k eventlet -b 0.0.0.0:8000 trading_platform.webapp:app
     ports:
-      - "8000:8000"
+      - "8000:8000"  # change left side to expose a different host port
     volumes:
       - ./data:/app/data
       - ./reports:/app/reports
       - models:/app/models
+      # - .:/app  # uncomment for live reload during development
     environment:
+      - FLASK_ENV=production
       - REPORTS_DIR=/app/reports
       - REDIS_URL=redis://redis:6379/0
     env_file:
@@ -30,7 +32,9 @@ services:
       - ./data:/app/data
       - ./reports:/app/reports
       - models:/app/models
+      # - .:/app  # uncomment for live reload during development
     environment:
+      - FLASK_ENV=production
       - REPORTS_DIR=/app/reports
       - REDIS_URL=redis://redis:6379/0
     env_file:
@@ -51,6 +55,17 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+
+  # Optional React front-end served via Nginx
+  # Uncomment this block if `frontend/build` exists
+  # frontend:
+  #   image: nginx:alpine
+  #   volumes:
+  #     - ./frontend/build:/usr/share/nginx/html:ro
+  #   ports:
+  #     - "3000:80"  # change host port as needed
+  #   depends_on:
+  #     - web
 volumes:
   reports:
   redis-data:
