@@ -18,9 +18,15 @@
 - docker-compose runs Gunicorn with a single worker to prevent Socket.IO session errors
 - Gunicorn uses eventlet worker and scheduler skips Socket.IO when Redis is unavailable
 - docker-compose now starts a `redis` service and web/scheduler use `REDIS_URL`
+- Added `tzdata` dependency to fix scheduler timezone errors in Docker
+- 404 responses no longer log full stack traces as "unhandled error"
 - Scheduler CLI logs and exits when API keys are missing
 - Socket.IO uses the Redis message queue to prevent worker crashes
 - Redis persists to a local volume with appendonly mode enabled
+- SPA served via catch-all route and WebSockets init once
+- Containers have health checks and restart policy
+- Training pipeline auto-creates missing target column
+- Polygon 403 "market closed" handled gracefully
 - CI workflow builds and pushes Docker images after tests pass
 - Fixed `run_daily` to pass `Config` into `run_pipeline`
 - Global error handler returns JSON and logs exceptions
