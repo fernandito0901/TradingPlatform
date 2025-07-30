@@ -8,4 +8,4 @@ def test_root_route(tmp_path):
     (Path(app.static_folder) / "index.html").write_text("hi")
     with app.test_client() as c:
         resp = c.get("/")
-        assert resp.status_code == 200
+        assert resp.json == {"status": "ok"}

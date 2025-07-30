@@ -17,6 +17,9 @@ def test_setup_creates_env(tmp_path, monkeypatch):
     index_file.write_text("SPA")
 
     resp = client.get("/")
+    assert resp.json == {"status": "ok"}
+
+    resp = client.get("/foo")
     assert b"SPA" in resp.data
 
     client.post("/dashboard", data={"polygon_api_key": "abc"})

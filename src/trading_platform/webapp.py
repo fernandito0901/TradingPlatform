@@ -572,6 +572,8 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         code = 500
         if isinstance(exc, HTTPException):
             code = exc.code
+            if code == 404 and not request.path.startswith("/api/"):
+                return app.send_static_file("index.html")
             if code == 404:
                 return jsonify(error=str(exc)), code
         elif isinstance(exc, RuntimeError):
@@ -970,10 +972,13 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
     def healthz():
         return jsonify({"status": "ok"})
 
-    @app.route("/", defaults={"path": ""})
+    @app.route("/")
+    def root() -> Response:
+        return jsonify(status="ok")
+
     @app.route("/<path:path>")
     def catch_all(path: str) -> Response:
-        """Serve the SPA entry point for any path."""
+        """Serve the SPA entry point for any non-API path."""
         return app.send_static_file("index.html")
 
     @socketio.on("connect")
@@ -985,6 +990,9 @@ def create_app(env_path: str | os.PathLike[str] = ".env") -> Flask:
         current_app.logger.info("Client disconnected")
 
     return app
+
+
+app = create_app()
 
 
 def main() -> None:
