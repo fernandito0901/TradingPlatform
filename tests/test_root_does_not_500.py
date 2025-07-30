@@ -1,9 +1,11 @@
-from importlib import import_module
+from trading_platform.webapp import create_app
+from pathlib import Path
 
-app = import_module("trading_platform.webapp").create_app()
 
-
-def test_root_route():
+def test_root_route(tmp_path):
+    app = create_app(env_path=tmp_path / ".env")
+    Path(app.static_folder).mkdir(parents=True, exist_ok=True)
+    (Path(app.static_folder) / "index.html").write_text("hi")
     with app.test_client() as c:
         resp = c.get("/")
         assert resp.status_code == 200

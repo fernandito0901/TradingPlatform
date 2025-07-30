@@ -22,6 +22,10 @@
 - Scheduler CLI logs and exits when API keys are missing
 - Socket.IO uses the Redis message queue to prevent worker crashes
 - Redis persists to a local volume with appendonly mode enabled
+- SPA served via catch-all route and WebSockets init once
+- Containers have health checks and restart policy
+- Training pipeline auto-creates missing target column
+- Polygon 403 "market closed" handled gracefully
 - CI workflow builds and pushes Docker images after tests pass
 - Fixed `run_daily` to pass `Config` into `run_pipeline`
 - Global error handler returns JSON and logs exceptions
