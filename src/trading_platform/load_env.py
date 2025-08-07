@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Iterable
 
 
 def load_env(path: str | os.PathLike[str] = ".env") -> None:
@@ -23,3 +24,10 @@ def load_env(path: str | os.PathLike[str] = ".env") -> None:
             continue
         key, value = line.split("=", 1)
         os.environ.setdefault(key, value)
+
+
+def validate_env(required: Iterable[str]) -> None:
+    """Ensure required variables are present."""
+    missing = [k for k in required if not os.getenv(k)]
+    if missing:
+        raise RuntimeError(f"Missing environment variables: {', '.join(missing)}")

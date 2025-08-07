@@ -7,6 +7,9 @@
 - [T103] Connect delayed stream to pipeline · Acceptance: webapp shows live trade ideas while training.
 - [T104] Tests for delayed feed and auto start · Acceptance: pytest covers stream integration and pipeline kickoff.
 - [T105] Review delayed feed implementation · Acceptance: README updated and PR approved by Reviewer.
+- [T106] Implement scheduler service · Acceptance: docker-compose starts scheduler container without errors.
+- [T107] Validate required environment variables · Acceptance: missing keys raise RuntimeError during startup.
+- [T108] Improve AGENTS guidelines · Acceptance: documentation updated and commit messages include task IDs.
 
 # Completed Tasks
 - [T85] Document risk workflow · Acceptance: README explains risk_report usage and risk limits. · Completed by Reviewer on 2025-09-05
@@ -20,9 +23,6 @@
 - [T86] Risk report tests · Acceptance: pytest covers risk calculations and dashboard output. · Completed by Tester on 2025-09-05
 - [T87] Real-time streaming for portfolio symbols · Acceptance: quotes for held symbols update every minute and log to database. · Completed by DataCollector on 2025-09-04
 - [T91] Real-time alert notifications · Acceptance: user notified via Slack when entry or exit triggers occur. · Completed by DataCollector on 2025-09-04
-- [T96] Modern dashboard design · Acceptance: plan P015 outlines new layout and API routes. · Completed by Planner on 2025-09-10
-- [T97] Implement watchlist and alert streaming · Acceptance: webapp shows watchlist, toasts, and auto-loaded files. · Completed by Coder on 2025-09-10
-- [T98] Update webapp tests for new endpoints · Acceptance: pytest covers watchlist and alerts API. · Completed by Tester on 2025-09-10
 - [T96] Modern dashboard design · Acceptance: plan P015 outlines new layout and API routes. · Completed by Planner on 2025-09-10
 - [T97] Implement watchlist and alert streaming · Acceptance: webapp shows watchlist, toasts, and auto-loaded files. · Completed by Coder on 2025-09-10
 - [T98] Update webapp tests for new endpoints · Acceptance: pytest covers watchlist and alerts API. · Completed by Tester on 2025-09-10

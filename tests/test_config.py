@@ -13,6 +13,6 @@ def test_load_config_reads_env(tmp_path, monkeypatch):
 
 def test_load_config_parses_max_risk(tmp_path, monkeypatch):
     env = tmp_path / ".env"
-    env.write_text("MAX_RISK=call=100,condor=50\n")
+    env.write_text("POLYGON_API_KEY=foo\nMAX_RISK=call=100,condor=50\n")
     cfg = load_config([], env_path=env)
     assert cfg.max_risk == {"call": 100.0, "condor": 50.0}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 
 import websocket
 
@@ -11,8 +12,16 @@ from ..webapp import socketio
 from .api import WS_URL, _get_polygon_key
 
 
-def stream_overview(symbols: str = "AAPL") -> None:
-    """Stream delayed quotes for ``symbols`` and emit via Socket.IO."""
+def stream_overview(symbols: str = "AAPL", testing: bool = False) -> None:
+    """Stream delayed quotes for ``symbols`` and emit via Socket.IO.
+
+    Parameters
+    ----------
+    symbols : str, optional
+        Symbols to subscribe to, by default "AAPL".
+    testing : bool, optional
+        If ``True``, stop after the first connection attempt.
+    """
 
     def on_open(ws):
         auth = json.dumps({"action": "auth", "params": _get_polygon_key()})
@@ -44,12 +53,21 @@ def stream_overview(symbols: str = "AAPL") -> None:
     def on_close(ws, code, msg):
         logging.info("WebSocket closed %s %s", code, msg)
 
-    ws = websocket.WebSocketApp(
-        WS_URL,
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close,
-    )
-    logging.info("Streaming delayed quotes for %s", symbols)
-    ws.run_forever()
+    backoff = 1
+    while True:
+        ws = websocket.WebSocketApp(
+            WS_URL,
+            on_open=on_open,
+            on_message=on_message,
+            on_error=on_error,
+            on_close=on_close,
+        )
+        logging.info("Streaming delayed quotes for %s", symbols)
+        try:
+            ws.run_forever()
+        except Exception as exc:  # pragma: no cover - network errors
+            logging.error("stream error: %s", exc)
+        time.sleep(backoff)
+        backoff = min(backoff * 2, 60)
+        if testing:
+            break

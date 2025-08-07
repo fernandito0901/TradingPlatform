@@ -14,6 +14,7 @@ from trading_platform.config import Config
 
 def test_run_daily_abort(monkeypatch):
     importlib.reload(run_daily)
+    monkeypatch.setenv("POLYGON_API_KEY", "x")
 
     monkeypatch.setattr(run_daily.verify, "verify", lambda symbols: False)
     cfg = Config(symbols="AAPL")
@@ -23,6 +24,7 @@ def test_run_daily_abort(monkeypatch):
 
 def test_run_daily_notify_failure(monkeypatch, tmp_path):
     importlib.reload(run_daily)
+    monkeypatch.setenv("POLYGON_API_KEY", "x")
 
     monkeypatch.setattr(run_daily.verify, "verify", lambda symbols: True)
 
@@ -61,6 +63,7 @@ def test_run_daily_notify_failure(monkeypatch, tmp_path):
 
 def test_run_daily_success(monkeypatch, tmp_path, capsys):
     importlib.reload(run_daily)
+    monkeypatch.setenv("POLYGON_API_KEY", "x")
 
     monkeypatch.setattr(run_daily.verify, "verify", lambda symbols: True)
 

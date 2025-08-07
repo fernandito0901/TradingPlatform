@@ -12,14 +12,21 @@ def test_setup_creates_env(tmp_path, monkeypatch):
     app = create_app(env_path=env)
     client = app.test_client()
 
-    resp = client.get("/")
-    assert b"Setup" in resp.data
+    index_file = Path(app.static_folder) / "index.html"
+    index_file.parent.mkdir(parents=True, exist_ok=True)
+    index_file.write_text("SPA")
 
-    client.post("/", data={"polygon_api_key": "abc"})
+    resp = client.get("/")
+    assert resp.json == {"status": "ok"}
+
+    resp = client.get("/foo")
+    assert b"SPA" in resp.data
+
+    client.post("/dashboard", data={"polygon_api_key": "abc"})
     assert os.getenv("POLYGON_API_KEY") == "abc"
 
-    resp = client.get("/")
-    assert b"Run Daily Pipeline" in resp.data
+    resp = client.get("/dashboard")
+    assert resp.status_code == 200
 
 
 def test_scheduler_controls(tmp_path, monkeypatch):
@@ -43,12 +50,12 @@ def test_scheduler_controls(tmp_path, monkeypatch):
 
     client.post("/start_scheduler")
     assert started
-    resp = client.get("/")
-    assert b"Stop Scheduler" in resp.data
+    resp = client.get("/api/scheduler/alive")
+    assert resp.json["alive"] is True
 
     client.post("/stop_scheduler")
-    resp = client.get("/")
-    assert b"Start Scheduler" in resp.data
+    resp = client.get("/api/scheduler/alive")
+    assert resp.json["alive"] is False
 
 
 def test_scoreboard_with_risk_columns(tmp_path, monkeypatch):
@@ -61,7 +68,7 @@ def test_scoreboard_with_risk_columns(tmp_path, monkeypatch):
     )
     app = create_app(env_path=env)
     client = app.test_client()
-    resp = client.get("/")
+    resp = client.get("/dashboard")
     assert b"sharpe" in resp.data
     assert b"max_drawdown" in resp.data
 
@@ -85,9 +92,10 @@ def test_api_watchlist_and_alerts(tmp_path, monkeypatch):
 def test_api_scoreboard_and_pnl(tmp_path):
     env = tmp_path / ".env"
     env.write_text("POLYGON_API_KEY=abc\n")
+    os.environ["REPORTS_DIR"] = str(tmp_path)
     app = create_app(env_path=env)
-    csv = Path(app.static_folder) / "scoreboard.csv"
-    pnl = Path(app.static_folder) / "pnl.csv"
+    csv = Path(os.environ["REPORTS_DIR"]) / "scoreboard.csv"
+    pnl = Path(os.environ["REPORTS_DIR"]) / "pnl.csv"
     pnl.parent.mkdir(parents=True, exist_ok=True)
     csv.write_text("date,playbook,auc\n2025-01-01,p1,0.7\n")
     pnl.write_text("date,symbol,unrealized,realized,total\n2025-01-01,A,0,0,0\n")

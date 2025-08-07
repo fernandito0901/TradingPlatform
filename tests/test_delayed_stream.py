@@ -36,5 +36,5 @@ def test_stream_overview(monkeypatch):
         return WS()
 
     monkeypatch.setattr(delayed_stream.websocket, "WebSocketApp", ws_app)
-    delayed_stream.stream_overview("AAPL")
+    delayed_stream.stream_overview("AAPL", testing=True)
     assert ("overview_quote", {"symbol": "AAPL", "p": 100}) in sock.emitted

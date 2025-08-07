@@ -6,7 +6,7 @@ import argparse
 import os
 from dataclasses import dataclass
 
-from .load_env import load_env
+from .load_env import load_env, validate_env
 
 
 def _parse_risk(value: str | None) -> dict[str, float] | None:
@@ -46,6 +46,7 @@ def load_config(
     """Load configuration from a ``.env`` file and command-line arguments."""
 
     load_env(env_path)
+    validate_env(["POLYGON_API_KEY"])
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--symbols", default=os.getenv("SYMBOLS", "AAPL"))

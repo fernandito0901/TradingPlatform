@@ -9,9 +9,15 @@ _Single-source handbook for all AI agents contributing to this project. Defines 
 - **Code Style:** Python projects follow PEP8 + Black. Run `black .` before PR.
 - **Tests:** All PRs must pass `pytest`, `flake8`, and any applicable schema checks.
 - **Docs:** Use NumPy-style docstrings. Document public functions. Update `CHANGELOG.md` for any user-facing change.
-- **Commits:** Format: `[<Role>] <summary>` (e.g. `[Coder] Add GARCH sigma calculator`)
+- **Commits:** Format: `[<Role>][TID] <summary>`
+  - Include the task ID from `TASKS.md` in every commit message.
 - **Branching:** Use `feature/<slug>` branches. Never push directly to `main`.
 - **Security:** Never expose keys or secrets. Use `.env`, config vaults, or encrypted secrets.
+
+### Environment Management
+- Copy `.env.example` to `.env` and fill in required values:
+  - `POLYGON_API_KEY`, `NEWS_API_KEY`, `SLACK_WEBHOOK_URL`, `REDIS_URL`, `CACHE_TTL`.
+  - Optional: `SCHED_INTERVAL`, `HEALTH_PORT`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`.
 
 ---
 
@@ -40,6 +46,7 @@ Agents append notes to `NOTES.md` under their section with timestamps:
 - ❌ If tests fail, @Tester documents error and assigns back to origin agent.
 - ⚠ If any agent is uncertain, write `⚠ NEEDS-HUMAN-REVIEW` and halt.
 - 🕒 If no progress in 10 min or 3 failed attempts, escalate to @Planner.
+- After repeated failures, request human review in the PR comments.
 
 ---
 
@@ -58,6 +65,19 @@ Agents append notes to `NOTES.md` under their section with timestamps:
 - Follow planner specs
 - Keep examples and docs current
 - Handoff changes via `NOTES.md`
+
+### @DataCollector
+**Role:** Gather market data and news
+**Responsibilities:**
+- Maintain API integrations
+- Ensure data quality
+- Retry failed jobs and log anomalies
+
+### @Modeler
+**Role:** Build and evaluate predictive models
+**Responsibilities:**
+- Create features and training pipelines
+- Tune hyperparameters and report metrics
 
 ---
 

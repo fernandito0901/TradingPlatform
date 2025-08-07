@@ -16,6 +16,7 @@ from . import notifier
 from .collector import api, api_async, db, verify
 from .collector.alerts import AlertAggregator
 from .config import Config, load_config
+from .load_env import validate_env
 from .playbook.generate import generate_playbook
 
 try:  # optional during CLI usage
@@ -38,6 +39,7 @@ def run(config: Config) -> str:
         Path to the generated playbook JSON file.
     """
 
+    validate_env(["POLYGON_API_KEY"])
     if not verify.verify(config.symbols):
         raise SystemExit("Connectivity check failed")
 
